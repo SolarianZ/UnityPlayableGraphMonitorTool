@@ -1,0 +1,18 @@
+{
+  "name": "com.greenbamboogames.playablegraphmonitor",
+  "version": "0.0.1",
+  "displayName": "PlayableGraphMonitor!",
+  "description": "Playable graph monitor.",
+  "unity": "2021.3",
+  "documentationUrl": "https://github.com/SolarianZ/UnityPlayableGraphMonitorTool",
+  "changelogUrl": "",
+  "licensesUrl": "https://github.com/SolarianZ/UnityPlayableGraphMonitorTool/blob/main/LICENSE",
+  "keywords": [],
+  "author": {
+    "name": "GBG",
+    "email": "vdergow@hotmail.com",
+    "url": ""
+  },
+  "type": "tool",
+  "hideInEditor": false
+}
