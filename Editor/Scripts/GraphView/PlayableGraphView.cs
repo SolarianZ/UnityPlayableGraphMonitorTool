@@ -1,0 +1,90 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.Experimental.GraphView;
+using UnityEditor.Playables;
+using UnityEngine;
+using UnityEngine.Assertions;
+using UnityEngine.Playables;
+using UnityEngine.UIElements;
+using UGraphView = UnityEditor.Experimental.GraphView.GraphView;
+
+namespace GBG.PlayableGraphMonitor.Editor.GraphView
+{
+    public class PlayableGraphView : UGraphView
+    {
+        private PlayableGraph _playableGraph;
+
+        private readonly List<PlayableOutputNode> _playableOutputNodes = new List<PlayableOutputNode>();
+
+
+        public PlayableGraphView()
+        {
+            this.AddManipulator(new ContentDragger());
+            this.AddManipulator(new SelectionDragger());
+            this.AddManipulator(new RectangleSelector());
+            SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
+        }
+
+        public PlayableGraph GetPlayableGraph()
+        {
+            return _playableGraph;
+        }
+
+        public void SetPlayableGraph(PlayableGraph playableGraph, bool forceRepaint)
+        {
+            if (!forceRepaint && IsEqual(ref _playableGraph, ref playableGraph))
+            {
+                return;
+            }
+
+            _playableGraph = playableGraph;
+
+            for (int i = 0; i < _playableOutputNodes.Count; i++)
+            {
+                RemoveElement(_playableOutputNodes[i]);
+            }
+
+            _playableOutputNodes.Clear();
+
+            if (!_playableGraph.IsValid())
+            {
+                return;
+            }
+
+            for (int i = 0; i < _playableGraph.GetOutputCount(); i++)
+            {
+                var playableOutput = _playableGraph.GetOutput(i);
+                var playableOutputTypeName = playableOutput.GetPlayableOutputType().Name;
+                var playableOutputEditorName = playableOutput.GetEditorName();
+                var playableOutputNode = new PlayableOutputNode(this, 0, playableOutput)
+                {
+                    title = $"{playableOutputTypeName} ({playableOutputEditorName})"
+                };
+                playableOutputNode.SetPosition(new Rect(200, 200, 0, 0));
+                _playableOutputNodes.Add(playableOutputNode);
+                AddElement(playableOutputNode);
+            }
+
+            FrameAll();
+        }
+
+
+        private static bool IsEqual(ref PlayableGraph a, ref PlayableGraph b)
+        {
+            if (!a.IsValid())
+            {
+                return !b.IsValid();
+            }
+
+            if (!b.IsValid())
+            {
+                return false;
+            }
+
+            var nameA = a.GetEditorName();
+            var nameB = b.GetEditorName();
+
+            return nameA.Equals(nameB);
+        }
+    }
+}
