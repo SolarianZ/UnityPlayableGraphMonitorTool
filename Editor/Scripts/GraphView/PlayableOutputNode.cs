@@ -19,7 +19,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             RefreshExpandedState();
             RefreshPorts();
 
-            CreateAndConnectInputs();
+            CreateAndConnectInputNodes();
         }
 
 
@@ -36,7 +36,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             InternalInputPorts.Add(inputPort);
         }
 
-        private void CreateAndConnectInputs()
+        private void CreateAndConnectInputNodes()
         {
             if (!PlayableOutput.IsOutputValid())
             {
@@ -53,7 +53,9 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             inputPlayableNode.SetPosition(new Rect(-400 * inputPlayableDepth, 200, 0, 0));
             Owner.AddElement(inputPlayableNode);
 
-            var edge = InternalInputPorts[0].ConnectTo(inputPlayableNode.OutputPorts[0]);
+            var inputPlayableOutputPortIndex = PlayableOutput.GetSourceOutputPort();
+            var inputPlayableOutputPort = InternalInputPorts[inputPlayableOutputPortIndex];
+            var edge = inputPlayableOutputPort.ConnectTo(inputPlayableNode.OutputPorts[0]);
             Owner.AddElement(edge);
         }
     }
