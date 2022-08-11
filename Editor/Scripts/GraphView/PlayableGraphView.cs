@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
+using GBG.PlayableGraphMonitor.Editor.Node;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.Playables;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
 using UGraphView = UnityEditor.Experimental.GraphView.GraphView;
@@ -39,13 +38,26 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
             _playableGraph = playableGraph;
 
-            for (int i = 0; i < _playableOutputNodes.Count; i++)
+            ClearView();
+
+            PopulateView();
+
+            // FrameAll();
+        }
+
+
+        private void ClearView()
+        {
+            foreach (var playableOutputNode in _playableOutputNodes)
             {
-                RemoveElement(_playableOutputNodes[i]);
+                playableOutputNode.RemoveFromContainer();
             }
 
             _playableOutputNodes.Clear();
+        }
 
+        private void PopulateView()
+        {
             if (!_playableGraph.IsValid())
             {
                 return;
@@ -56,16 +68,20 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                 var playableOutput = _playableGraph.GetOutput(i);
                 var playableOutputTypeName = playableOutput.GetPlayableOutputType().Name;
                 var playableOutputEditorName = playableOutput.GetEditorName();
-                var playableOutputNode = new PlayableOutputNode(this, 0, playableOutput)
+                var playableOutputNode = new PlayableOutputNode(0, playableOutput)
                 {
                     title = $"{playableOutputTypeName} ({playableOutputEditorName})"
                 };
                 playableOutputNode.SetPosition(new Rect(200, 200, 0, 0));
+                playableOutputNode.AddToContainer(this);
+
                 _playableOutputNodes.Add(playableOutputNode);
-                AddElement(playableOutputNode);
             }
 
-            FrameAll();
+            for (int i = 0; i < _playableOutputNodes.Count; i++)
+            {
+                _playableOutputNodes[i].CreateAndConnectInputNodes();
+            }
         }
 
 

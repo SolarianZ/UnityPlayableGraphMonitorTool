@@ -1,8 +1,7 @@
-using System.Collections.Generic;
 using GBG.PlayableGraphMonitor.Editor.GraphView;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
 using PlayableUtility = UnityEditor.Playables.Utility;
@@ -28,7 +27,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private PlayableGraphView _graphView;
 
-        private bool _isGraphsChanged;
+        private bool _needRepaintGraph;
 
 
         private void OnEnable()
@@ -71,8 +70,8 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void Update()
         {
-            _graphView.SetPlayableGraph(_graphPopupField.value, _isGraphsChanged);
-            _isGraphsChanged = false;
+            _graphView.SetPlayableGraph(_graphPopupField.value, _needRepaintGraph);
+            _needRepaintGraph = false;
         }
 
         private string GraphPopupFieldFormatter(PlayableGraph graph)
@@ -91,7 +90,7 @@ namespace GBG.PlayableGraphMonitor.Editor
             {
                 _graphs.Add(graph);
                 _graphPopupField.MarkDirtyRepaint();
-                _isGraphsChanged = true;
+                _needRepaintGraph = true;
             }
         }
 
@@ -99,7 +98,7 @@ namespace GBG.PlayableGraphMonitor.Editor
         {
             _graphs.Remove(graph);
             _graphPopupField.MarkDirtyRepaint();
-            _isGraphsChanged = true;
+            _needRepaintGraph = true;
         }
     }
 }
