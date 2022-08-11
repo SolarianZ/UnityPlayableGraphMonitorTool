@@ -47,35 +47,23 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 return _hierarchySize.Value;
             }
 
-
             if (Children.Count == 0)
             {
                 _hierarchySize = GetNodeSize();
                 return _hierarchySize.Value;
             }
 
-            if (Children.Count == 1)
-            {
-                var selfSize = GetNodeSize();
-                var childHierarchySize = Children[0].GetHierarchySize();
-                _hierarchySize = new Vector2
-                {
-                    x = selfSize.x + childHierarchySize.x + NodeLayoutInfo.HorizontalSpace,
-                    y = selfSize.y + childHierarchySize.y + NodeLayoutInfo.VerticalSpace
-                };
-
-                return _hierarchySize.Value;
-            }
-
-            var hierarchySize = GetNodeSize() + new Vector2(NodeLayoutInfo.HorizontalSpace, 0);
+            var subHierarchySize = Vector2.zero;
             for (int i = 0; i < Children.Count; i++)
             {
                 var childSize = Children[i].GetHierarchySize();
-                hierarchySize.x += childSize.x;
-                hierarchySize.y = Mathf.Max(hierarchySize.y, childSize.y);
+                subHierarchySize.x = Mathf.Max(subHierarchySize.x, childSize.x);
+                subHierarchySize.y += childSize.y;
             }
+            subHierarchySize.y += (Children.Count - 1) * NodeLayoutInfo.VerticalSpace;
 
-            hierarchySize.y += (Children.Count - 1) * NodeLayoutInfo.VerticalSpace;
+            var hierarchySize = GetNodeSize() + new Vector2(NodeLayoutInfo.HorizontalSpace, 0);
+            hierarchySize.y = Mathf.Max(hierarchySize.y, subHierarchySize.y);
             _hierarchySize = hierarchySize;
 
             return _hierarchySize.Value;
@@ -83,8 +71,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         public void CalculateLayout(Vector2 treeSize, Vector2 origin)
         {
-            var hierarchySize = GetHierarchySize();
-            var nodePos = CalculateSubTreeRootPosition(treeSize, hierarchySize, origin);
+            var subTreeSize = GetHierarchySize();
+            var nodePos = CalculateSubTreeRootPosition(treeSize, subTreeSize, origin);
             SetPosition(new Rect(nodePos, Vector2.zero));
 
             origin.x -= GetNodeSize().x - NodeLayoutInfo.HorizontalSpace;
@@ -94,7 +82,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 var childHierarchySize = childNode.GetHierarchySize();
                 childNode.CalculateLayout(treeSize, origin);
 
-                origin.y += childHierarchySize.y + NodeLayoutInfo.VerticalSpace;
+                origin.y += childHierarchySize.y;
             }
         }
 

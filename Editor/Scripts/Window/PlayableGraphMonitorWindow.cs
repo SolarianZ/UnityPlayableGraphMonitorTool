@@ -23,11 +23,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private PopupField<PlayableGraph> _graphPopupField;
 
-        private PlayableGraph _selectedGraph;
-
         private PlayableGraphView _graphView;
-
-        private bool _needRepaintGraph;
 
 
         private void OnEnable()
@@ -70,8 +66,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void Update()
         {
-            _graphView.SetPlayableGraph(_graphPopupField.value, _needRepaintGraph);
-            _needRepaintGraph = false;
+            _graphView.SetPlayableGraph(_graphPopupField.value);
         }
 
         private string GraphPopupFieldFormatter(PlayableGraph graph)
@@ -90,7 +85,6 @@ namespace GBG.PlayableGraphMonitor.Editor
             {
                 _graphs.Add(graph);
                 _graphPopupField.MarkDirtyRepaint();
-                _needRepaintGraph = true;
             }
         }
 
@@ -98,7 +92,6 @@ namespace GBG.PlayableGraphMonitor.Editor
         {
             _graphs.Remove(graph);
             _graphPopupField.MarkDirtyRepaint();
-            _needRepaintGraph = true;
         }
     }
 }

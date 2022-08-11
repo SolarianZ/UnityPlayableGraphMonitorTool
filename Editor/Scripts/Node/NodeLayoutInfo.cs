@@ -8,7 +8,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         public const int VerticalSpace = 80;
 
-        public static readonly Vector2 StandardNodeSize = new Vector2(300, 150);
+        public static readonly Vector2 StandardNodeSize = new Vector2(400, 150);
 
         public int TreeWidth;
 

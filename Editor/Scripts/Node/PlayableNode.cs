@@ -34,7 +34,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 {
                     title = inputPlayableTypeName
                 };
-                //inputPlayableNode.SetPosition(new Rect(-400 * inputPlayableDepth, 200, 0, 0));
                 inputPlayableNode.AddToContainer(Container);
                 Children.Add(inputPlayableNode);
 

@@ -35,12 +35,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 title = sourcePlayableTypeName
             };
-            //sourcePlayableNode.SetPosition(new Rect(-400 * sourcePlayableNodeDepth, 200, 0, 0));
             sourcePlayableNode.AddToContainer(Container);
             Children.Add(sourcePlayableNode);
 
-            var sourcePlayableOutputPortIndex = PlayableOutput.GetSourceOutputPort();
-            var sourcePlayableOutputPort = sourcePlayableNode.OutputPorts[sourcePlayableOutputPortIndex];
+            var sourcePlayableOutputPort = sourcePlayableNode.OutputPorts[0];
             var selfSourcePort = InternalInputPorts[0];
             var edge = selfSourcePort.ConnectTo(sourcePlayableOutputPort);
             Container.AddElement(edge);

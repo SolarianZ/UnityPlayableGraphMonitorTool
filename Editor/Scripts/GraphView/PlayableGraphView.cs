@@ -30,9 +30,9 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             return _playableGraph;
         }
 
-        public void SetPlayableGraph(PlayableGraph playableGraph, bool forceRepaint)
+        public void SetPlayableGraph(PlayableGraph playableGraph)
         {
-            if (!forceRepaint && IsEqual(ref _playableGraph, ref playableGraph))
+            if (IsEqual(ref _playableGraph, ref playableGraph))
             {
                 return;
             }
@@ -91,10 +91,10 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             for (int i = 0; i < _playableOutputNodes.Count; i++)
             {
                 var outputNode = _playableOutputNodes[i];
-                var hierarchySize = outputNode.GetHierarchySize();
-                outputNode.CalculateLayout(hierarchySize, origin);
+                var treeSize = outputNode.GetHierarchySize();
+                outputNode.CalculateLayout(treeSize, origin);
 
-                origin.y += hierarchySize.y + NodeLayoutInfo.VerticalSpace;
+                origin.y += treeSize.y + NodeLayoutInfo.VerticalSpace;
             }
         }
 
