@@ -16,10 +16,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             CreatePorts();
             RefreshExpandedState();
             RefreshPorts();
-
-            // root node occupies one width unit
-            LayoutInfo.TreeWidth += 1;
         }
+
 
         public override void CreateAndConnectInputNodes()
         {
@@ -43,11 +41,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var edge = selfSourcePort.ConnectTo(sourcePlayableOutputPort);
             Container.AddElement(edge);
             InternalInputEdges.Add(edge);
-
-            if (Children.Count > 1)
-            {
-                LayoutInfo.TreeWidth += Children.Count - 1;
-            }
 
             for (int i = 0; i < Children.Count; i++)
             {

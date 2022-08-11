@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.GraphView;
+﻿using System;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Playables;
 
@@ -7,6 +8,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
     public class PlayableNode : GraphViewNode
     {
         public Playable Playable { get; }
+
+        public Type PlayableType => Playable.IsValid() ? Playable.GetPlayableType() : null;
+
 
         public PlayableNode(int depth, Playable playable)
             : base(depth)
@@ -42,11 +46,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 var edge = selfInputPort.ConnectTo(inputPlayableNodeOutputPort);
                 Container.AddElement(edge);
                 InternalInputEdges.Add(edge);
-            }
-
-            if (Children.Count > 1)
-            {
-                LayoutInfo.TreeWidth += Children.Count - 1;
             }
 
             for (int i = 0; i < Children.Count; i++)

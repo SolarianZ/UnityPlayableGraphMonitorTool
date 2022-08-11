@@ -1,6 +1,5 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.Node;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.Playables;
 using UnityEngine;
@@ -20,8 +19,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         public PlayableGraphView()
         {
             this.AddManipulator(new ContentDragger());
-            this.AddManipulator(new SelectionDragger());
-            this.AddManipulator(new RectangleSelector());
+            //this.AddManipulator(new SelectionDragger());
+            //this.AddManipulator(new RectangleSelector());
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
         }
 
@@ -32,18 +31,16 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         public void SetPlayableGraph(PlayableGraph playableGraph)
         {
-            if (IsEqual(ref _playableGraph, ref playableGraph))
-            {
-                return;
-            }
+            //if (IsEqual(ref _playableGraph, ref playableGraph))
+            //{
+            //    return;
+            //}
 
             _playableGraph = playableGraph;
 
             ClearView();
 
             PopulateView();
-
-            EditorApplication.delayCall += () => FrameAll();
         }
 
 
@@ -55,8 +52,6 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             }
 
             _playableOutputNodes.Clear();
-
-            GraphViewNode.LayoutInfo.Reset();
         }
 
         private void PopulateView()
@@ -92,7 +87,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             {
                 var outputNode = _playableOutputNodes[i];
                 var treeSize = outputNode.GetHierarchySize();
-                outputNode.CalculateLayout(treeSize, origin);
+
+                outputNode.CalculateLayout(origin);
 
                 origin.y += treeSize.y + NodeLayoutInfo.VerticalSpace;
             }

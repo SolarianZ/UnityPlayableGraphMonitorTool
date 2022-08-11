@@ -8,8 +8,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 {
     public abstract class GraphViewNode : UNode
     {
-        internal static NodeLayoutInfo LayoutInfo;
-
         public int Depth { get; }
 
         public IReadOnlyList<Port> InputPorts => InternalInputPorts;
@@ -20,11 +18,11 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         protected List<Port> InternalOutputPorts { get; } = new List<Port>();
 
-        protected UGraphView Container { get; set; }
-
         // public IReadOnlyList<Edge> InputEdges => InternalInputEdges;
 
         protected List<Edge> InternalInputEdges { get; } = new List<Edge>();
+
+        protected UGraphView Container { get; set; }
 
         protected GraphViewNode Parent { get; private set; }
 
@@ -32,6 +30,17 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
 
         private Vector2? _hierarchySize;
+
+
+        protected GraphViewNode(int depth)
+        {
+            Depth = depth;
+        }
+
+        protected Port InstantiatePort<TPort>(Direction direction)
+        {
+            return InstantiatePort(Orientation.Horizontal, direction, Port.Capacity.Single, typeof(TPort));
+        }
 
 
         public Vector2 GetNodeSize()
@@ -69,10 +78,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             return _hierarchySize.Value;
         }
 
-        public void CalculateLayout(Vector2 treeSize, Vector2 origin)
+        public void CalculateLayout(Vector2 origin)
         {
             var subTreeSize = GetHierarchySize();
-            var nodePos = CalculateSubTreeRootPosition(treeSize, subTreeSize, origin);
+            var nodePos = CalculateSubTreeRootNodePosition(subTreeSize, origin);
             SetPosition(new Rect(nodePos, Vector2.zero));
 
             origin.x -= GetNodeSize().x - NodeLayoutInfo.HorizontalSpace;
@@ -80,13 +89,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 var childNode = Children[i];
                 var childHierarchySize = childNode.GetHierarchySize();
-                childNode.CalculateLayout(treeSize, origin);
+                childNode.CalculateLayout(origin);
 
                 origin.y += childHierarchySize.y;
             }
         }
 
-        public static Vector2 CalculateSubTreeRootPosition(Vector2 treeSize, Vector2 subTreeSize, Vector2 subTreeOrigin)
+        public static Vector2 CalculateSubTreeRootNodePosition(Vector2 subTreeSize, Vector2 subTreeOrigin)
         {
             var subTreePos = subTreeOrigin;
             subTreePos.y += subTreeSize.y / 2;
@@ -124,16 +133,5 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         }
 
         public abstract void CreateAndConnectInputNodes();
-
-
-        protected GraphViewNode(int depth)
-        {
-            Depth = depth;
-        }
-
-        protected Port InstantiatePort<TPort>(Direction direction)
-        {
-            return InstantiatePort(Orientation.Horizontal, direction, Port.Capacity.Single, typeof(TPort));
-        }
     }
 }
