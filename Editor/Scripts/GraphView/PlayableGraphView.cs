@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using GBG.PlayableGraphMonitor.Editor.Node;
+﻿using GBG.PlayableGraphMonitor.Editor.Node;
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.Playables;
 using UnityEngine;
@@ -42,7 +43,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
             PopulateView();
 
-            // FrameAll();
+            EditorApplication.delayCall += () => FrameAll();
         }
 
 
@@ -54,6 +55,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             }
 
             _playableOutputNodes.Clear();
+
+            GraphViewNode.LayoutInfo.Reset();
         }
 
         private void PopulateView()
@@ -63,6 +66,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                 return;
             }
 
+            // create nodes
             for (int i = 0; i < _playableGraph.GetOutputCount(); i++)
             {
                 var playableOutput = _playableGraph.GetOutput(i);
@@ -72,7 +76,6 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                 {
                     title = $"{playableOutputTypeName} ({playableOutputEditorName})"
                 };
-                playableOutputNode.SetPosition(new Rect(200, 200, 0, 0));
                 playableOutputNode.AddToContainer(this);
 
                 _playableOutputNodes.Add(playableOutputNode);
@@ -81,6 +84,17 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             for (int i = 0; i < _playableOutputNodes.Count; i++)
             {
                 _playableOutputNodes[i].CreateAndConnectInputNodes();
+            }
+
+            // calculate node layout
+            var origin = Vector2.zero;
+            for (int i = 0; i < _playableOutputNodes.Count; i++)
+            {
+                var outputNode = _playableOutputNodes[i];
+                var hierarchySize = outputNode.GetHierarchySize();
+                outputNode.CalculateLayout(hierarchySize, origin);
+
+                origin.y += hierarchySize.y + NodeLayoutInfo.VerticalSpace;
             }
         }
 

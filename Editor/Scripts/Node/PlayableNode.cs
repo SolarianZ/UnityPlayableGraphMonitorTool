@@ -34,9 +34,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 {
                     title = inputPlayableTypeName
                 };
-                inputPlayableNode.SetPosition(new Rect(-400 * inputPlayableDepth, 200, 0, 0));
+                //inputPlayableNode.SetPosition(new Rect(-400 * inputPlayableDepth, 200, 0, 0));
                 inputPlayableNode.AddToContainer(Container);
-                ChildNodes.Add(inputPlayableNode);
+                Children.Add(inputPlayableNode);
 
                 var inputPlayableNodeOutputPort = inputPlayableNode.OutputPorts[0];
                 var selfInputPort = InternalInputPorts[i];
@@ -45,9 +45,14 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 InternalInputEdges.Add(edge);
             }
 
-            for (int i = 0; i < ChildNodes.Count; i++)
+            if (Children.Count > 1)
             {
-                ChildNodes[i].CreateAndConnectInputNodes();
+                LayoutInfo.TreeWidth += Children.Count - 1;
+            }
+
+            for (int i = 0; i < Children.Count; i++)
+            {
+                Children[i].CreateAndConnectInputNodes();
             }
         }
 

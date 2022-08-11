@@ -16,6 +16,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             CreatePorts();
             RefreshExpandedState();
             RefreshPorts();
+
+            // root node occupies one width unit
+            LayoutInfo.TreeWidth += 1;
         }
 
         public override void CreateAndConnectInputNodes()
@@ -32,9 +35,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 title = sourcePlayableTypeName
             };
-            sourcePlayableNode.SetPosition(new Rect(-400 * sourcePlayableNodeDepth, 200, 0, 0));
+            //sourcePlayableNode.SetPosition(new Rect(-400 * sourcePlayableNodeDepth, 200, 0, 0));
             sourcePlayableNode.AddToContainer(Container);
-            ChildNodes.Add(sourcePlayableNode);
+            Children.Add(sourcePlayableNode);
 
             var sourcePlayableOutputPortIndex = PlayableOutput.GetSourceOutputPort();
             var sourcePlayableOutputPort = sourcePlayableNode.OutputPorts[sourcePlayableOutputPortIndex];
@@ -43,9 +46,14 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             Container.AddElement(edge);
             InternalInputEdges.Add(edge);
 
-            for (int i = 0; i < ChildNodes.Count; i++)
+            if (Children.Count > 1)
             {
-                ChildNodes[i].CreateAndConnectInputNodes();
+                LayoutInfo.TreeWidth += Children.Count - 1;
+            }
+
+            for (int i = 0; i < Children.Count; i++)
+            {
+                Children[i].CreateAndConnectInputNodes();
             }
         }
 
