@@ -1,4 +1,5 @@
 using GBG.PlayableGraphMonitor.Editor.GraphView;
+using GBG.PlayableGraphMonitor.Editor.Utility;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -62,6 +63,8 @@ namespace GBG.PlayableGraphMonitor.Editor
         {
             PlayableUtility.graphCreated -= OnGraphCreated;
             PlayableUtility.destroyingGraph -= OnDestroyingGraph;
+
+            GraphTool.ClearGlobalCache();
         }
 
         private void Update()

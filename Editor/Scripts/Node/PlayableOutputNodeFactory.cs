@@ -1,4 +1,5 @@
-﻿using UnityEditor.Playables;
+﻿using GBG.PlayableGraphMonitor.Editor.Utility;
+using UnityEditor.Playables;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -28,8 +29,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             // default node
             var playableOutputNode = new PlayableOutputNode(playableOutput)
             {
-                title = nodeTitle
+                title = nodeTitle,
             };
+            playableOutputNode.SetNodeStyle(playableOutput.GetPlayableOutputNodeColor());
+
             return playableOutputNode;
         }
     }

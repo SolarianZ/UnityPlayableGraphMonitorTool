@@ -27,10 +27,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             if (!Playable.IsValid())
             {
-                foreach (var port in InternalOutputPorts)
-                {
-                    port.portColor = GraphTool.GetPortInvalidColor(0);
-                }
+                style.backgroundColor = GraphTool.GetNodeInvalidColor();
                 return;
             }
 
@@ -43,9 +40,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             // diff child nodes
             for (int i = 0; i < Playable.GetInputCount(); i++)
             {
-                // update port color
+                // update self port color
                 var inputWeight = Playable.GetInputWeight(i);
-                InternalInputPorts[i].portColor = GraphTool.GetPortColor(Playable, inputWeight);
+                InternalInputPorts[i].portColor = GraphTool.GetPortColor(inputWeight);
 
                 var inputPlayable = Playable.GetInput(i);
                 if (!inputPlayable.IsValid())
@@ -89,9 +86,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                     continue;
                 }
 
-                // update port color
+                // update child port color
                 var inputWeight = Playable.GetInputWeight(input.PortIndex);
-                input.Node.OutputPorts[0].portColor = GraphTool.GetPortColor(Playable, inputWeight);
+                input.Node.OutputPorts[0].portColor = GraphTool.GetPortColor(inputWeight);
                 input.Edge.UpdateEdgeControl();
 
                 InternalInputs[i].Node.Update();
@@ -124,7 +121,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 var inputPort = InstantiatePort<Playable>(Direction.Input);
                 inputPort.portName = $"Input {i}";
-                inputPort.portColor = GraphTool.GetPortColor(Playable, Playable.GetInputWeight(i));
+                inputPort.portColor = GraphTool.GetPortColor(Playable.GetInputWeight(i));
                 inputContainer.Add(inputPort);
                 InternalInputPorts.Add(inputPort);
             }
@@ -133,7 +130,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 var outputPort = InstantiatePort<Playable>(Direction.Output);
                 outputPort.portName = $"Output {i}";
-                outputPort.portColor = GraphTool.GetPortColor(Playable, 1);
+                outputPort.portColor = GraphTool.GetPortColor(1);
                 outputContainer.Add(outputPort);
                 InternalOutputPorts.Add(outputPort);
             }

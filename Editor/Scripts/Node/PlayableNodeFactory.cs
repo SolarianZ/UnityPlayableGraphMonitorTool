@@ -1,4 +1,5 @@
-﻿using UnityEngine.Animations;
+﻿using GBG.PlayableGraphMonitor.Editor.Utility;
+using UnityEngine.Animations;
 using UnityEngine.Playables;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
@@ -41,6 +42,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         SET_NODE_TITLE:
             playableNode.title = nodeTitle;
+            playableNode.SetNodeStyle(playable.GetPlayableNodeColor());
 
             return playableNode;
         }
