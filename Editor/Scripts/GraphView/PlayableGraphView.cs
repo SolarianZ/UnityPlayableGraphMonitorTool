@@ -1,5 +1,7 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.Node;
+using GBG.PlayableGraphMonitor.Editor.Utility;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -25,7 +27,10 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         public void Update(PlayableGraph playableGraph)
         {
+            var needFrameAll = !GraphTool.IsEqual(ref _playableGraph, ref playableGraph);
+
             _playableGraph = playableGraph;
+
             if (!_playableGraph.IsValid())
             {
                 ClearView();
@@ -34,6 +39,15 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             PopulateView();
 
             CalculateLayout();
+
+            if (needFrameAll)
+            {
+                // wait for view initialize at least 2 frames
+                EditorApplication.delayCall += () =>
+                {
+                    EditorApplication.delayCall += () => { FrameAll(); };
+                };
+            }
         }
 
 
