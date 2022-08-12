@@ -1,5 +1,5 @@
-﻿using UnityEditor.Experimental.GraphView;
-using UnityEngine;
+﻿using GBG.PlayableGraphMonitor.Editor.Utility;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine.Playables;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
@@ -52,7 +52,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                     var selfSourcePort = InternalInputPorts[0];
                     var edge = selfSourcePort.ConnectTo(sourcePlayableOutputPort);
                     Container.AddElement(edge);
-                    InternalInputs.Add(new NodeInput(edge, sourcePlayableNode));
+                    InternalInputs.Add(new NodeInput(edge, sourcePlayableNode, 0));
                 }
             }
 
@@ -96,7 +96,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             var inputPort = InstantiatePort<Playable>(Direction.Input);
             inputPort.portName = "Source";
-            inputPort.portColor = Color.white;
+            inputPort.portColor = GraphTool.GetPortColor(PlayableOutput);
             inputContainer.Add(inputPort);
             InternalInputPorts.Add(inputPort);
         }

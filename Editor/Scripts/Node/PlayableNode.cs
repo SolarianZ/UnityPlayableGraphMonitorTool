@@ -1,6 +1,6 @@
-﻿using System;
+﻿using GBG.PlayableGraphMonitor.Editor.Utility;
+using System;
 using UnityEditor.Experimental.GraphView;
-using UnityEngine;
 using UnityEngine.Playables;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
@@ -27,6 +27,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             if (!Playable.IsValid())
             {
+                foreach (var port in InternalOutputPorts)
+                {
+                    port.portColor = GraphTool.GetPortInvalidColor(0);
+                }
                 return;
             }
 
@@ -36,8 +40,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 InternalInputs[i].Node.RemoveFlag(NodeFlag.Active);
             }
 
+            // diff child nodes
             for (int i = 0; i < Playable.GetInputCount(); i++)
             {
+                // update port color
+                var inputWeight = Playable.GetInputWeight(i);
+                InternalInputPorts[i].portColor = GraphTool.GetPortColor(Playable, inputWeight);
+
                 var inputPlayable = Playable.GetInput(i);
                 if (!inputPlayable.IsValid())
                 {
@@ -47,7 +56,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 var childNodeIndex = FindChildPlayableNode(inputPlayable);
                 if (childNodeIndex >= 0)
                 {
-                    InternalInputs[i].Node.AddFlag(NodeFlag.Active);
+                    var input = InternalInputs[i];
+                    input.Node.AddFlag(NodeFlag.Active);
+                    InternalInputs[i] = input.Copy(input, i);
                     continue;
                 }
 
@@ -60,12 +71,15 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 var selfInputPort = InternalInputPorts[i];
                 var edge = selfInputPort.ConnectTo(inputPlayableNodeOutputPort);
                 Container.AddElement(edge);
-                InternalInputs.Add(new NodeInput(edge, inputPlayableNode));
+                InternalInputs.Add(new NodeInput(edge, inputPlayableNode, i));
             }
 
+            // update child nodes
             for (int i = InternalInputs.Count - 1; i >= 0; i--)
             {
                 var input = InternalInputs[i];
+
+                // remove inactive child node
                 if (!input.Node.CheckFlag(NodeFlag.Active))
                 {
                     Container.RemoveElement(input.Edge);
@@ -74,6 +88,11 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                     InternalInputs.RemoveAt(i);
                     continue;
                 }
+
+                // update port color
+                var inputWeight = Playable.GetInputWeight(input.PortIndex);
+                input.Node.OutputPorts[0].portColor = GraphTool.GetPortColor(Playable, inputWeight);
+                input.Edge.UpdateEdgeControl();
 
                 InternalInputs[i].Node.Update();
             }
@@ -105,7 +124,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 var inputPort = InstantiatePort<Playable>(Direction.Input);
                 inputPort.portName = $"Input {i}";
-                inputPort.portColor = Color.white;
+                inputPort.portColor = GraphTool.GetPortColor(Playable, Playable.GetInputWeight(i));
                 inputContainer.Add(inputPort);
                 InternalInputPorts.Add(inputPort);
             }
@@ -114,7 +133,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 var outputPort = InstantiatePort<Playable>(Direction.Output);
                 outputPort.portName = $"Output {i}";
-                outputPort.portColor = Color.white;
+                outputPort.portColor = GraphTool.GetPortColor(Playable, 1);
                 outputContainer.Add(outputPort);
                 InternalOutputPorts.Add(outputPort);
             }

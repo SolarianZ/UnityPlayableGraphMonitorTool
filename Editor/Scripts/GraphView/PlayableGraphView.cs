@@ -23,29 +23,15 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
         }
 
-        public PlayableGraph GetPlayableGraph()
-        {
-            return _playableGraph;
-        }
-
         public void Update(PlayableGraph playableGraph)
         {
+            _playableGraph = playableGraph;
             if (!_playableGraph.IsValid())
             {
                 ClearView();
             }
 
-            if (IsEqual(ref _playableGraph, ref playableGraph))
-            {
-                DiffOutputNodes();
-            }
-            else
-            {
-                // playable graph changed
-                _playableGraph = playableGraph;
-
-                PopulateView();
-            }
+            PopulateView();
 
             CalculateLayout();
         }
@@ -62,30 +48,6 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         }
 
         private void PopulateView()
-        {
-            if (!_playableGraph.IsValid())
-            {
-                return;
-            }
-
-            // create nodes
-            for (int i = 0; i < _playableGraph.GetOutputCount(); i++)
-            {
-                var playableOutput = _playableGraph.GetOutput(i);
-                var playableOutputNode = PlayableOutputNodeFactory.CreateNode(playableOutput);
-                playableOutputNode.AddToContainer(this);
-
-                _rootOutputNodes.Add(playableOutputNode);
-            }
-
-            for (int i = 0; i < _rootOutputNodes.Count; i++)
-            {
-                //_rootOutputNodes[i].CreateAndConnectInputNodes();
-                _rootOutputNodes[i].Update();
-            }
-        }
-
-        private void DiffOutputNodes()
         {
             if (!_playableGraph.IsValid())
             {
@@ -157,25 +119,6 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
                 origin.y += treeSize.y + NodeLayoutInfo.VerticalSpace;
             }
-        }
-
-
-        private static bool IsEqual(ref PlayableGraph a, ref PlayableGraph b)
-        {
-            if (!a.IsValid())
-            {
-                return !b.IsValid();
-            }
-
-            if (!b.IsValid())
-            {
-                return false;
-            }
-
-            var nameA = a.GetEditorName();
-            var nameB = b.GetEditorName();
-
-            return nameA.Equals(nameB);
         }
     }
 }
