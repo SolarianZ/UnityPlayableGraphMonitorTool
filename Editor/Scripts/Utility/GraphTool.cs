@@ -48,7 +48,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
 
         public static Color GetPortColor(float weight)
         {
-            var alpha = (weight + ColorAlphaFactor) / (1 + weight);
+            var alpha = (weight + ColorAlphaFactor) / (1 + ColorAlphaFactor);
             return new Color(1, 1, 1, alpha);
         }
 
