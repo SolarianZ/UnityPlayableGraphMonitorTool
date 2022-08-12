@@ -12,8 +12,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         public Type PlayableType => Playable.IsValid() ? Playable.GetPlayableType() : null;
 
 
-        public PlayableNode(int depth, Playable playable)
-            : base(depth)
+        public PlayableNode(Playable playable)
         {
             Playable = playable;
 
@@ -22,36 +21,76 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             RefreshPorts();
         }
 
-        public override void CreateAndConnectInputNodes()
+        public override void Update()
         {
+            base.Update();
+
             if (!Playable.IsValid())
             {
                 return;
             }
 
-            var inputPlayableDepth = Depth + 1;
+            // mark all child nodes inactive
+            for (int i = 0; i < InternalInputs.Count; i++)
+            {
+                InternalInputs[i].Node.RemoveFlag(NodeFlag.Active);
+            }
+
             for (int i = 0; i < Playable.GetInputCount(); i++)
             {
                 var inputPlayable = Playable.GetInput(i);
-                var inputPlayableTypeName = inputPlayable.GetPlayableType().Name;
-                var inputPlayableNode = new PlayableNode(inputPlayableDepth, inputPlayable)
+                if (!inputPlayable.IsValid())
                 {
-                    title = inputPlayableTypeName
-                };
+                    continue;
+                }
+
+                var childNodeIndex = FindChildPlayableNode(inputPlayable);
+                if (childNodeIndex >= 0)
+                {
+                    InternalInputs[i].Node.AddFlag(NodeFlag.Active);
+                    continue;
+                }
+
+                // create new node
+                var inputPlayableNode = PlayableNodeFactory.CreateNode(inputPlayable);
                 inputPlayableNode.AddToContainer(Container);
-                Children.Add(inputPlayableNode);
+                inputPlayableNode.AddFlag(NodeFlag.Active);
 
                 var inputPlayableNodeOutputPort = inputPlayableNode.OutputPorts[0];
                 var selfInputPort = InternalInputPorts[i];
                 var edge = selfInputPort.ConnectTo(inputPlayableNodeOutputPort);
                 Container.AddElement(edge);
-                InternalInputEdges.Add(edge);
+                InternalInputs.Add(new NodeInput(edge, inputPlayableNode));
             }
 
-            for (int i = 0; i < Children.Count; i++)
+            for (int i = InternalInputs.Count - 1; i >= 0; i--)
             {
-                Children[i].CreateAndConnectInputNodes();
+                var input = InternalInputs[i];
+                if (!input.Node.CheckFlag(NodeFlag.Active))
+                {
+                    Container.RemoveElement(input.Edge);
+                    input.Node.RemoveFromContainer();
+
+                    InternalInputs.RemoveAt(i);
+                    continue;
+                }
+
+                InternalInputs[i].Node.Update();
             }
+        }
+
+
+        protected int FindChildPlayableNode(Playable playable)
+        {
+            for (int i = 0; i < InternalInputs.Count; i++)
+            {
+                if (((PlayableNode)InternalInputs[i].Node).Playable.Equals(playable))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
 

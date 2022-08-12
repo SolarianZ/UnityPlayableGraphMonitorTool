@@ -1,15 +1,35 @@
 ﻿using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UEdge = UnityEditor.Experimental.GraphView.Edge;
 using UGraphView = UnityEditor.Experimental.GraphView.GraphView;
 using UNode = UnityEditor.Experimental.GraphView.Node;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
 {
+    public enum NodeFlag : uint
+    {
+        None = 0,
+        Active = 1 << 0,
+        Dirty = 1 << 1,
+    }
+
+    public readonly struct NodeInput
+    {
+        public UEdge Edge { get; }
+
+        public GraphViewNode Node { get; }
+
+
+        public NodeInput(UEdge edge, GraphViewNode node)
+        {
+            Edge = edge;
+            Node = node;
+        }
+    }
+
     public abstract class GraphViewNode : UNode
     {
-        public int Depth { get; }
-
         public IReadOnlyList<Port> InputPorts => InternalInputPorts;
 
         protected List<Port> InternalInputPorts { get; } = new List<Port>();
@@ -18,29 +38,56 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         protected List<Port> InternalOutputPorts { get; } = new List<Port>();
 
-        // public IReadOnlyList<Edge> InputEdges => InternalInputEdges;
-
-        protected List<Edge> InternalInputEdges { get; } = new List<Edge>();
-
         protected UGraphView Container { get; set; }
+
+        public IReadOnlyList<NodeInput> Inputs => InternalInputs;
+
+        protected List<NodeInput> InternalInputs { get; } = new List<NodeInput>();
 
         protected GraphViewNode Parent { get; private set; }
 
-        protected new List<GraphViewNode> Children { get; } = new List<GraphViewNode>();
+
+        public virtual void Update() { }
 
 
-        private Vector2? _hierarchySize;
+        #region Hierarchy
 
-
-        protected GraphViewNode(int depth)
+        public virtual void AddToContainer(UGraphView container)
         {
-            Depth = depth;
+            Container = container;
+            Container.AddElement(this);
         }
+
+        public virtual void RemoveFromContainer()
+        {
+            // self
+            Container.RemoveElement(this);
+
+            // children
+            for (int i = 0; i < InternalInputs.Count; i++)
+            {
+                var input = InternalInputs[i];
+                Container.RemoveElement(input.Edge);
+                input.Node.RemoveFromContainer();
+            }
+
+            InternalInputs.Clear();
+
+            Container = null;
+        }
+
 
         protected Port InstantiatePort<TPort>(Direction direction)
         {
             return InstantiatePort(Orientation.Horizontal, direction, Port.Capacity.Single, typeof(TPort));
         }
+
+        #endregion
+
+
+        #region Layout
+
+        private Vector2? _hierarchySize;
 
 
         public Vector2 GetNodeSize()
@@ -56,20 +103,20 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 return _hierarchySize.Value;
             }
 
-            if (Children.Count == 0)
+            if (Inputs.Count == 0)
             {
                 _hierarchySize = GetNodeSize();
                 return _hierarchySize.Value;
             }
 
             var subHierarchySize = Vector2.zero;
-            for (int i = 0; i < Children.Count; i++)
+            for (int i = 0; i < Inputs.Count; i++)
             {
-                var childSize = Children[i].GetHierarchySize();
+                var childSize = Inputs[i].Node.GetHierarchySize();
                 subHierarchySize.x = Mathf.Max(subHierarchySize.x, childSize.x);
                 subHierarchySize.y += childSize.y;
             }
-            subHierarchySize.y += (Children.Count - 1) * NodeLayoutInfo.VerticalSpace;
+            subHierarchySize.y += (Inputs.Count - 1) * NodeLayoutInfo.VerticalSpace;
 
             var hierarchySize = GetNodeSize() + new Vector2(NodeLayoutInfo.HorizontalSpace, 0);
             hierarchySize.y = Mathf.Max(hierarchySize.y, subHierarchySize.y);
@@ -85,11 +132,11 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             SetPosition(new Rect(nodePos, Vector2.zero));
 
             origin.x -= GetNodeSize().x - NodeLayoutInfo.HorizontalSpace;
-            for (int i = 0; i < Children.Count; i++)
+            for (int i = 0; i < Inputs.Count; i++)
             {
-                var childNode = Children[i];
-                var childHierarchySize = childNode.GetHierarchySize();
-                childNode.CalculateLayout(origin);
+                var childNode = Inputs[i];
+                var childHierarchySize = childNode.Node.GetHierarchySize();
+                childNode.Node.CalculateLayout(origin);
 
                 origin.y += childHierarchySize.y;
             }
@@ -102,36 +149,29 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             return subTreePos;
         }
 
-        public virtual void AddToContainer(UGraphView container)
+        #endregion
+
+
+        #region Flags
+
+        private uint _flags = 0;
+
+
+        public bool CheckFlag(NodeFlag flag)
         {
-            Container = container;
-            Container.AddElement(this);
+            return (_flags & (uint)flag) != 0;
         }
 
-        public virtual void RemoveFromContainer()
+        public void AddFlag(NodeFlag flag)
         {
-            // self
-            Container.RemoveElement(this);
-
-            // input edges
-            for (int i = 0; i < InternalInputEdges.Count; i++)
-            {
-                Container.RemoveElement(InternalInputEdges[i]);
-            }
-
-            InternalInputEdges.Clear();
-
-            // children
-            foreach (var childNode in Children)
-            {
-                childNode.RemoveFromContainer();
-            }
-
-            Children.Clear();
-
-            Container = null;
+            _flags |= (uint)flag;
         }
 
-        public abstract void CreateAndConnectInputNodes();
+        public void RemoveFlag(NodeFlag flag)
+        {
+            _flags &= ~(uint)flag;
+        }
+
+        #endregion
     }
 }

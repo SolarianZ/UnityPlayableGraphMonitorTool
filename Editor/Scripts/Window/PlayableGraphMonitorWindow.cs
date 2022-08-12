@@ -66,7 +66,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void Update()
         {
-            _graphView.SetPlayableGraph(_graphPopupField.value);
+            _graphView.Update(_graphPopupField.value);
         }
 
         private string GraphPopupFieldFormatter(PlayableGraph graph)
@@ -84,13 +84,26 @@ namespace GBG.PlayableGraphMonitor.Editor
             if (!_graphs.Contains(graph))
             {
                 _graphs.Add(graph);
-                _graphPopupField.MarkDirtyRepaint();
+                UpdatePlayableGraphPopupField();
             }
         }
 
         private void OnDestroyingGraph(PlayableGraph graph)
         {
             _graphs.Remove(graph);
+            UpdatePlayableGraphPopupField();
+        }
+
+        private void UpdatePlayableGraphPopupField()
+        {
+            var index = _graphs.IndexOf(_graphPopupField.value);
+            if (index == -1 && _graphs.Count > 0)
+            {
+                index = 0;
+            }
+
+            _graphPopupField.index = index;
+            _graphPopupField.value = index > -1 ? _graphs[index] : new PlayableGraph();
             _graphPopupField.MarkDirtyRepaint();
         }
     }

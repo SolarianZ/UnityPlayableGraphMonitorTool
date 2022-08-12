@@ -1,7 +1,6 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.Node;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
-using UnityEditor.Playables;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
@@ -13,7 +12,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
     {
         private PlayableGraph _playableGraph;
 
-        private readonly List<PlayableOutputNode> _playableOutputNodes = new List<PlayableOutputNode>();
+        private readonly List<PlayableOutputNode> _rootOutputNodes = new List<PlayableOutputNode>();
 
 
         public PlayableGraphView()
@@ -29,29 +28,37 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             return _playableGraph;
         }
 
-        public void SetPlayableGraph(PlayableGraph playableGraph)
+        public void Update(PlayableGraph playableGraph)
         {
-            //if (IsEqual(ref _playableGraph, ref playableGraph))
-            //{
-            //    return;
-            //}
+            if (!_playableGraph.IsValid())
+            {
+                ClearView();
+            }
 
-            _playableGraph = playableGraph;
+            if (IsEqual(ref _playableGraph, ref playableGraph))
+            {
+                DiffOutputNodes();
+            }
+            else
+            {
+                // playable graph changed
+                _playableGraph = playableGraph;
 
-            ClearView();
+                PopulateView();
+            }
 
-            PopulateView();
+            CalculateLayout();
         }
 
 
         private void ClearView()
         {
-            foreach (var playableOutputNode in _playableOutputNodes)
+            foreach (var playableOutputNode in _rootOutputNodes)
             {
                 playableOutputNode.RemoveFromContainer();
             }
 
-            _playableOutputNodes.Clear();
+            _rootOutputNodes.Clear();
         }
 
         private void PopulateView()
@@ -65,27 +72,85 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             for (int i = 0; i < _playableGraph.GetOutputCount(); i++)
             {
                 var playableOutput = _playableGraph.GetOutput(i);
-                var playableOutputTypeName = playableOutput.GetPlayableOutputType().Name;
-                var playableOutputEditorName = playableOutput.GetEditorName();
-                var playableOutputNode = new PlayableOutputNode(0, playableOutput)
-                {
-                    title = $"{playableOutputTypeName} ({playableOutputEditorName})"
-                };
+                var playableOutputNode = PlayableOutputNodeFactory.CreateNode(playableOutput);
                 playableOutputNode.AddToContainer(this);
 
-                _playableOutputNodes.Add(playableOutputNode);
+                _rootOutputNodes.Add(playableOutputNode);
             }
 
-            for (int i = 0; i < _playableOutputNodes.Count; i++)
+            for (int i = 0; i < _rootOutputNodes.Count; i++)
             {
-                _playableOutputNodes[i].CreateAndConnectInputNodes();
+                //_rootOutputNodes[i].CreateAndConnectInputNodes();
+                _rootOutputNodes[i].Update();
+            }
+        }
+
+        private void DiffOutputNodes()
+        {
+            if (!_playableGraph.IsValid())
+            {
+                return;
             }
 
-            // calculate node layout
+            // mark all root nodes inactive
+            for (int i = 0; i < _rootOutputNodes.Count; i++)
+            {
+                _rootOutputNodes[i].RemoveFlag(NodeFlag.Active);
+            }
+
+            // diff nodes
+            for (int i = 0; i < _playableGraph.GetOutputCount(); i++)
+            {
+                var playableOutput = _playableGraph.GetOutput(i);
+                var rootOutputNodeIndex = FindRootOutputNode(playableOutput);
+                if (rootOutputNodeIndex >= 0)
+                {
+                    _rootOutputNodes[i].AddFlag(NodeFlag.Active);
+                    continue;
+                }
+
+                // create new node
+                var playableOutputNode = PlayableOutputNodeFactory.CreateNode(playableOutput);
+                playableOutputNode.AddToContainer(this);
+                playableOutputNode.AddFlag(NodeFlag.Active);
+
+                _rootOutputNodes.Add(playableOutputNode);
+            }
+
+            for (int i = _rootOutputNodes.Count - 1; i >= 0; i--)
+            {
+                var rootOutputNode = _rootOutputNodes[i];
+                if (!rootOutputNode.CheckFlag(NodeFlag.Active))
+                {
+                    rootOutputNode.RemoveFromContainer();
+
+                    _rootOutputNodes.RemoveAt(i);
+                    continue;
+                }
+
+                rootOutputNode.Update();
+            }
+        }
+
+        private int FindRootOutputNode(PlayableOutput playableOutput)
+        {
+            for (int i = 0; i < _rootOutputNodes.Count; i++)
+            {
+                if (_rootOutputNodes[i].PlayableOutput.Equals(playableOutput))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private void CalculateLayout()
+        {
             var origin = Vector2.zero;
-            for (int i = 0; i < _playableOutputNodes.Count; i++)
+            for (int i = 0; i < _rootOutputNodes.Count; i++)
             {
-                var outputNode = _playableOutputNodes[i];
+                var outputNode = _rootOutputNodes[i];
                 var treeSize = outputNode.GetHierarchySize();
 
                 outputNode.CalculateLayout(origin);
