@@ -19,13 +19,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var nodeTitle = $"{PlayableOutputHeader}\n" +
                             $"{playableOutputTypeSortName} ({playableOutputEditorName})";
 
-            if (playableOutputType == typeof(AnimationPlayableOutput))
-            {
-
-            }
-
-            // todo create node by playable output type
-
             // default node
             var playableOutputNode = new PlayableOutputNode(playableOutput)
             {

@@ -16,31 +16,22 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 .Remove(playableTypeName.Length - PlayableHeader.Length);
             var nodeTitle = $"{PlayableHeader}\n{playableTypeSortName}";
 
+            // create node by playable type
             PlayableNode playableNode;
-
-            // todo create node by playable type
-
             if (playableType == typeof(AnimationClipPlayable))
             {
-                //goto SET_NODE_TITLE;
+                playableNode = new AnimationClipPlayableNode(playable);
             }
-
-            if (playableType == typeof(AnimationMixerPlayable))
+            else if (playableType == typeof(AnimationLayerMixerPlayable))
             {
-
+                playableNode = new AnimationLayerMixerPlayableNode(playable);
             }
-
-            if (playableType == typeof(AnimationLayerMixerPlayable))
+            else
             {
-
+                // default node
+                playableNode = new PlayableNode(playable);
             }
 
-            // ...
-
-            // default node
-            playableNode = new PlayableNode(playable);
-
-        SET_NODE_TITLE:
             playableNode.title = nodeTitle;
             playableNode.SetNodeStyle(playable.GetPlayableNodeColor());
 

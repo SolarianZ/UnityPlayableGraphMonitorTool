@@ -1,5 +1,6 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.Utility;
 using System;
+using System.Text;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.Playables;
 
@@ -135,5 +136,30 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 InternalOutputPorts.Add(outputPort);
             }
         }
+
+
+        #region Description
+
+        protected override void AppendStateDescriptions(StringBuilder descBuilder)
+        {
+            descBuilder.Append("Type: ").AppendLine(PlayableType.Name)
+                .Append("IsValid: ").AppendLine(Playable.IsValid().ToString());
+            if (Playable.IsValid())
+            {
+                descBuilder.Append("IsDone: ").AppendLine(Playable.IsDone().ToString())
+                    .Append("PlayState: ").AppendLine(Playable.GetPlayState().ToString())
+                    .Append("Speed: ").Append(Playable.GetSpeed().ToString("F3")).AppendLine("x")
+                    .Append("Duration: ").Append(Playable.DurationToString()).AppendLine("(s)")
+                    .Append("Time: ").Append(Playable.GetTime().ToString("F3")).AppendLine("(s)");
+                for (int i = 0; i < Playable.GetInputCount(); i++)
+                {
+                    descBuilder.Append("#").Append(i.ToString()).Append(" InputWeight: ")
+                        .AppendLine(Playable.GetInputWeight(i).ToString("F3"));
+                }
+                descBuilder.Append("OutputCount: ").AppendLine(Playable.GetOutputCount().ToString());
+            }
+        }
+
+        #endregion
     }
 }

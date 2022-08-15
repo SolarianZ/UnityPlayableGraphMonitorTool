@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UEdge = UnityEditor.Experimental.GraphView.Edge;
@@ -56,6 +57,30 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
 
         public virtual void Update() { }
+
+        #region Description
+
+        private StringBuilder _descBuilder;
+
+
+        public string GetStateDescription()
+        {
+            if (_descBuilder == null)
+            {
+                _descBuilder = new StringBuilder();
+            }
+
+            _descBuilder.Clear();
+            AppendStateDescriptions(_descBuilder);
+
+            return _descBuilder.ToString();
+        }
+
+
+        protected abstract void AppendStateDescriptions(StringBuilder descBuilder);
+
+
+        #endregion
 
 
         #region Hierarchy
