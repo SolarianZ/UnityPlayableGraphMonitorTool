@@ -19,7 +19,10 @@ namespace GBG.PlayableGraphMonitor.Editor
         }
 
 
-        private readonly List<PlayableGraph> _graphs = new List<PlayableGraph>();
+        private readonly List<PlayableGraph> _graphs = new List<PlayableGraph>
+        {
+            new PlayableGraph() // a invalid graph, for compatibility with Unity 2019
+        };
 
         private Toolbar _toolbar;
 
@@ -187,13 +190,13 @@ namespace GBG.PlayableGraphMonitor.Editor
         private void UpdatePlayableGraphPopupField()
         {
             var index = _graphs.IndexOf(_graphPopupField.value);
-            if (index == -1 && _graphs.Count > 0)
+            if (index < 1)
             {
-                index = 0;
+                index = _graphs.Count - 1;
             }
 
             _graphPopupField.index = index;
-            _graphPopupField.value = index > -1 ? _graphs[index] : new PlayableGraph();
+            _graphPopupField.value = _graphs[index];
             _graphPopupField.MarkDirtyRepaint();
         }
 
