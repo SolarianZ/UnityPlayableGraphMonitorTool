@@ -16,15 +16,23 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
     public readonly struct NodeInput
     {
-        public UEdge Edge { get; }
+        public readonly UEdge Edge;
 
-        public GraphViewNode Node { get; }
+        public readonly GraphViewNode Node;
+
+        public readonly int PortIndex;
 
 
-        public NodeInput(UEdge edge, GraphViewNode node)
+        public NodeInput(UEdge edge, GraphViewNode node, int portIndex)
         {
             Edge = edge;
             Node = node;
+            PortIndex = portIndex;
+        }
+
+        public NodeInput Copy(NodeInput other, int portIndexOverride)
+        {
+            return new NodeInput(other.Edge, other.Node, portIndexOverride);
         }
     }
 
