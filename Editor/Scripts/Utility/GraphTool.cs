@@ -1,6 +1,7 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.Node;
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -29,6 +30,14 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
             return nameA.Equals(nameB);
         }
 
+        public static string DurationToString(this Playable playable, string format = "F3")
+        {
+            var duration = playable.GetDuration();
+            var durationStr = duration > float.MaxValue ? "+Inf" : duration.ToString(format);
+
+            return durationStr;
+        }
+
 
         public static void SetNodeStyle(this GraphViewNode node, Color nodeColor,
             float titleFontSize = 15, Color? titleColor = null)
@@ -45,6 +54,35 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
         // Ensure edge is always visible.
         public const float ColorAlphaFactor = 1f / 9;
 
+
+        public static Color GetButtonBackgroundColor(bool isChecked)
+        {
+            if (isChecked)
+            {
+                return EditorGUIUtility.isProSkin ?
+                    new Color32(70, 96, 124, 255) : // dark
+                    new Color32(150, 195, 251, 255); // light
+
+            }
+
+            return EditorGUIUtility.isProSkin ?
+                new Color32(88, 88, 88, 255) : // dark
+                new Color32(228, 228, 228, 255); // light
+        }
+
+        public static Color GetNodeInspectorBackgroundColor()
+        {
+            return EditorGUIUtility.isProSkin ?
+                new Color32(50, 50, 50, 255) : // dark
+                new Color32(175, 175, 175, 255); // light
+        }
+
+        public static Color GetNodeInspectorTextColor()
+        {
+            return EditorGUIUtility.isProSkin ?
+                new Color32(255, 255, 255, 255) : // dark
+                new Color32(0, 0, 0, 255); // light
+        }
 
         public static Color GetPortColor(float weight)
         {

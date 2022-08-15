@@ -1,5 +1,6 @@
-﻿using GBG.PlayableGraphMonitor.Editor.Utility;
+﻿using System.Text;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.Playables;
 using UnityEngine;
 using UnityEngine.Playables;
 
@@ -101,5 +102,24 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             inputContainer.Add(inputPort);
             InternalInputPorts.Add(inputPort);
         }
+
+
+        #region Description
+
+        protected override void AppendStateDescriptions(StringBuilder descBuilder)
+        {
+            descBuilder.Append("Type: ").AppendLine(PlayableOutput.GetPlayableOutputType().Name)
+                        .Append("IsValid: ").AppendLine(PlayableOutput.IsOutputValid().ToString());
+            if (PlayableOutput.IsOutputValid())
+            {
+                descBuilder.Append("Name: ").AppendLine(PlayableOutput.GetEditorName())
+                    .Append("Weight: ").AppendLine(PlayableOutput.GetWeight().ToString("F3"))
+                    .Append("ReferenceObject: ").AppendLine(PlayableOutput.GetReferenceObject()?.name ?? "Null")
+                    .Append("UserData: ").AppendLine(PlayableOutput.GetUserData()?.name ?? "Null")
+                    .Append("SourceOutputPort: ").AppendLine(PlayableOutput.GetSourceOutputPort().ToString());
+            }
+        }
+
+        #endregion
     }
 }
