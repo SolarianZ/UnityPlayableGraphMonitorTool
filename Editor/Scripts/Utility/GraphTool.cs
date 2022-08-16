@@ -38,7 +38,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
             return durationStr;
         }
 
-
         public static void SetNodeStyle(this GraphViewNode node, Color nodeColor,
             float titleFontSize = 15, Color? titleColor = null)
         {
@@ -51,8 +50,20 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
         }
 
 
+        #region Port Color
+
         // Ensure edge is always visible.
         public const float ColorAlphaFactor = 1f / 9;
+
+
+        public static Color GetPortColor(float weight)
+        {
+            var alpha = (weight + ColorAlphaFactor) / (1 + ColorAlphaFactor);
+            return new Color(1, 1, 1, alpha);
+        }
+
+        #endregion
+
 
 
         public static Color GetButtonBackgroundColor(bool isChecked)
@@ -77,6 +88,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
                 new Color32(175, 175, 175, 255); // light
         }
 
+
+        #region Node Color
+
         public static Color GetNodeInspectorTextColor()
         {
             return EditorGUIUtility.isProSkin ?
@@ -84,17 +98,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
                 new Color32(0, 0, 0, 255); // light
         }
 
-        public static Color GetPortColor(float weight)
-        {
-            var alpha = (weight + ColorAlphaFactor) / (1 + ColorAlphaFactor);
-            return new Color(1, 1, 1, alpha);
-        }
-
         public static Color GetNodeInvalidColor()
         {
             return Color.red;
         }
 
+        // (0, ?, 255, 255) for PlayableOutput nodes
         public static Color GetPlayableOutputNodeColor(this ref PlayableOutput playableOutput)
         {
             if (playableOutput.IsPlayableOutputOfType<AnimationPlayableOutput>())
@@ -111,19 +120,25 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
             return GetRandomColorForType(playableOutput.GetPlayableOutputType());
         }
 
+        // (0, 255, ?, 255) for Playable nodes
         public static Color GetPlayableNodeColor(this ref Playable playable)
         {
             if (playable.IsPlayableOfType<AnimationClipPlayable>())
             {
-                return new Color32(0, 255, 102, 255);
+                return new Color32(0, 255, 51, 255);
             }
 
             if (playable.IsPlayableOfType<AnimationMixerPlayable>())
             {
-                return new Color32(0, 255, 153, 255);
+                return new Color32(0, 255, 102, 255);
             }
 
             if (playable.IsPlayableOfType<AnimationLayerMixerPlayable>())
+            {
+                return new Color32(0, 255, 153, 255);
+            }
+
+            if (playable.IsPlayableOfType<AnimationScriptPlayable>())
             {
                 return new Color32(0, 255, 204, 255);
             }
@@ -131,20 +146,11 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
             return GetRandomColorForType(playable.GetPlayableType());
         }
 
-        public static Color GetRandomColorForType(this Type type)
-        {
-            if (_colorCache.TryGetValue(type, out var color))
-            {
-                return color;
-            }
-
-            color = ColorPool[URandom.Range(0, ColorPool.Count)];
-            _colorCache[type] = color;
-
-            return color;
-        }
+        #endregion
 
 
+        // reserve (0, ?, 255, 255) for PlayableOutput nodes
+        // reserve (0, 255, ?, 255) for Playable nodes
         public static readonly IReadOnlyList<Color32> ColorPool = new Color32[]
         {
             new Color32(255,0,255,255), new Color32(255,0,153,255),
@@ -158,6 +164,19 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
 
         private static readonly Dictionary<Type, Color32> _colorCache = new Dictionary<Type, Color32>();
 
+
+        public static Color GetRandomColorForType(this Type type)
+        {
+            if (_colorCache.TryGetValue(type, out var color))
+            {
+                return color;
+            }
+
+            color = ColorPool[URandom.Range(0, ColorPool.Count)];
+            _colorCache[type] = color;
+
+            return color;
+        }
 
         public static void ClearGlobalCache()
         {

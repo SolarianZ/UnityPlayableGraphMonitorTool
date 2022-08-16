@@ -19,7 +19,7 @@ Unity 2019.4 and later.
 
 ## Installation
 
-**In development.**
+Install this package via [OpenUPM](https://openupm.com/packages/com.greenbamboogames.playablegraphmonitor/).
 
 ## How to use
 

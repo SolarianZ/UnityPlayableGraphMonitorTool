@@ -36,13 +36,13 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                 ClearView();
             }
 
-            PopulateView();
+            UpdateView();
 
             CalculateLayout();
 
             if (needFrameAll)
             {
-                // wait for view initialize at least 2 frames
+                // wait at least 2 frames for view initialization
                 EditorApplication.delayCall += () =>
                 {
                     EditorApplication.delayCall += () => { FrameAll(); };
@@ -61,7 +61,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             _rootOutputNodes.Clear();
         }
 
-        private void PopulateView()
+        private void UpdateView()
         {
             if (!_playableGraph.IsValid())
             {
@@ -93,6 +93,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                 _rootOutputNodes.Add(playableOutputNode);
             }
 
+            // check and update nodes
             for (int i = _rootOutputNodes.Count - 1; i >= 0; i--)
             {
                 var rootOutputNode = _rootOutputNodes[i];
@@ -131,7 +132,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
                 outputNode.CalculateLayout(origin);
 
-                origin.y += treeSize.y + NodeLayoutInfo.VerticalSpace;
+                origin.y += treeSize.y + GraphViewNode.VerticalSpace;
             }
         }
     }

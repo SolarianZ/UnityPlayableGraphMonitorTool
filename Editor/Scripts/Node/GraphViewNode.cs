@@ -12,7 +12,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
     {
         None = 0,
         Active = 1 << 0,
-        Dirty = 1 << 1,
+        //Dirty = 1 << 1,
     }
 
     public readonly struct NodeInput
@@ -49,14 +49,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         protected UGraphView Container { get; set; }
 
-        public IReadOnlyList<NodeInput> Inputs => InternalInputs;
-
         protected List<NodeInput> InternalInputs { get; } = new List<NodeInput>();
 
-        protected GraphViewNode Parent { get; private set; }
+        //protected GraphViewNode Parent { get; private set; }
 
 
         public virtual void Update() { }
+
 
         #region Description
 
@@ -79,19 +78,18 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         protected abstract void AppendStateDescriptions(StringBuilder descBuilder);
 
-
         #endregion
 
 
         #region Hierarchy
 
-        public virtual void AddToContainer(UGraphView container)
+        public void AddToContainer(UGraphView container)
         {
             Container = container;
             Container.AddElement(this);
         }
 
-        public virtual void RemoveFromContainer()
+        public void RemoveFromContainer()
         {
             // self
             Container.RemoveElement(this);
@@ -120,12 +118,18 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         #region Layout
 
+        public const int HorizontalSpace = 80;
+
+        public const int VerticalSpace = 80;
+
+        public static readonly Vector2 StandardNodeSize = new Vector2(400, 150);
+
         private Vector2? _hierarchySize;
 
 
         public Vector2 GetNodeSize()
         {
-            return NodeLayoutInfo.StandardNodeSize;
+            return StandardNodeSize;
             //return worldBound.size;
         }
 
@@ -136,22 +140,22 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 return _hierarchySize.Value;
             }
 
-            if (Inputs.Count == 0)
+            if (InternalInputs.Count == 0)
             {
                 _hierarchySize = GetNodeSize();
                 return _hierarchySize.Value;
             }
 
             var subHierarchySize = Vector2.zero;
-            for (int i = 0; i < Inputs.Count; i++)
+            for (int i = 0; i < InternalInputs.Count; i++)
             {
-                var childSize = Inputs[i].Node.GetHierarchySize();
+                var childSize = InternalInputs[i].Node.GetHierarchySize();
                 subHierarchySize.x = Mathf.Max(subHierarchySize.x, childSize.x);
                 subHierarchySize.y += childSize.y;
             }
-            subHierarchySize.y += (Inputs.Count - 1) * NodeLayoutInfo.VerticalSpace;
+            subHierarchySize.y += (InternalInputs.Count - 1) * VerticalSpace;
 
-            var hierarchySize = GetNodeSize() + new Vector2(NodeLayoutInfo.HorizontalSpace, 0);
+            var hierarchySize = GetNodeSize() + new Vector2(HorizontalSpace, 0);
             hierarchySize.y = Mathf.Max(hierarchySize.y, subHierarchySize.y);
             _hierarchySize = hierarchySize;
 
@@ -164,10 +168,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var nodePos = CalculateSubTreeRootNodePosition(subTreeSize, origin);
             SetPosition(new Rect(nodePos, Vector2.zero));
 
-            origin.x -= GetNodeSize().x - NodeLayoutInfo.HorizontalSpace;
-            for (int i = 0; i < Inputs.Count; i++)
+            origin.x -= GetNodeSize().x - HorizontalSpace;
+            for (int i = 0; i < InternalInputs.Count; i++)
             {
-                var childNode = Inputs[i];
+                var childNode = InternalInputs[i];
                 var childHierarchySize = childNode.Node.GetHierarchySize();
                 childNode.Node.CalculateLayout(origin);
 

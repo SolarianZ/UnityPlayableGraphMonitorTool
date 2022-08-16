@@ -72,7 +72,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 InternalInputs.Add(new NodeInput(edge, inputPlayableNode, i));
             }
 
-            // update child nodes
+            // check and update children
             for (int i = InternalInputs.Count - 1; i >= 0; i--)
             {
                 var input = InternalInputs[i];

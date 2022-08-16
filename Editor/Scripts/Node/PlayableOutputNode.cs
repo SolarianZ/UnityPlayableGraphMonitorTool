@@ -58,6 +58,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 }
             }
 
+            // check and update children
             for (int i = InternalInputs.Count - 1; i >= 0; i--)
             {
                 var input = InternalInputs[i];
