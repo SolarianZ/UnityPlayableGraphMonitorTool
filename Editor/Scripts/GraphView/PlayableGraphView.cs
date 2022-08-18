@@ -21,7 +21,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         {
             this.AddManipulator(new ContentDragger());
             //this.AddManipulator(new SelectionDragger());
-            //this.AddManipulator(new RectangleSelector());
+            this.AddManipulator(new RectangleSelector());
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
         }
 

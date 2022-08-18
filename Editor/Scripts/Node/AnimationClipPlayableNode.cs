@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using UnityEditor.UIElements;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -6,8 +7,29 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 {
     public class AnimationClipPlayableNode : PlayableNode
     {
+        private ProgressBar _progressBar;
+
+
         public AnimationClipPlayableNode(Playable playable) : base(playable)
         {
+            _progressBar = new ProgressBar();
+            // insert between title and port container
+            titleContainer.parent.Insert(1, _progressBar);
+        }
+
+        public override void Update()
+        {
+            if (Playable.IsValid())
+            {
+                var clipPlayable = (AnimationClipPlayable)Playable;
+                var clip = clipPlayable.GetAnimationClip();
+                var duration = clip ? clip.length : float.PositiveInfinity;
+                var progress = (float)(Playable.GetTime() / duration) % 1.0f * 100;
+                _progressBar.SetValueWithoutNotify(progress);
+                _progressBar.MarkDirtyRepaint();
+            }
+
+            base.Update();
         }
 
 
