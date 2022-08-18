@@ -2,6 +2,7 @@
 using System.Text;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UIElements;
 using UEdge = UnityEditor.Experimental.GraphView.Edge;
 using UGraphView = UnityEditor.Experimental.GraphView.GraphView;
 using UNode = UnityEditor.Experimental.GraphView.Node;
@@ -75,6 +76,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             return _descBuilder.ToString();
         }
 
+
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+        {
+            // disable contextual menu
+            //base.BuildContextualMenu(evt);
+        }
 
         protected abstract void AppendStateDescriptions(StringBuilder descBuilder);
 

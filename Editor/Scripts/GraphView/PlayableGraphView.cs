@@ -51,6 +51,12 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         }
 
 
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+        {
+            // disable contextual menu
+            //base.BuildContextualMenu(evt);
+        }
+
         private void ClearView()
         {
             foreach (var playableOutputNode in _rootOutputNodes)
