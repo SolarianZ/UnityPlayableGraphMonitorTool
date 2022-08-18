@@ -1,13 +1,17 @@
 ﻿using System.Text;
-using UnityEditor.UIElements;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+#if UNITY_2021_1_OR_NEWER
+using UnityEngine.UIElements;
+#else
+using UnityEditor.UIElements;
+#endif
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
 {
     public class AnimationClipPlayableNode : PlayableNode
     {
-        private ProgressBar _progressBar;
+        private readonly ProgressBar _progressBar;
 
 
         public AnimationClipPlayableNode(Playable playable) : base(playable)
