@@ -1,7 +1,6 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.Node;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -42,11 +41,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
             if (needFrameAll)
             {
-                // wait at least 2 frames for view initialization
-                EditorApplication.delayCall += () =>
-                {
-                    EditorApplication.delayCall += () => { FrameAll(); };
-                };
+                schedule.Execute(() => FrameAll());
             }
         }
 
