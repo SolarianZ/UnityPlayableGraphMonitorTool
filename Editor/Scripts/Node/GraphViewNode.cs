@@ -12,8 +12,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
     public enum NodeFlag : uint
     {
         None = 0,
+
         Active = 1 << 0,
-        //Dirty = 1 << 1,
+
+        HierarchyDirty = 1 << 1,
     }
 
     public readonly struct NodeInput
@@ -52,7 +54,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         protected List<NodeInput> InternalInputs { get; } = new List<NodeInput>();
 
-        //protected GraphViewNode Parent { get; private set; }
+        protected GraphViewNode Parent { get; private set; }
 
 
         public virtual void Update() { }
@@ -90,13 +92,14 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         #region Hierarchy
 
-        public void AddToContainer(UGraphView container)
+        public void AddToView(UGraphView container, GraphViewNode parentNode)
         {
             Container = container;
             Container.AddElement(this);
+            Parent = parentNode;
         }
 
-        public void RemoveFromContainer()
+        public void RemoveFromView()
         {
             // self
             Container.RemoveElement(this);
@@ -106,12 +109,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 var input = InternalInputs[i];
                 Container.RemoveElement(input.Edge);
-                input.Node.RemoveFromContainer();
+                input.Node.RemoveFromView();
             }
 
             InternalInputs.Clear();
 
             Container = null;
+            Parent = null;
         }
 
 
@@ -209,11 +213,25 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         public void AddFlag(NodeFlag flag)
         {
             _flags |= (uint)flag;
+            OnFlagsChanged();
         }
 
         public void RemoveFlag(NodeFlag flag)
         {
             _flags &= ~(uint)flag;
+            OnFlagsChanged();
+        }
+
+
+        protected virtual void OnFlagsChanged()
+        {
+            if (CheckFlag(NodeFlag.HierarchyDirty))
+            {
+                _hierarchySize = null;
+                RemoveFlag(NodeFlag.HierarchyDirty);
+
+                Parent?.AddFlag(NodeFlag.HierarchyDirty);
+            }
         }
 
         #endregion

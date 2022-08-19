@@ -56,7 +56,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         {
             foreach (var playableOutputNode in _rootOutputNodes)
             {
-                playableOutputNode.RemoveFromContainer();
+                playableOutputNode.RemoveFromView();
             }
 
             _rootOutputNodes.Clear();
@@ -88,7 +88,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
                 // create new node
                 var playableOutputNode = PlayableOutputNodeFactory.CreateNode(playableOutput);
-                playableOutputNode.AddToContainer(this);
+                playableOutputNode.AddToView(this, null);
                 playableOutputNode.AddFlag(NodeFlag.Active);
 
                 _rootOutputNodes.Add(playableOutputNode);
@@ -100,7 +100,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                 var rootOutputNode = _rootOutputNodes[i];
                 if (!rootOutputNode.CheckFlag(NodeFlag.Active))
                 {
-                    rootOutputNode.RemoveFromContainer();
+                    rootOutputNode.RemoveFromView();
 
                     _rootOutputNodes.RemoveAt(i);
                     continue;

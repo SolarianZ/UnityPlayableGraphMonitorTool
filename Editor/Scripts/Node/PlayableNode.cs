@@ -62,7 +62,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
                 // create new node
                 var inputPlayableNode = PlayableNodeFactory.CreateNode(inputPlayable);
-                inputPlayableNode.AddToContainer(Container);
+                inputPlayableNode.AddToView(Container, this);
                 inputPlayableNode.AddFlag(NodeFlag.Active);
 
                 var inputPlayableNodeOutputPort = inputPlayableNode.OutputPorts[0];
@@ -70,6 +70,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 var edge = selfInputPort.ConnectTo(inputPlayableNodeOutputPort);
                 Container.AddElement(edge);
                 InternalInputs.Add(new NodeInput(edge, inputPlayableNode, i));
+
+                AddFlag(NodeFlag.HierarchyDirty);
             }
 
             // check and update children
@@ -81,9 +83,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 if (!input.Node.CheckFlag(NodeFlag.Active))
                 {
                     Container.RemoveElement(input.Edge);
-                    input.Node.RemoveFromContainer();
+                    input.Node.RemoveFromView();
 
                     InternalInputs.RemoveAt(i);
+
+                    AddFlag(NodeFlag.HierarchyDirty);
+
                     continue;
                 }
 
