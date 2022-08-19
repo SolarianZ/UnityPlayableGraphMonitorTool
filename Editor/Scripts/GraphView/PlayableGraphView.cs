@@ -22,6 +22,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             //this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
+
+            deleteSelection = OnDeleteSelectionEvent;
         }
 
         public void Update(PlayableGraph playableGraph)
@@ -135,6 +137,11 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
                 origin.y += treeSize.y + GraphViewNode.VerticalSpace;
             }
+        }
+
+        private void OnDeleteSelectionEvent(string operationName, AskUser askuser)
+        {
+            // disallow delete graph elements
         }
     }
 }
