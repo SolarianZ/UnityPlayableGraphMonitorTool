@@ -51,13 +51,19 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                     continue;
                 }
 
-                var childNodeIndex = FindChildPlayableNode(inputPlayable);
-                if (childNodeIndex >= 0)
+                // FIXME: A Playable may has multi output ports,
+                // and if all these output ports connected to same input port,
+                // 'i' will be greater than InternalInputs.Count, so there is a check.
+                if (i < InternalInputs.Count)
                 {
-                    var input = InternalInputs[i];
-                    input.Node.AddFlag(NodeFlag.Active);
-                    InternalInputs[i] = input.Copy(input, i);
-                    continue;
+                    var childNodeIndex = FindChildPlayableNode(inputPlayable);
+                    if (childNodeIndex >= 0)
+                    {
+                        var input = InternalInputs[i];
+                        input.Node.AddFlag(NodeFlag.Active);
+                        InternalInputs[i] = input.Copy(input, i);
+                        continue;
+                    }
                 }
 
                 // create new node
@@ -161,6 +167,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                     descBuilder.Append("#").Append(i.ToString()).Append(" InputWeight: ")
                         .AppendLine(Playable.GetInputWeight(i).ToString("F3"));
                 }
+
                 descBuilder.Append("OutputCount: ").AppendLine(Playable.GetOutputCount().ToString());
             }
         }
