@@ -57,7 +57,15 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         protected GraphViewNode Parent { get; private set; }
 
 
-        public virtual void Update() { }
+        protected GraphViewNode()
+        {
+            capabilities &= ~Capabilities.Movable;
+            capabilities &= ~Capabilities.Deletable;
+        }
+        
+        public virtual void Update()
+        {
+        }
 
 
         #region Description
@@ -129,9 +137,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         #region Layout
 
-        public const int HorizontalSpace = 80;
+        public const int HORIZONTAL_SPACE = 80;
 
-        public const int VerticalSpace = 80;
+        public const int VERTICAL_SPACE = 80;
 
         public static readonly Vector2 StandardNodeSize = new Vector2(400, 150);
 
@@ -164,9 +172,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 subHierarchySize.x = Mathf.Max(subHierarchySize.x, childSize.x);
                 subHierarchySize.y += childSize.y;
             }
-            subHierarchySize.y += (InternalInputs.Count - 1) * VerticalSpace;
 
-            var hierarchySize = GetNodeSize() + new Vector2(HorizontalSpace, 0);
+            subHierarchySize.y += (InternalInputs.Count - 1) * VERTICAL_SPACE;
+
+            var hierarchySize = GetNodeSize() + new Vector2(HORIZONTAL_SPACE, 0);
             hierarchySize.y = Mathf.Max(hierarchySize.y, subHierarchySize.y);
             _hierarchySize = hierarchySize;
 
@@ -179,7 +188,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var nodePos = CalculateSubTreeRootNodePosition(subTreeSize, origin);
             SetPosition(new Rect(nodePos, Vector2.zero));
 
-            origin.x -= GetNodeSize().x - HorizontalSpace;
+            origin.x -= GetNodeSize().x - HORIZONTAL_SPACE;
             for (int i = 0; i < InternalInputs.Count; i++)
             {
                 var childNode = InternalInputs[i];
@@ -202,7 +211,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         #region Flags
 
-        private uint _flags = 0;
+        private uint _flags;
 
 
         public bool CheckFlag(NodeFlag flag)

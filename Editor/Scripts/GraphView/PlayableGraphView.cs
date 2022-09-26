@@ -18,12 +18,10 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         public PlayableGraphView()
         {
+            SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
             this.AddManipulator(new ContentDragger());
             //this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
-            SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
-
-            deleteSelection = OnDeleteSelectionEvent;
         }
 
         public void Update(PlayableGraph playableGraph)
@@ -47,11 +45,9 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             }
         }
 
-
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
             // disable contextual menu
-            //base.BuildContextualMenu(evt);
         }
 
         private void ClearView()
@@ -135,13 +131,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
                 outputNode.CalculateLayout(origin);
 
-                origin.y += treeSize.y + GraphViewNode.VerticalSpace;
+                origin.y += treeSize.y + GraphViewNode.VERTICAL_SPACE;
             }
-        }
-
-        private void OnDeleteSelectionEvent(string operationName, AskUser askuser)
-        {
-            // disallow delete graph elements
         }
     }
 }

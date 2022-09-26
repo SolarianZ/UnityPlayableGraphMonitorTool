@@ -75,6 +75,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 var selfInputPort = InternalInputPorts[i];
                 var edge = selfInputPort.ConnectTo(inputPlayableNodeOutputPort);
                 Container.AddElement(edge);
+                edge.capabilities &= ~Capabilities.Movable;
+                edge.capabilities &= ~Capabilities.Deletable;
+                edge.capabilities &= ~Capabilities.Selectable;
                 InternalInputs.Add(new NodeInput(edge, inputPlayableNode, i));
 
                 AddFlag(NodeFlag.HierarchyDirty);

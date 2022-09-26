@@ -53,12 +53,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
         #region Port Color
 
         // Ensure edge is always visible.
-        public const float ColorAlphaFactor = 1f / 9;
+        public const float COLOR_ALPHA_FACTOR = 1f / 9;
 
 
         public static Color GetPortColor(float weight)
         {
-            var alpha = (weight + ColorAlphaFactor) / (1 + ColorAlphaFactor);
+            var alpha = (weight + COLOR_ALPHA_FACTOR) / (1 + COLOR_ALPHA_FACTOR);
             return new Color(1, 1, 1, alpha);
         }
 

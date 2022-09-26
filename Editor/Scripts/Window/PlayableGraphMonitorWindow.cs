@@ -9,6 +9,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 {
     public partial class PlayableGraphMonitorWindow : EditorWindow
     {
+        // ReSharper disable once Unity.IncorrectMethodSignature
         [MenuItem("Window/Analysis/PlayableGraph Monitor")]
         public static PlayableGraphMonitorWindow Open()
         {

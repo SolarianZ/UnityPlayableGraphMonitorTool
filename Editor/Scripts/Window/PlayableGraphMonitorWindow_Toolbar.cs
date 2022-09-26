@@ -1,4 +1,3 @@
-using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor.UIElements;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
@@ -11,7 +10,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private PopupField<PlayableGraph> _graphPopupField;
 
-        private Button _showInspectorButton;
+        private ToolbarToggle _inspectorToggle;
 
 
         private void CreateToolbar()
@@ -23,27 +22,26 @@ namespace GBG.PlayableGraphMonitor.Editor
             _graphPopupField = new PopupField<PlayableGraph>(_graphs, 0,
                 GraphPopupFieldFormatter, GraphPopupFieldFormatter);
             _toolbar.Add(_graphPopupField);
+            _toolbar.Add(new ToolbarSpacer());
 
             // frame all button
-            var frameAllButton = new Button(OnFrameAllButtonClicked)
+            var frameAllButton = new ToolbarButton(OnFrameAllButtonClicked)
             {
                 name = "frame-all-button",
                 text = "Frame All",
             };
             _toolbar.Add(frameAllButton);
+            _toolbar.Add(new ToolbarSpacer());
 
-            // inspector button
-            _showInspectorButton = new Button(OnInspectorButtonClicked)
+            // inspector toggle
+            _inspectorToggle = new ToolbarToggle()
             {
-                name = "inspector-button",
-                text = "Show Inspector",
-                style =
-            {
-                backgroundColor = GraphTool.GetButtonBackgroundColor(true)
-            },
-                userData = true
+                name = "inspector-toggle",
+                text = "Inspector",
+                value = true,
             };
-            _toolbar.Add(_showInspectorButton);
+            _inspectorToggle.RegisterValueChangedCallback(ToggleInspector);
+            _toolbar.Add(_inspectorToggle);
         }
 
         private string GraphPopupFieldFormatter(PlayableGraph graph)
@@ -75,14 +73,11 @@ namespace GBG.PlayableGraphMonitor.Editor
             _graphView.FrameAll();
         }
 
-        private void OnInspectorButtonClicked()
+        private void ToggleInspector(ChangeEvent<bool> evt)
         {
-            var showInspector = !(bool)_showInspectorButton.userData;
-            _showInspectorButton.userData = showInspector;
-            _showInspectorButton.style.backgroundColor = GraphTool.GetButtonBackgroundColor(showInspector);
-
+            var showInspector = evt.newValue;
             _nodeInspectorPanel.visible = showInspector;
-            _nodeInspectorPanel.style.width = showInspector ? _nodeInspectorWidth : 0;
+            _nodeInspectorPanel.style.width = showInspector ? _NODE_INSPECTOR_WIDTH : 0;
         }
     }
 }

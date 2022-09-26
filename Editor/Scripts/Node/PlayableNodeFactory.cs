@@ -6,15 +6,15 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 {
     public static class PlayableNodeFactory
     {
-        public const string PlayableHeader = "Playable";
+        public const string PLAYABLE_HEADER = "Playable";
 
         public static PlayableNode CreateNode(Playable playable)
         {
             var playableType = playable.GetPlayableType();
             var playableTypeName = playableType.Name;
             var playableTypeSortName = playableTypeName
-                .Remove(playableTypeName.Length - PlayableHeader.Length);
-            var nodeTitle = $"{PlayableHeader}\n{playableTypeSortName}";
+                .Remove(playableTypeName.Length - PLAYABLE_HEADER.Length);
+            var nodeTitle = $"{PLAYABLE_HEADER}\n{playableTypeSortName}";
 
             // create node by playable type
             PlayableNode playableNode;

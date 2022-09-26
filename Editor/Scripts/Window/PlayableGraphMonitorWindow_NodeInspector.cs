@@ -6,7 +6,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 {
     public partial class PlayableGraphMonitorWindow
     {
-        private const float _nodeInspectorWidth = 250f;
+        private const float _NODE_INSPECTOR_WIDTH = 250f;
 
         private VisualElement _nodeInspectorPanel;
 
@@ -19,15 +19,15 @@ namespace GBG.PlayableGraphMonitor.Editor
             {
                 name = "node-inspector",
                 style =
-            {
-                width = new Length(_nodeInspectorWidth, LengthUnit.Pixel),
-                height = new Length(100, LengthUnit.Percent),
-                backgroundColor = GraphTool.GetNodeInspectorBackgroundColor(),
-                paddingLeft = 4,
-                paddingRight = 4,
-                paddingTop = 4,
-                paddingBottom = 4
-            }
+                {
+                    width = new Length(_NODE_INSPECTOR_WIDTH, LengthUnit.Pixel),
+                    height = new Length(100, LengthUnit.Percent),
+                    backgroundColor = GraphTool.GetNodeInspectorBackgroundColor(),
+                    paddingLeft = 4,
+                    paddingRight = 4,
+                    paddingTop = 4,
+                    paddingBottom = 4
+                }
             };
 
             var scrollView = new ScrollView
@@ -38,9 +38,9 @@ namespace GBG.PlayableGraphMonitor.Editor
             {
                 name = "node-desc-label",
                 style =
-            {
-                color = GraphTool.GetNodeInspectorTextColor()
-            }
+                {
+                    color = GraphTool.GetNodeInspectorTextColor()
+                }
             };
             scrollView.Add(_nodeDescriptionLabel);
             _nodeInspectorPanel.Add(scrollView);
@@ -50,7 +50,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void DrawGraphNodeInspector()
         {
-            if (!(bool)_showInspectorButton.userData)
+            if (!_inspectorToggle.value)
             {
                 return;
             }

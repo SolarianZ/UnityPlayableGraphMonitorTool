@@ -53,6 +53,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                     var sourcePlayableOutputPort = sourcePlayableNode.OutputPorts[0];
                     var selfSourcePort = InternalInputPorts[0];
                     var edge = selfSourcePort.ConnectTo(sourcePlayableOutputPort);
+                    edge.capabilities &= ~Capabilities.Movable;
+                    edge.capabilities &= ~Capabilities.Deletable;
+                    edge.capabilities &= ~Capabilities.Selectable;
                     Container.AddElement(edge);
                     InternalInputs.Add(new NodeInput(edge, sourcePlayableNode, 0));
 
@@ -115,7 +118,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         protected override void AppendStateDescriptions(StringBuilder descBuilder)
         {
             descBuilder.Append("Type: ").AppendLine(PlayableOutput.GetPlayableOutputType().Name)
-                        .Append("IsValid: ").AppendLine(PlayableOutput.IsOutputValid().ToString());
+                .Append("IsValid: ").AppendLine(PlayableOutput.IsOutputValid().ToString());
             if (PlayableOutput.IsOutputValid())
             {
                 descBuilder.Append("Name: ").AppendLine(PlayableOutput.GetEditorName())

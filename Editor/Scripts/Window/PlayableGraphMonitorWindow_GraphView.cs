@@ -13,9 +13,9 @@ namespace GBG.PlayableGraphMonitor.Editor
             _graphView = new PlayableGraphView
             {
                 style =
-            {
-                flexGrow = new StyleFloat(1)
-            }
+                {
+                    flexGrow = new StyleFloat(1)
+                }
             };
 
             container.Add(_graphView);
