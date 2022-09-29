@@ -2,7 +2,9 @@
     "name": "GBG.PlayableGraphMonitor.Editor",
     "rootNamespace": "GBG.PlayableGraphMonitor.Editor",
     "references": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
