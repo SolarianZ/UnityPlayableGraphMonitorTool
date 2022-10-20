@@ -3,19 +3,39 @@ using UnityEngine.Animations;
 using UnityEngine.Playables;
 #if UNITY_2021_1_OR_NEWER
 using UnityEngine.UIElements;
+
 #else
 using UnityEditor.UIElements;
 #endif
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
 {
-    public class AnimationClipPlayableNode : PlayableNode
+    public sealed class AnimationClipPlayableNode : PlayableNode
     {
+        public override string title
+        {
+            get => _mainTitle;
+            set
+            {
+                _mainTitle = value;
+                var clipPlayable = (AnimationClipPlayable)Playable;
+                var clip = clipPlayable.GetAnimationClip();
+                var clipName = clip ? clip.name : "None";
+                base.title = $"{_mainTitle}\n({clipName})";
+            }
+        }
+
+        private string _mainTitle;
+
         private readonly ProgressBar _progressBar;
 
 
         public AnimationClipPlayableNode(Playable playable) : base(playable)
         {
+            title = Playable.GetPlayableType().Name;
+            var titleLabel = titleContainer.Q<Label>(name: "title-label");
+            titleLabel.style.maxWidth = 220;
+
             _progressBar = new ProgressBar();
             // insert between title and port container
             titleContainer.parent.Insert(1, _progressBar);

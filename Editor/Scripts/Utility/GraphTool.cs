@@ -1,9 +1,10 @@
-﻿using GBG.PlayableGraphMonitor.Editor.Node;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using GBG.PlayableGraphMonitor.Editor.Node;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Audio;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
 using URandom = UnityEngine.Random;
@@ -65,26 +66,27 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
         #endregion
 
 
-
         public static Color GetButtonBackgroundColor(bool isChecked)
         {
             if (isChecked)
             {
-                return EditorGUIUtility.isProSkin ?
-                    new Color32(70, 96, 124, 255) : // dark
+                return EditorGUIUtility.isProSkin
+                    ? new Color32(70, 96, 124, 255)
+                    : // dark
                     new Color32(150, 195, 251, 255); // light
-
             }
 
-            return EditorGUIUtility.isProSkin ?
-                new Color32(88, 88, 88, 255) : // dark
+            return EditorGUIUtility.isProSkin
+                ? new Color32(88, 88, 88, 255)
+                : // dark
                 new Color32(228, 228, 228, 255); // light
         }
 
         public static Color GetNodeInspectorBackgroundColor()
         {
-            return EditorGUIUtility.isProSkin ?
-                new Color32(50, 50, 50, 255) : // dark
+            return EditorGUIUtility.isProSkin
+                ? new Color32(50, 50, 50, 255)
+                : // dark
                 new Color32(175, 175, 175, 255); // light
         }
 
@@ -93,8 +95,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
 
         public static Color GetNodeInspectorTextColor()
         {
-            return EditorGUIUtility.isProSkin ?
-                new Color32(255, 255, 255, 255) : // dark
+            return EditorGUIUtility.isProSkin
+                ? new Color32(255, 255, 255, 255)
+                : // dark
                 new Color32(0, 0, 0, 255); // light
         }
 
@@ -108,14 +111,18 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
         {
             if (playableOutput.IsPlayableOutputOfType<AnimationPlayableOutput>())
             {
-                return new Color32(0, 255, 255, 255);
+                return new Color32(0, 240, 255, 255);
+            }
+
+            if (playableOutput.IsPlayableOutputOfType<AudioPlayableOutput>())
+            {
+                return new Color32(0, 190, 255, 255);
             }
 
             if (playableOutput.IsPlayableOutputOfType<ScriptPlayableOutput>())
             {
-                return new Color32(0, 204, 255, 255);
+                return new Color32(0, 140, 255, 255);
             }
-
 
             return GetRandomColorForType(playableOutput.GetPlayableOutputType());
         }
@@ -125,22 +132,39 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
         {
             if (playable.IsPlayableOfType<AnimationClipPlayable>())
             {
-                return new Color32(0, 255, 51, 255);
+                return new Color32(0, 255, 25, 255);
+            }
+
+            // Audio
+            if (playable.IsPlayableOfType<AudioClipPlayable>())
+            {
+                return new Color32(0, 255, 60, 255);
             }
 
             if (playable.IsPlayableOfType<AnimationMixerPlayable>())
             {
-                return new Color32(0, 255, 102, 255);
+                return new Color32(0, 255, 95, 255);
+            }
+
+            // Audio
+            if (playable.IsPlayableOfType<AudioMixerPlayable>())
+            {
+                return new Color32(0, 255, 130, 255);
             }
 
             if (playable.IsPlayableOfType<AnimationLayerMixerPlayable>())
             {
-                return new Color32(0, 255, 153, 255);
+                return new Color32(0, 255, 165, 255);
             }
 
             if (playable.IsPlayableOfType<AnimationScriptPlayable>())
             {
-                return new Color32(0, 255, 204, 255);
+                return new Color32(0, 255, 200, 255);
+            }
+
+            if (playable.IsPlayableOfType<AnimatorControllerPlayable>())
+            {
+                return new Color32(0, 255, 235, 255);
             }
 
             return GetRandomColorForType(playable.GetPlayableType());
@@ -153,13 +177,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
         // reserve (0, 255, ?, 255) for Playable nodes
         public static readonly IReadOnlyList<Color32> ColorPool = new Color32[]
         {
-            new Color32(255,0,255,255), new Color32(255,0,153,255),
-            new Color32(153,255,0,255), new Color32(204,255,0,255),
-            new Color32(255,255,0,255), new Color32(255,204,0,255),
-            new Color32(255,153,0,255), new Color32(255,102,0,255),
-            new Color32(153,204,255,255), new Color32(153,255,102,255),
-            new Color32(153,255,153,255), new Color32(153,255,204,255),
-            new Color32(204,255,102,255), new Color32(204,255,255,255),
+            new Color32(255, 0, 255, 255), new Color32(255, 0, 153, 255),
+            new Color32(153, 255, 0, 255), new Color32(204, 255, 0, 255),
+            new Color32(255, 255, 0, 255), new Color32(255, 204, 0, 255),
+            new Color32(255, 153, 0, 255), new Color32(255, 102, 0, 255),
+            new Color32(153, 204, 255, 255), new Color32(153, 255, 102, 255),
+            new Color32(153, 255, 153, 255), new Color32(153, 255, 204, 255),
+            new Color32(204, 255, 102, 255), new Color32(204, 255, 255, 255),
         };
 
         private static readonly Dictionary<Type, Color32> _colorCache = new Dictionary<Type, Color32>();

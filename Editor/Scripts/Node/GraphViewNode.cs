@@ -61,6 +61,11 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         {
             capabilities &= ~Capabilities.Movable;
             capabilities &= ~Capabilities.Deletable;
+            
+            // Hide collapse button
+            titleButtonContainer.Clear();
+            var titleLabel = titleContainer.Q<Label>(name: "title-label");
+            titleLabel.style.marginRight = 6;
         }
         
         public virtual void Update()
@@ -139,7 +144,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         public const int HORIZONTAL_SPACE = 80;
 
-        public const int VERTICAL_SPACE = 80;
+        public const int VERTICAL_SPACE = 60;
 
         public static readonly Vector2 StandardNodeSize = new Vector2(400, 150);
 

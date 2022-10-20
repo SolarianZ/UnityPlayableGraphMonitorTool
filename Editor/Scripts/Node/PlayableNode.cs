@@ -51,7 +51,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                     continue;
                 }
 
-                // FIXME: A Playable may has multi output ports,
+                // TODO FIXME: A Playable may has multi output ports,
                 // and if all these output ports connected to same input port,
                 // 'i' will be greater than InternalInputs.Count, so there is a check.
                 if (i < InternalInputs.Count)

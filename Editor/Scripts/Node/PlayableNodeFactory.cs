@@ -6,18 +6,11 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 {
     public static class PlayableNodeFactory
     {
-        public const string PLAYABLE_HEADER = "Playable";
-
         public static PlayableNode CreateNode(Playable playable)
         {
-            var playableType = playable.GetPlayableType();
-            var playableTypeName = playableType.Name;
-            var playableTypeSortName = playableTypeName
-                .Remove(playableTypeName.Length - PLAYABLE_HEADER.Length);
-            var nodeTitle = $"{PLAYABLE_HEADER}\n{playableTypeSortName}";
-
             // create node by playable type
             PlayableNode playableNode;
+            var playableType = playable.GetPlayableType();
             if (playableType == typeof(AnimationClipPlayable))
             {
                 playableNode = new AnimationClipPlayableNode(playable);
@@ -32,7 +25,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 playableNode = new PlayableNode(playable);
             }
 
-            playableNode.title = nodeTitle;
+            playableNode.title = playableType.Name;
             playableNode.SetNodeStyle(playable.GetPlayableNodeColor());
 
             return playableNode;
