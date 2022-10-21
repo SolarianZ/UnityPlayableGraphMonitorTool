@@ -1,11 +1,9 @@
 ﻿using System.Text;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
-#if UNITY_2021_1_OR_NEWER
 using UnityEngine.UIElements;
-
-#else
-using UnityEditor.UIElements;
+#if !UNITY_2021_1_OR_NEWER
+using UnityEditor.UIElements; // ProgressBar
 #endif
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
