@@ -4,9 +4,6 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
-#if !UNITY_2021_1_OR_NEWER
-using UnityEditor.UIElements; // ProgressBar
-#endif
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
 {
