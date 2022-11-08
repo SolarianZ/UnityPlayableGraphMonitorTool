@@ -1,4 +1,6 @@
 ﻿using System.Text;
+using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
@@ -10,21 +12,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 {
     public sealed class AnimationClipPlayableNode : PlayableNode
     {
-        public override string title
-        {
-            get => _mainTitle;
-            set
-            {
-                _mainTitle = value;
-                var clipPlayable = (AnimationClipPlayable)Playable;
-                var clip = clipPlayable.GetAnimationClip();
-                var clipName = clip ? clip.name : "None";
-                base.title = $"{_mainTitle}\n({clipName})";
-            }
-        }
-
-        private string _mainTitle;
-
         private readonly ProgressBar _progressBar;
 
 
@@ -34,9 +21,21 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var titleLabel = titleContainer.Q<Label>(name: "title-label");
             titleLabel.style.maxWidth = 220;
 
+            var banner = mainContainer.Q("divider");
+            banner.style.height = StyleKeyword.Auto;
+
             _progressBar = new ProgressBar();
-            // insert between title and port container
-            titleContainer.parent.Insert(1, _progressBar);
+            banner.Add(_progressBar);
+
+            var clipField = new ObjectField()
+            {
+                objectType = typeof(Motion),
+                value = ((AnimationClipPlayable)Playable).GetAnimationClip(),
+            };
+            // clipField.SetEnabled(false);
+            var clipFieldSelector = clipField.Q(className: "unity-object-field__selector");
+            clipFieldSelector.SetEnabled(false);
+            banner.Add(clipField);
         }
 
         public override void Update()
