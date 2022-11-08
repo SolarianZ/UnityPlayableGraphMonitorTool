@@ -1,5 +1,6 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEngine.Animations;
+using UnityEngine.Audio;
 using UnityEngine.Playables;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
@@ -18,6 +19,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             else if (playableType == typeof(AnimationLayerMixerPlayable))
             {
                 playableNode = new AnimationLayerMixerPlayableNode(playable);
+            }
+            else if (playableType == typeof(AudioClipPlayable))
+            {
+                playableNode = new AudioClipPlayableNode(playable);
             }
             else
             {

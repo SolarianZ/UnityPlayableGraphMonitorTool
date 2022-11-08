@@ -1,18 +1,18 @@
 ﻿using System.Text;
 using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.Animations;
+using UnityEngine.Audio;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
 {
-    public sealed class AnimationClipPlayableNode : PlayableNode
+    public sealed class AudioClipPlayableNode : PlayableNode
     {
         private readonly ProgressBar _progressBar;
 
 
-        public AnimationClipPlayableNode(Playable playable) : base(playable)
+        public AudioClipPlayableNode(Playable playable) : base(playable)
         {
             title = Playable.GetPlayableType().Name;
             var titleLabel = titleContainer.Q<Label>(name: "title-label");
@@ -26,8 +26,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             var clipField = new ObjectField()
             {
-                objectType = typeof(Motion),
-                value = ((AnimationClipPlayable)Playable).GetAnimationClip(),
+                objectType = typeof(AudioClip),
+                value = ((AudioClipPlayable)Playable).GetClip(),
             };
             // clipField.SetEnabled(false);
             var clipFieldSelector = clipField.Q(className: "unity-object-field__selector");
@@ -39,8 +39,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         {
             if (Playable.IsValid())
             {
-                var clipPlayable = (AnimationClipPlayable)Playable;
-                var clip = clipPlayable.GetAnimationClip();
+                var clipPlayable = (AudioClipPlayable)Playable;
+                var clip = clipPlayable.GetClip();
                 var duration = clip ? clip.length : float.PositiveInfinity;
                 var progress = (float)(Playable.GetTime() / duration) % 1.0f * 100;
                 _progressBar.SetValueWithoutNotify(progress);
@@ -57,17 +57,14 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             if (Playable.IsValid())
             {
-                var clipPlayable = (AnimationClipPlayable)Playable;
-                descBuilder.Append("ApplyFootIK: ").AppendLine(clipPlayable.GetApplyFootIK().ToString())
-                    .Append("ApplyPlayableIK: ").AppendLine(clipPlayable.GetApplyPlayableIK().ToString())
-                    .AppendLine();
+                var clipPlayable = (AudioClipPlayable)Playable;
+                descBuilder.Append("Looped: ").AppendLine(clipPlayable.GetLooped().ToString());
 
-                var clip = clipPlayable.GetAnimationClip();
+                var clip = clipPlayable.GetClip();
                 descBuilder.Append("Clip: ").AppendLine(clip ? clip.name : "None");
                 if (clip)
                 {
-                    descBuilder.Append("Looped: ").AppendLine(clip.isLooping.ToString())
-                        .Append("Length: ").Append(clip.length.ToString("F3")).AppendLine("(s)");
+                    descBuilder.Append("Length: ").Append(clip.length.ToString("F3")).AppendLine("(s)");
                 }
             }
         }
