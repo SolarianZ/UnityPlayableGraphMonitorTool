@@ -2,7 +2,7 @@
 
 PlayableGraph监控工具，参考了[PlayableGraph Visualizer](https://github.com/Unity-Technologies/graph-visualizer)，使用UIElements实现。
 
-![PlayableGraph Monitor](./Documents/imgs/img_sample_playablegraph_monitor.png)
+![PlayableGraph Monitor](./Documents~/imgs/img_sample_playablegraph_monitor.png)
 
 [English](./README.md)
 

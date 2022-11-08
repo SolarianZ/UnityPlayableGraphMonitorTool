@@ -2,7 +2,7 @@
 
 PlayableGraph monitor tool inspired by [PlayableGraph Visualizer](https://github.com/Unity-Technologies/graph-visualizer) and implemented in UIElements.
 
-![PlayableGraph Monitor](./Documents/imgs/img_sample_playablegraph_monitor.png)
+![PlayableGraph Monitor](./Documents~/imgs/img_sample_playablegraph_monitor.png)
 
 [中文](./README_CN.md)
 
