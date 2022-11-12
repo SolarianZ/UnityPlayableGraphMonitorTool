@@ -93,6 +93,122 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
 
         #region Node Color
 
+        private static readonly IReadOnlyDictionary<Type, Color32> _specialTypeColors = new Dictionary<Type, Color32>()
+        {
+            { typeof(AnimationClipPlayable), new Color32(0, 255, 100, 255) },
+            { typeof(AnimationMixerPlayable), new Color32(0, 190, 255, 255) },
+            { typeof(AnimationLayerMixerPlayable), new Color32(0, 115, 255, 255) },
+            { typeof(AnimatorControllerPlayable), new Color32(255, 145, 0, 255) },
+            { typeof(AnimationScriptPlayable), new Color32(0, 255, 145, 255) },
+            { typeof(AnimationPlayableOutput), new Color32(200, 255, 80, 255) },
+
+            { typeof(ScriptPlayableOutput), new Color32(55, 255, 20, 255) },
+
+            { typeof(AudioClipPlayable), new Color32(255, 190, 19, 255) },
+            { typeof(AudioMixerPlayable), new Color32(170, 255, 0, 255) },
+            { typeof(AudioPlayableOutput), new Color32(255, 135, 0, 255) },
+        };
+
+
+        public static readonly byte MinRGB = 50;
+        public static readonly byte MaxRGB = 200;
+
+        public static Color32 GetNodeColor(Type playableType)
+        {
+            if (!_specialTypeColors.TryGetValue(playableType, out var color) &&
+                !_colorCache.TryGetValue(playableType, out color))
+            {
+                color = GenerateRandomPlayableColor(_colorCache.Values);
+            }
+
+            _colorCache[playableType] = color;
+
+            return color;
+        }
+
+        public static Color32 GenerateRandomPlayableColor(IEnumerable<Color32> existedColors)
+        {
+            while (true)
+            {
+                Color32 color;
+                var leader = URandom.Range(0, 3);
+                switch (leader)
+                {
+                    case 0: // R
+                        color = new Color32
+                        {
+                            r = MaxRGB,
+                            g = (byte)URandom.Range(MinRGB, MaxRGB + 1),
+                            b = (byte)URandom.Range(MinRGB, MaxRGB + 1),
+                            a = 255,
+                        };
+                        break;
+                    case 1: // G
+                        color = new Color32
+                        {
+                            r = (byte)URandom.Range(MinRGB, MaxRGB + 1),
+                            g = MaxRGB,
+                            b = (byte)URandom.Range(MinRGB, MaxRGB + 1),
+                            a = 255,
+                        };
+                        break;
+
+                    case 2: // B
+                        color = new Color32
+                        {
+                            r = (byte)URandom.Range(MinRGB, MaxRGB + 1),
+                            g = (byte)URandom.Range(MinRGB, MaxRGB + 1),
+                            b = MaxRGB,
+                            a = 255,
+                        };
+                        break;
+
+                    default: throw new IndexOutOfRangeException();
+                }
+
+                if (IsCloseRGB(color))
+                {
+                    continue;
+                }
+
+                var hasSimilarColor = false;
+                if (existedColors != null)
+                {
+                    // ReSharper disable once PossibleMultipleEnumeration
+                    foreach (var existedColor in existedColors)
+                    {
+                        if (IsSimilarColor(existedColor, color))
+                        {
+                            hasSimilarColor = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!hasSimilarColor)
+                {
+                    return color;
+                }
+            }
+        }
+
+        public static bool IsCloseRGB(Color32 color, byte threshold = 50)
+        {
+            var rg = Mathf.Abs(color.r - color.g);
+            var gb = Mathf.Abs(color.g - color.b);
+            var br = Mathf.Abs(color.b - color.r);
+
+            return rg <= threshold && gb <= threshold && br <= threshold;
+        }
+
+        public static bool IsSimilarColor(Color32 a, Color32 b, byte threshold = 10)
+        {
+            return Mathf.Abs(a.r - b.r) < threshold &&
+                   Mathf.Abs(a.g - b.g) < threshold &&
+                   Mathf.Abs(a.b - b.b) < threshold &&
+                   Mathf.Abs(a.a - b.a) < threshold;
+        }
+
         public static Color GetNodeInspectorTextColor()
         {
             return EditorGUIUtility.isProSkin
@@ -106,101 +222,20 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
             return Color.red;
         }
 
-        // (0, ?, 255, 255) for PlayableOutput nodes
-        public static Color GetPlayableOutputNodeColor(this ref PlayableOutput playableOutput)
+        public static Color GetPlayableOutputNodeColor(this PlayableOutput playableOutput)
         {
-            if (playableOutput.IsPlayableOutputOfType<AnimationPlayableOutput>())
-            {
-                return new Color32(0, 240, 255, 255);
-            }
-
-            if (playableOutput.IsPlayableOutputOfType<AudioPlayableOutput>())
-            {
-                return new Color32(0, 190, 255, 255);
-            }
-
-            if (playableOutput.IsPlayableOutputOfType<ScriptPlayableOutput>())
-            {
-                return new Color32(0, 140, 255, 255);
-            }
-
-            return GetRandomColorForType(playableOutput.GetPlayableOutputType());
+            return GetNodeColor(playableOutput.GetPlayableOutputType());
         }
 
-        // (0, 255, ?, 255) for Playable nodes
-        public static Color GetPlayableNodeColor(this ref Playable playable)
+        public static Color GetPlayableNodeColor(this Playable playable)
         {
-            if (playable.IsPlayableOfType<AnimationClipPlayable>())
-            {
-                return new Color32(0, 255, 25, 255);
-            }
-
-            // Audio
-            if (playable.IsPlayableOfType<AudioClipPlayable>())
-            {
-                return new Color32(0, 255, 60, 255);
-            }
-
-            if (playable.IsPlayableOfType<AnimationMixerPlayable>())
-            {
-                return new Color32(0, 255, 95, 255);
-            }
-
-            // Audio
-            if (playable.IsPlayableOfType<AudioMixerPlayable>())
-            {
-                return new Color32(0, 255, 130, 255);
-            }
-
-            if (playable.IsPlayableOfType<AnimationLayerMixerPlayable>())
-            {
-                return new Color32(0, 255, 165, 255);
-            }
-
-            if (playable.IsPlayableOfType<AnimationScriptPlayable>())
-            {
-                return new Color32(0, 255, 200, 255);
-            }
-
-            if (playable.IsPlayableOfType<AnimatorControllerPlayable>())
-            {
-                return new Color32(0, 255, 235, 255);
-            }
-
-            return GetRandomColorForType(playable.GetPlayableType());
+            return GetNodeColor(playable.GetPlayableType());
         }
 
         #endregion
 
 
-        // reserve (0, ?, 255, 255) for PlayableOutput nodes
-        // reserve (0, 255, ?, 255) for Playable nodes
-        public static readonly IReadOnlyList<Color32> ColorPool = new Color32[]
-        {
-            new Color32(255, 0, 255, 255), new Color32(255, 0, 153, 255),
-            new Color32(153, 255, 0, 255), new Color32(204, 255, 0, 255),
-            new Color32(255, 255, 0, 255), new Color32(255, 204, 0, 255),
-            new Color32(255, 153, 0, 255), new Color32(255, 102, 0, 255),
-            new Color32(153, 204, 255, 255), new Color32(153, 255, 102, 255),
-            new Color32(153, 255, 153, 255), new Color32(153, 255, 204, 255),
-            new Color32(204, 255, 102, 255), new Color32(204, 255, 255, 255),
-        };
-
         private static readonly Dictionary<Type, Color32> _colorCache = new Dictionary<Type, Color32>();
-
-
-        public static Color GetRandomColorForType(this Type type)
-        {
-            if (_colorCache.TryGetValue(type, out var color))
-            {
-                return color;
-            }
-
-            color = ColorPool[URandom.Range(0, ColorPool.Count)];
-            _colorCache[type] = color;
-
-            return color;
-        }
 
         public static void ClearGlobalCache()
         {

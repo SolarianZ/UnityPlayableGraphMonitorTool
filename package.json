@@ -1,7 +1,7 @@
 {
   "name": "com.greenbamboogames.playablegraphmonitor",
-  "version": "1.0.7",
-  "displayName": "PlayableGraphMonitor!",
+  "version": "1.0.8",
+  "displayName": "PlayableGraph Monitor!",
   "description": "PlayableGraph monitor.",
   "unity": "2019.4",
   "documentationUrl": "https://github.com/SolarianZ/UnityPlayableGraphMonitorTool",
