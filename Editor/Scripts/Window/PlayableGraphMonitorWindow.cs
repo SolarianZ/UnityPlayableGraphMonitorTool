@@ -10,6 +10,7 @@ namespace GBG.PlayableGraphMonitor.Editor
     public partial class PlayableGraphMonitorWindow : EditorWindow
     {
         // ReSharper disable once Unity.IncorrectMethodSignature
+        [MenuItem("Tools/Bamboo/PlayableGraph Monitor")]
         [MenuItem("Window/Analysis/PlayableGraph Monitor")]
         public static PlayableGraphMonitorWindow Open()
         {
