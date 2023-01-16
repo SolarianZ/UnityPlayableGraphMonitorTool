@@ -42,6 +42,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             }
 
             // diff child nodes
+            var skipPort = 0;
             for (int i = 0; i < Playable.GetInputCount(); i++)
             {
                 // update self port color
@@ -51,20 +52,22 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 var inputPlayable = Playable.GetInput(i);
                 if (!inputPlayable.IsValid())
                 {
+                    skipPort++;
                     continue;
                 }
 
                 // TODO FIXME: A Playable may has multi output ports,
                 // and if all these output ports connected to same input port,
-                // 'i' will be greater than InternalInputs.Count, so there is a check.
-                if (i < InternalInputs.Count)
+                // 'i' will be greater than InternalInputs.Count, so there is a skipPort check.
+                var index = i - skipPort;
+                if (index < InternalInputs.Count)
                 {
                     var childNodeIndex = FindChildPlayableNode(inputPlayable);
                     if (childNodeIndex >= 0)
                     {
-                        var input = InternalInputs[i];
+                        var input = InternalInputs[index];
                         input.Node.AddFlag(NodeFlag.Active);
-                        InternalInputs[i] = input.Copy(input, i);
+                        InternalInputs[index] = input.Copy(input, i);
                         continue;
                     }
                 }
