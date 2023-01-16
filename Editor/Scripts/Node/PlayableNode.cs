@@ -1,7 +1,8 @@
-﻿using GBG.PlayableGraphMonitor.Editor.Utility;
-using System;
+﻿using System;
 using System.Text;
+using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.Playables;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
@@ -17,9 +18,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         {
             Playable = playable;
 
-            CreatePorts();
-            RefreshExpandedState();
+            PreparePorts();
             RefreshPorts();
+            RefreshExpandedState();
         }
 
         public override void Update()
@@ -31,6 +32,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 style.backgroundColor = GraphTool.GetNodeInvalidColor();
                 return;
             }
+
+            PreparePorts();
 
             // mark all child nodes inactive
             for (int i = 0; i < InternalInputs.Count; i++)
@@ -124,7 +127,78 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             return -1;
         }
 
+        protected void PreparePorts()
+        {
+            // Input ports
+            var realInputCount = Playable.GetInputCount();
+            var cachedInputCount = InternalInputPorts.Count;
+            var portChanged = realInputCount != cachedInputCount;
+            if (realInputCount < cachedInputCount)
+            {
+                var count = cachedInputCount - realInputCount;
+                for (int i = 0; i < count; i++)
+                {
+                    var index = cachedInputCount - i - 1;
+                    InternalInputPorts.RemoveAt(index);
+                    inputContainer.RemoveAt(index);
+                }
+            }
+            else if (realInputCount > cachedInputCount)
+            {
+                var count = realInputCount - cachedInputCount;
+                for (int i = 0; i < count; i++)
+                {
+                    var index = i + cachedInputCount;
+                    var inputPort = InstantiatePort<Playable>(Direction.Input);
+                    inputPort.portName = $"Input {index}";
+                    inputPort.portColor = GraphTool.GetPortColor(Playable.GetInputWeight(index));
+                    InternalInputPorts.Add(inputPort);
+                    inputContainer.Add(inputPort);
+                }
+            }
 
+            // Output ports
+            var realOutputCount = Playable.GetOutputCount();
+            if (realOutputCount > 1)
+            {
+                Debug.LogError("Playable Graph Monitor doesn't support node with multiple output port.");
+            }
+
+            var cachedOutputCount = InternalOutputPorts.Count;
+            portChanged |= realOutputCount != cachedOutputCount;
+            if (realOutputCount < cachedOutputCount)
+            {
+                var count = cachedOutputCount - realOutputCount;
+                for (int i = 0; i < count; i++)
+                {
+                    var index = cachedOutputCount - i - 1;
+                    InternalOutputPorts.RemoveAt(index);
+                    outputContainer.RemoveAt(index);
+                }
+            }
+            else if (realOutputCount > cachedOutputCount)
+            {
+                var count = realOutputCount - cachedOutputCount;
+                for (int i = 0; i < count; i++)
+                {
+                    var index = i + cachedOutputCount;
+                    var outputPort = InstantiatePort<Playable>(Direction.Output);
+                    outputPort.portName = $"Output {index}";
+                    outputPort.portColor = GraphTool.GetPortColor(1);
+                    InternalOutputPorts.Add(outputPort);
+                    outputContainer.Add(outputPort);
+                }
+            }
+
+            if (portChanged)
+            {
+                RefreshPorts();
+            }
+        }
+
+
+        // ReSharper disable once UnusedMember.Local
+        [Obsolete]
         private void CreatePorts()
         {
             if (!Playable.IsValid())
