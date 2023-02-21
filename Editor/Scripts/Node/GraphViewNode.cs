@@ -33,26 +33,19 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             Node = node;
             PortIndex = portIndex;
         }
-
-        public NodeInput Copy(NodeInput other, int portIndexOverride)
-        {
-            return new NodeInput(other.Edge, other.Node, portIndexOverride);
-        }
     }
 
     public abstract class GraphViewNode : UNode
     {
-        public IReadOnlyList<Port> InputPorts => InternalInputPorts;
+        public IReadOnlyList<Port> OutputPorts => InternalOutputPorts;
 
         protected List<Port> InternalInputPorts { get; } = new List<Port>();
 
-        public IReadOnlyList<Port> OutputPorts => InternalOutputPorts;
-
         protected List<Port> InternalOutputPorts { get; } = new List<Port>();
 
-        protected UGraphView Container { get; set; }
-
         protected List<NodeInput> InternalInputs { get; } = new List<NodeInput>();
+
+        protected UGraphView Container { get; private set; }
 
         protected GraphViewNode Parent { get; private set; }
 
@@ -61,15 +54,20 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         {
             capabilities &= ~Capabilities.Movable;
             capabilities &= ~Capabilities.Deletable;
-            
+
             // Hide collapse button
             titleButtonContainer.Clear();
             var titleLabel = titleContainer.Q<Label>(name: "title-label");
             titleLabel.style.marginRight = 6;
         }
-        
+
         public virtual void Update()
         {
+        }
+
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+        {
+            // disable contextual menu
         }
 
 
@@ -91,12 +89,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             return _descBuilder.ToString();
         }
 
-
-        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
-        {
-            // disable contextual menu
-            //base.BuildContextualMenu(evt);
-        }
 
         protected abstract void AppendStateDescriptions(StringBuilder descBuilder);
 
@@ -226,18 +218,28 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         public void AddFlag(NodeFlag flag)
         {
+            var oldFlags = _flags;
             _flags |= (uint)flag;
-            OnFlagsChanged();
+
+            if (oldFlags != _flags)
+            {
+                OnFlagsChanged();
+            }
         }
 
         public void RemoveFlag(NodeFlag flag)
         {
+            var oldFlags = _flags;
             _flags &= ~(uint)flag;
-            OnFlagsChanged();
+
+            if (oldFlags != _flags)
+            {
+                OnFlagsChanged();
+            }
         }
 
 
-        protected virtual void OnFlagsChanged()
+        private void OnFlagsChanged()
         {
             if (CheckFlag(NodeFlag.HierarchyDirty))
             {

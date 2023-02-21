@@ -18,7 +18,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         public PlayableGraphView()
         {
-            SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
+            SetupZoom(0.1f, ContentZoomer.DefaultMaxScale);
             this.AddManipulator(new ContentDragger());
             //this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
@@ -77,7 +77,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             for (int i = 0; i < _playableGraph.GetOutputCount(); i++)
             {
                 var playableOutput = _playableGraph.GetOutput(i);
-                var rootOutputNodeIndex = FindRootOutputNode(playableOutput);
+                var rootOutputNodeIndex = FindRootOutputNodeIndex(playableOutput);
                 if (rootOutputNodeIndex >= 0)
                 {
                     _rootOutputNodes[i].AddFlag(NodeFlag.Active);
@@ -108,7 +108,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             }
         }
 
-        private int FindRootOutputNode(PlayableOutput playableOutput)
+        private int FindRootOutputNodeIndex(PlayableOutput playableOutput)
         {
             for (int i = 0; i < _rootOutputNodes.Count; i++)
             {

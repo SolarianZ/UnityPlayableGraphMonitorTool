@@ -13,6 +13,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
 {
     public static class GraphTool
     {
+        // todo: try to use PlayableGraph.m_Handle
         public static bool IsEqual(ref PlayableGraph a, ref PlayableGraph b)
         {
             if (!a.IsValid())
@@ -54,12 +55,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
         #region Port Color
 
         // Ensure edge is always visible.
-        public const float COLOR_ALPHA_FACTOR = 1f / 9;
+        public static readonly float ColorAlphaFactor = 1f / 9;
 
 
         public static Color GetPortColor(float weight)
         {
-            var alpha = (weight + COLOR_ALPHA_FACTOR) / (1 + COLOR_ALPHA_FACTOR);
+            var alpha = (weight + ColorAlphaFactor) / (1 + ColorAlphaFactor);
             return new Color(1, 1, 1, alpha);
         }
 
@@ -166,7 +167,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
                     default: throw new IndexOutOfRangeException();
                 }
 
-                if (IsCloseRGB(color))
+                if (IsSimilarRGB(color))
                 {
                     continue;
                 }
@@ -192,7 +193,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
             }
         }
 
-        public static bool IsCloseRGB(Color32 color, byte threshold = 50)
+        public static bool IsSimilarRGB(Color32 color, byte threshold = 50)
         {
             var rg = Mathf.Abs(color.r - color.g);
             var gb = Mathf.Abs(color.g - color.b);

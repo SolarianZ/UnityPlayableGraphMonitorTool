@@ -67,7 +67,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                     {
                         var input = InternalInputs[index];
                         input.Node.AddFlag(NodeFlag.Active);
-                        InternalInputs[index] = input.Copy(input, i);
+                        InternalInputs[index] = new NodeInput(input.Edge, input.Node, i);
                         continue;
                     }
                 }
