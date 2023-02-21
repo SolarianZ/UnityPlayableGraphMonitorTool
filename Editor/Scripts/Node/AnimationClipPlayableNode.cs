@@ -9,6 +9,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 {
     public sealed class AnimationClipPlayableNode : PlayableNode
     {
+        private readonly ObjectField _clipField;
+
         private readonly ProgressBar _progressBar;
 
 
@@ -24,15 +26,15 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             _progressBar = new ProgressBar();
             banner.Add(_progressBar);
 
-            var clipField = new ObjectField()
+            _clipField = new ObjectField()
             {
                 objectType = typeof(Motion),
                 value = ((AnimationClipPlayable)Playable).GetAnimationClip(),
             };
             // clipField.SetEnabled(false);
-            var clipFieldSelector = clipField.Q(className: "unity-object-field__selector");
+            var clipFieldSelector = _clipField.Q(className: "unity-object-field__selector");
             clipFieldSelector.SetEnabled(false);
-            banner.Add(clipField);
+            banner.Add(_clipField);
         }
 
         public override void Update()
@@ -41,6 +43,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 var clipPlayable = (AnimationClipPlayable)Playable;
                 var clip = clipPlayable.GetAnimationClip();
+                _clipField.SetValueWithoutNotify(clip);
+                
                 var duration = clip ? clip.length : float.PositiveInfinity;
                 var progress = (float)(Playable.GetTime() / duration) % 1.0f * 100;
                 _progressBar.SetValueWithoutNotify(progress);
