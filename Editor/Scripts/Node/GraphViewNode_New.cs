@@ -1,20 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
-using UEdge = UnityEditor.Experimental.GraphView.Edge;
-using UGraphView = UnityEditor.Experimental.GraphView.GraphView;
 using UNode = UnityEditor.Experimental.GraphView.Node;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
 {
     public abstract class GraphViewNode_New : UNode
     {
-        protected List<Port> InputPorts { get; } = new List<Port>();
-
-        protected List<Port> OutputPorts { get; } = new List<Port>();
-
-
         protected GraphViewNode_New()
         {
             capabilities &= ~Capabilities.Movable;
@@ -26,6 +20,71 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             titleLabel.style.marginRight = 6;
         }
 
+        // todo: Release referenced assets
+        public virtual void Clean()
+        {
+            Description = null;
+
+            // Disconnect all ports
+            for (int i = 0; i < InputPorts.Count; i++)
+            {
+                InputPorts[i].DisconnectAll();
+            }
+
+            for (int i = 0; i < OutputPorts.Count; i++)
+            {
+                OutputPorts[i].DisconnectAll();
+            }
+        }
+
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+        {
+            // Disable contextual menu
+        }
+
+
+        #region Playable
+
+        public abstract IEnumerable<Playable> GetInputPlayables();
+
+        public abstract IEnumerable<Playable> GetOutputPlayables();
+
+        #endregion
+
+
+        #region Description
+
+        public string Description { get; protected set; }
+
+        private StringBuilder _descBuilder;
+
+
+        public string GetStateDescription()
+        {
+            if (_descBuilder == null)
+            {
+                _descBuilder = new StringBuilder();
+            }
+
+            _descBuilder.Clear();
+            AppendStateDescriptions(_descBuilder);
+
+            return _descBuilder.ToString();
+        }
+
+
+        protected abstract void AppendStateDescriptions(StringBuilder descBuilder);
+
+        #endregion
+
+
+        #region Port
+
+        protected List<Port> InputPorts { get; } = new List<Port>();
+
+        protected List<Port> OutputPorts { get; } = new List<Port>();
+
+
         public Port GetInputPort(int index)
         {
             return InputPorts[index];
@@ -36,45 +95,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             return OutputPorts[index];
         }
 
-        public IEnumerable<Playable> GetInputPlayables()
-        {
-            Playable playable = default;
-            if (!playable.IsValid())
-            {
-                yield break;
-            }
 
-            for (int i = 0; i < playable.GetInputCount(); i++)
-            {
-                var inputPlayable = playable.GetInput(i);
-                yield return inputPlayable;
-            }
+        protected Port InstantiatePort<TPortData>(Direction direction)
+        {
+            return InstantiatePort(Orientation.Horizontal, direction, Port.Capacity.Multi, typeof(TPortData));
         }
 
-        public IEnumerable<Playable> GetOutputPlayables()
-        {
-            Playable playable = default;
-            if (!playable.IsValid())
-            {
-                yield break;
-            }
-
-            for (int i = 0; i < playable.GetOutputCount(); i++)
-            {
-                var outputPlayable = playable.GetOutput(i);
-                yield return outputPlayable;
-            }
-        }
-
-        public void Clean()
-        {
-            // Disconnect all ports
-            // Release referenced assets
-        }
-
-        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
-        {
-            // disable contextual menu
-        }
+        #endregion
     }
 }
