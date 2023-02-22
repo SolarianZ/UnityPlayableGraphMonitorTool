@@ -54,12 +54,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         #region Description
 
-        public string Description { get; protected set; }
+        public string Description { get; private set; }
 
         private StringBuilder _descBuilder;
 
 
-        public string GetStateDescription()
+        public void UpdateDescription()
         {
             if (_descBuilder == null)
             {
@@ -68,8 +68,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             _descBuilder.Clear();
             AppendStateDescriptions(_descBuilder);
-
-            return _descBuilder.ToString();
+            Description = _descBuilder.ToString();
+            _descBuilder.Clear();
         }
 
 
