@@ -31,7 +31,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             new Dictionary<PlayableHandle, PlayableNode_New>();
 
 
-        public IEnumerable UpdateIncremental()
+        public IEnumerator UpdateIncremental()
         {
             RecycleAllNodesAndEdges();
 
