@@ -49,7 +49,9 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void Update()
         {
-            _graphView.Update(_graphPopupField.value);
+            // _graphView.Update(_graphPopupField.value);
+            _graphView.Update_New(_graphPopupField.value);
+
 
             DrawGraphNodeInspector();
         }

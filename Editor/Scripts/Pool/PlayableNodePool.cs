@@ -40,8 +40,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
         {
             for (int i = _activeNodes.Count - 1; i >= 0; i--)
             {
-                _activeNodes.RemoveAt(i);
                 _nodePool.Release(_activeNodes[i]);
+                _activeNodes.RemoveAt(i);
             }
         }
 

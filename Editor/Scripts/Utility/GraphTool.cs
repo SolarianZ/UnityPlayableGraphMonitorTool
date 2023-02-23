@@ -50,6 +50,17 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
             var titlePanel = node.Q("title");
             titlePanel.style.backgroundColor = nodeColor;
         }
+        
+        public static void SetNodeStyle(this GraphViewNode_New node, Color nodeColor,
+            float titleFontSize = 15, Color? titleColor = null)
+        {
+            // title
+            var titleLabel = node.Q("title-label");
+            titleLabel.style.fontSize = titleFontSize;
+            titleLabel.style.color = titleColor ?? Color.black;
+            var titlePanel = node.Q("title");
+            titlePanel.style.backgroundColor = nodeColor;
+        }
 
 
         #region Port Color

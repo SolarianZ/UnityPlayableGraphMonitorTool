@@ -41,8 +41,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
         {
             for (int i = _activeEdges.Count - 1; i >= 0; i--)
             {
-                _activeEdges.RemoveAt(i);
                 _edgePool.Release(_activeEdges[i]);
+                _activeEdges.RemoveAt(i);
             }
         }
 

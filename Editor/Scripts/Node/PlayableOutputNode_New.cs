@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.Playables;
 using UnityEngine;
@@ -24,7 +25,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var playableOutputEditorName = playableOutput.GetEditorName();
             title = $"{playableOutputTypeName}\n({playableOutputEditorName})";
 
-            // todo: this.SetNodeStyle(playableOutput.GetPlayableOutputNodeColor());
+            this.SetNodeStyle(playableOutput.GetPlayableOutputNodeColor());
 
             // todo: Update Description
         }
@@ -48,6 +49,16 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
 
         #region Description
+
+        public override string ToString()
+        {
+            if (PlayableOutput.IsOutputValid())
+            {
+                return PlayableOutput.GetPlayableOutputType().Name;
+            }
+
+            return GetType().Name;
+        }
 
         protected override void AppendStateDescriptions(StringBuilder descBuilder)
         {
