@@ -231,16 +231,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         #region Description
 
-        public override string ToString()
-        {
-            if (Playable.IsValid())
-            {
-                return Playable.GetPlayableType().Name;
-            }
-
-            return GetType().Name;
-        }
-
         protected override void AppendStateDescriptions(StringBuilder descBuilder)
         {
             descBuilder.Append("Type: ").AppendLine(PlayableType.Name)

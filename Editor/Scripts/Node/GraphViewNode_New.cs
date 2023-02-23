@@ -14,8 +14,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
     {
         protected GraphViewNode_New()
         {
+            capabilities &= ~Capabilities.Collapsible;
             capabilities &= ~Capabilities.Movable;
             capabilities &= ~Capabilities.Deletable;
+            capabilities &= ~Capabilities.Droppable;
+            capabilities &= ~Capabilities.Renamable;
+            capabilities &= ~Capabilities.Copiable;
 
             // Hide collapse button
             titleButtonContainer.Clear();
@@ -24,7 +28,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         }
 
         // todo: Release referenced assets
-        public virtual void Clean()
+        public virtual void Release()
         {
             Description = null;
 
@@ -189,6 +193,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         {
             return InstantiatePort(Orientation.Horizontal, direction, Port.Capacity.Multi, typeof(TPortData));
         }
+
+        #endregion
+
+
+        #region Pool
+
+        public int PoolKey { get; protected set; } = 0;
 
         #endregion
     }

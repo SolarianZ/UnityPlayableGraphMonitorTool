@@ -11,9 +11,14 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         public void Setup(Playable playable)
         {
             Playable = playable;
+            PoolKey = Playable.IsValid() ? Playable.GetHandle().GetHashCode() : 0;
 
-            SyncPorts();
-            RefreshExpandedState();
+            SyncPorts(out var portChanged);
+            // RefreshExpandedState(); // Expensive
+            // if (portChanged)
+            // {
+            //     RefreshPorts();
+            // }
             RefreshPorts();
 
             // todo: Update Description
@@ -58,6 +63,16 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         #region Description
 
+        public override string ToString()
+        {
+            if (Playable.IsValid())
+            {
+                return Playable.GetPlayableType().Name;
+            }
+
+            return GetType().Name;
+        }
+
         protected override void AppendStateDescriptions(StringBuilder descBuilder)
         {
             descBuilder.Append("Type: ").AppendLine(Playable.GetPlayableType()?.Name ?? "")
@@ -98,8 +113,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             return null;
         }
 
-        private void SyncPorts()
+        private void SyncPorts(out bool portChanged)
         {
+            portChanged = false;
             var isPlayableValid = Playable.IsValid();
 
             // Input ports
@@ -110,6 +126,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 // todo: use port pool
                 inputContainer.Remove(InputPorts[i]);
                 InputPorts.RemoveAt(i);
+                portChanged = true;
             }
 
             var missingInputPortCount = inputCount - InputPorts.Count;
@@ -121,6 +138,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
                 inputContainer.Add(inputPort);
                 InputPorts.Add(inputPort);
+                portChanged = true;
             }
 
             // Output ports
@@ -131,6 +149,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 // todo: use port pool
                 outputContainer.Remove(OutputPorts[i]);
                 OutputPorts.RemoveAt(i);
+                portChanged = true;
             }
 
             var missingOutputPortCount = outputCount - OutputPorts.Count;
@@ -142,6 +161,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
                 outputContainer.Add(outputPort);
                 OutputPorts.Add(outputPort);
+                portChanged = true;
             }
         }
 

@@ -59,7 +59,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
         private void RecycleNode(PlayableOutputNode_New node)
         {
             _container.RemoveElement(node);
-            node.Clean();
+            node.Release();
         }
 
         private void DestroyNode(PlayableOutputNode_New node)

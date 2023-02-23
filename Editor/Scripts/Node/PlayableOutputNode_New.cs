@@ -13,19 +13,24 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         public PlayableOutputNode_New()
         {
             CreatePorts();
-            RefreshExpandedState();
+            // RefreshExpandedState(); // Expensive
             RefreshPorts();
         }
 
         public void Setup(PlayableOutput playableOutput)
         {
-            PlayableOutput = playableOutput;
+            if (PlayableOutput.GetHandle() != playableOutput.GetHandle())
+            {
+                PlayableOutput = playableOutput;
+                PoolKey = PlayableOutput.IsOutputValid() ? PlayableOutput.GetHandle().GetHashCode() : 0;
 
-            var playableOutputTypeName = playableOutput.GetPlayableOutputType().Name;
-            var playableOutputEditorName = playableOutput.GetEditorName();
-            title = $"{playableOutputTypeName}\n({playableOutputEditorName})";
+                // Expensive operations
+                var playableOutputTypeName = playableOutput.GetPlayableOutputType().Name;
+                var playableOutputEditorName = playableOutput.GetEditorName();
+                title = $"{playableOutputTypeName}\n({playableOutputEditorName})";
 
-            this.SetNodeStyle(playableOutput.GetPlayableOutputNodeColor());
+                this.SetNodeStyle(playableOutput.GetPlayableOutputNodeColor());
+            }
 
             // todo: Update Description
         }

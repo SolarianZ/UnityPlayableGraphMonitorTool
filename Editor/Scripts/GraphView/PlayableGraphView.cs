@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using GBG.PlayableGraphMonitor.Editor.Node;
+﻿using GBG.PlayableGraphMonitor.Editor.Node;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using System.Collections.Generic;
 using GBG.PlayableGraphMonitor.Editor.Pool;
@@ -14,6 +13,79 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 {
     public class PlayableGraphView : UGraphView
     {
+        class PlayableNodeBuffer
+        {
+            private readonly UGraphView _graphView;
+
+            private readonly Dictionary<PlayableHandle, PlayableNode_New> _activePlayableNodeTable =
+                new Dictionary<PlayableHandle, PlayableNode_New>();
+
+            private readonly Dictionary<PlayableHandle, PlayableNode_New> _dormantPlayableNodeTable =
+                new Dictionary<PlayableHandle, PlayableNode_New>();
+
+
+            public PlayableNodeBuffer(UGraphView graphView)
+            {
+                _graphView = graphView;
+            }
+
+            public PlayableNode_New GetActiveNode(Playable playable)
+            {
+                return _activePlayableNodeTable[playable.GetHandle()];
+            }
+
+            public IEnumerable<PlayableNode_New> GetActiveNodes()
+            {
+                return _activePlayableNodeTable.Values;
+            }
+
+            public PlayableNode_New Alloc(Playable playable)
+            {
+                var handle = playable.GetHandle();
+                if (_activePlayableNodeTable.TryGetValue(handle, out var node))
+                {
+                    return node;
+                }
+
+                if (!_dormantPlayableNodeTable.Remove(handle, out node))
+                {
+                    node = new PlayableNode_New();
+                    _graphView.AddElement(node);
+                }
+
+                _activePlayableNodeTable.Add(handle, node);
+
+                return node;
+            }
+
+            public void Recycle(PlayableNode_New node)
+            {
+                node.Release();
+                var handle = node.Playable.GetHandle();
+                _activePlayableNodeTable.Remove(handle);
+                _dormantPlayableNodeTable.TryAdd(handle, node);
+            }
+
+            public void RecycleAllActiveNodes()
+            {
+                foreach (var node in _activePlayableNodeTable.Values)
+                {
+                    node.Release();
+                    var handle = node.Playable.GetHandle();
+                    _dormantPlayableNodeTable.Add(handle, node);
+                }
+
+                _activePlayableNodeTable.Clear();
+            }
+
+            public void RemoveDormantNodesFromView()
+            {
+                _graphView.DeleteElements(_dormantPlayableNodeTable.Values);
+                _dormantPlayableNodeTable.Clear();
+            }
+        }
+
+
         private PlayableGraph _playableGraph;
 
         private readonly List<PlayableOutputNode> _rootOutputNodes = new List<PlayableOutputNode>();
@@ -23,28 +95,10 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         private readonly PlayableOutputNodePool _outputNodePool;
 
-        private readonly PlayableNodePool _playableNodePool;
-
         private readonly List<PlayableOutputNode_New> _outputNodeList = new List<PlayableOutputNode_New>();
 
-        private readonly Dictionary<PlayableHandle, PlayableNode_New> _playableNodeTable =
-            new Dictionary<PlayableHandle, PlayableNode_New>();
+        private readonly PlayableNodeBuffer _playableNodeBuffer;
 
-
-        public IEnumerator UpdateIncremental()
-        {
-            RecycleAllNodesAndEdges();
-
-            yield return null;
-
-            // Call these two methods continuously in case PlayableGraph topology changed
-            AllocAndSetupAllNodes();
-            ConnectNodes();
-
-            yield return null;
-
-            CalculateLayout_New();
-        }
 
         public void Update_New(PlayableGraph playableGraph)
         {
@@ -59,16 +113,17 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             AllocAndSetupAllNodes();
             ConnectNodes();
             CalculateLayout_New();
+
+            _playableNodeBuffer.RemoveDormantNodesFromView();
         }
 
         private void RecycleAllNodesAndEdges()
         {
             _edgePool.RecycleAllActiveEdges();
             _outputNodePool.RecycleAllActiveNodes();
-            _playableNodePool.RecycleAllActiveNodes();
+            _playableNodeBuffer.RecycleAllActiveNodes();
 
             _outputNodeList.Clear();
-            _playableNodeTable.Clear();
         }
 
         private void AllocAndSetupAllNodes()
@@ -104,10 +159,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                 return;
             }
 
-            var playableNode = _playableNodePool.Alloc();
             // todo: Playable in timeline may appears more than once
-            _playableNodeTable[rootPlayable.GetHandle()] = playableNode;
-            // _playableNodeTable.Add(rootPlayable.GetHandle(), playableNode);
+            var playableNode = _playableNodeBuffer.Alloc(rootPlayable);
 
             playableNode.Setup(rootPlayable);
 
@@ -131,7 +184,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                         continue;
                     }
 
-                    var inputNode = _playableNodeTable[inputPlayable.GetHandle()];
+                    var inputNode = _playableNodeBuffer.GetActiveNode(inputPlayable);
                     // todo: outputNode.PlayableOutput.GetSourceOutputPort() returns 1 but source playable only has ONE output!
                     // var inputNodeOutputIndex = outputNode.PlayableOutput.GetSourceOutputPort();
                     var inputNodeOutputIndex = 0;
@@ -143,7 +196,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             }
 
             // PlayableNodes
-            foreach (var playableNode in _playableNodeTable.Values)
+            foreach (var playableNode in _playableNodeBuffer.GetActiveNodes())
             {
                 var inputIndex = -1;
                 foreach (var inputPlayable in playableNode.GetInputPlayables())
@@ -154,7 +207,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                         continue;
                     }
 
-                    var inputNode = _playableNodeTable[inputPlayable.GetHandle()];
+                    var inputNode = _playableNodeBuffer.GetActiveNode(inputPlayable);
                     var inputNodeOutputPort = inputNode.FindConnectedOutputPort(playableNode.Playable);
                     var edge = _edgePool.Alloc();
                     edge.input = playableNode.GetInputPort(inputIndex);
@@ -186,8 +239,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             this.AddManipulator(new RectangleSelector());
 
             _edgePool = new EdgePool(this);
-            _outputNodePool = new PlayableOutputNodePool(this);
-            _playableNodePool = new PlayableNodePool(this);
+            _outputNodePool = new(this);
+            _playableNodeBuffer = new PlayableNodeBuffer(this);
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
