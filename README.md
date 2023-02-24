@@ -9,9 +9,10 @@ PlayableGraph monitor tool inspired by [PlayableGraph Visualizer](https://github
 ## Features
 
 - Monitor all valid PlayableGraphs
-- Inspect nodes in the PlayableGraph
+- Inspect node details in PlayableGraph
 - Draggable graph view
 - Zoomable graph view
+- Show extra label on Playable node
 
 ## Supported Unity Version
 
@@ -28,3 +29,5 @@ Install this package via [OpenUPM](https://openupm.com/packages/com.greenbamboog
 Open PlayableGraph Monitor window from **menu** "Window/Analysis/PlayableGraph Monitor"，
 then select a PlayableGraph from the **popup menu** on the top left of the window.
 Select any node in the graph to inspect its details.
+
+Use `PlayableGraphMonitorWindow.Open(IReadOnlyDictionary<PlayableHandle, string>)` or `PlayableGraphMonitorWindow.SetNodeExtraLabelTable(IReadOnlyDictionary<PlayableHandle, string>)` to add extra labels to Playable node.
