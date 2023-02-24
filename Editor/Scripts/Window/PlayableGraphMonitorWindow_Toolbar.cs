@@ -117,8 +117,7 @@ namespace GBG.PlayableGraphMonitor.Editor
         private void ToggleInspector(ChangeEvent<bool> evt)
         {
             var showInspector = evt.newValue;
-            _nodeInspectorPanel.visible = showInspector;
-            _nodeInspectorPanel.style.width = showInspector ? _NODE_INSPECTOR_WIDTH : 0;
+            _nodeInspectorPanel.style.display = showInspector ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
 }
