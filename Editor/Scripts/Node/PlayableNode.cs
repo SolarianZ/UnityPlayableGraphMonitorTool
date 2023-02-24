@@ -118,12 +118,20 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         #region Port
 
-        public Port FindConnectedOutputPort(Playable connectedOutputPlayable)
+        /// <summary>
+        /// Find the output port that is connected to <see cref="outputPlayable"/>.
+        /// </summary>
+        /// <param name="outputPlayable"></param>
+        /// <returns></returns>
+        public Port FindOutputPort(Playable outputPlayable)
         {
+            // If the output of Playable at index i is connected to a PlayableOutput,
+            // Playable.GetOutput(i) will return an invalid Playable.
+
             for (int i = 0; i < Playable.GetOutputCount(); i++)
             {
                 var output = Playable.GetOutput(i);
-                if (output.GetHandle() == connectedOutputPlayable.GetHandle())
+                if (output.GetHandle() == outputPlayable.GetHandle())
                 {
                     return OutputPorts[i];
                 }

@@ -124,7 +124,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                 var childNodeOutputIndex = parentNode.PlayableOutput.GetSourceOutputPort();
                 var childNodeOutputPort = childNode.GetOutputPort(childNodeOutputIndex, true);
                 var edge = _edgePool.Alloc(parentNode.InputPort, childNodeOutputPort);
-                Connect(edge, parentNode.InputPort, childNodeOutputPort, 1);
+                var weight = parentNode.PlayableOutput.GetWeight();
+                Connect(edge, parentNode.InputPort, childNodeOutputPort, weight);
             }
 
             // PlayableNodes
@@ -141,7 +142,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                     }
 
                     var childNode = _playableNodePoolFactory.GetActiveNode(childPlayable);
-                    var childNodeOutputPort = childNode.FindConnectedOutputPort(parentNode.Playable);
+                    var childNodeOutputPort = childNode.FindOutputPort(parentNode.Playable);
                     var parentNodeInputPort = parentNode.GetInputPort(i);
                     var edge = _edgePool.Alloc(parentNodeInputPort, childNodeOutputPort);
                     var weight = parentPlayable.GetInputWeight(i);

@@ -85,7 +85,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
         }
 
 
-        public static int GetEdgeKey(Port inputPort, Port outputPort)
+        private static int GetEdgeKey(Port inputPort, Port outputPort)
         {
             Assert.IsTrue(inputPort == null || inputPort.direction == Direction.Input);
             Assert.IsTrue(outputPort == null || outputPort.direction == Direction.Output);
