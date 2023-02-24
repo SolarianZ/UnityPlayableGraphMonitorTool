@@ -23,9 +23,9 @@ namespace GBG.PlayableGraphMonitor.Editor
             new PlayableGraph() // an invalid graph, for compatible with Unity 2019
         };
 
-        private bool _autoUpdateView;
+        private RefreshRate _refreshRate;
 
-        private bool _updateViewOnce;
+        private long _nextUpdateViewTimeMS;
 
 
         private void OnEnable()
@@ -53,9 +53,10 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void Update()
         {
-            if (_autoUpdateView || _updateViewOnce)
+            var currentTimeMS = GetCurrentEditorTimeMs();
+            if (currentTimeMS >= _nextUpdateViewTimeMS)
             {
-                _updateViewOnce = false;
+                _nextUpdateViewTimeMS = currentTimeMS + (long)_refreshRate;
                 _graphView.Update(_graphPopupField.value);
             }
 
@@ -94,6 +95,12 @@ namespace GBG.PlayableGraphMonitor.Editor
         {
             _graphs.Remove(graph);
             UpdatePlayableGraphPopupField();
+        }
+
+
+        private static long GetCurrentEditorTimeMs()
+        {
+            return (long)(EditorApplication.timeSinceStartup * 1000);
         }
     }
 }

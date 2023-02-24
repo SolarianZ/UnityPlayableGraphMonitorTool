@@ -1,16 +1,39 @@
+using System;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
 
 namespace GBG.PlayableGraphMonitor.Editor
 {
+    public enum RefreshRate
+    {
+        [InspectorName("Max FPS")]
+        Fps_Max = 0,
+
+        [InspectorName("50 FPS")]
+        Fps_50 = 20,
+
+        [InspectorName("20 FPS")]
+        Fps_20 = 50,
+
+        [InspectorName("10 FPS")]
+        Fps_10 = 100,
+
+        [InspectorName("1 FPS")]
+        Fps_1 = 1000,
+
+        [InspectorName("Manual")]
+        Manual = int.MaxValue
+    }
+
     public partial class PlayableGraphMonitorWindow
     {
         private Toolbar _toolbar;
 
         private PopupField<PlayableGraph> _graphPopupField;
 
-        private ToolbarToggle _autoUpdateViewToggle;
+        private EnumField _refreshRateField;
 
         private ToolbarButton _manualUpdateViewButton;
 
@@ -19,7 +42,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void CreateToolbar()
         {
-            _autoUpdateView = true;
+            _refreshRate = RefreshRate.Fps_20;
             _toolbar = new Toolbar();
             rootVisualElement.Add(_toolbar);
 
@@ -40,22 +63,23 @@ namespace GBG.PlayableGraphMonitor.Editor
             _inspectorToggle.RegisterValueChangedCallback(ToggleInspector);
             _toolbar.Add(_inspectorToggle);
 
-            // Auto update toggle
-            _autoUpdateViewToggle = new ToolbarToggle()
+            // Refresh rate popup
+            _refreshRateField = new EnumField(_refreshRate)
             {
-                name = "auto-update-toggle",
-                text = "Auto Update",
-                value = _autoUpdateView,
+                name = "refresh-rate-popup"
             };
-            _autoUpdateViewToggle.RegisterValueChangedCallback(ToggleAutoUpdate);
-            _toolbar.Add(_autoUpdateViewToggle);
+            _refreshRateField.RegisterValueChangedCallback(OnRefreshRateChanged);
+            _toolbar.Add(_refreshRateField);
 
             // Manual update button
             _manualUpdateViewButton = new ToolbarButton(OnManualUpdateButtonClicked)
             {
                 name = "manual-update-button",
                 text = "Update View",
-                style = { display = _autoUpdateView ? DisplayStyle.None : DisplayStyle.Flex }
+                style =
+                {
+                    display = _refreshRate == RefreshRate.Manual ? DisplayStyle.Flex : DisplayStyle.None
+                }
             };
             _toolbar.Add(_manualUpdateViewButton);
 
@@ -95,23 +119,26 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void OnSelectedPlayableGraphChanged(ChangeEvent<PlayableGraph> evt)
         {
-            _updateViewOnce = true;
+            _nextUpdateViewTimeMS = GetCurrentEditorTimeMs();
         }
 
         private void OnManualUpdateButtonClicked()
         {
-            _updateViewOnce = true;
+            _nextUpdateViewTimeMS = GetCurrentEditorTimeMs();
+        }
+
+        private void OnRefreshRateChanged(ChangeEvent<Enum> evt)
+        {
+            _refreshRate = (RefreshRate)evt.newValue;
+            _nextUpdateViewTimeMS = _nextUpdateViewTimeMS - (long)(RefreshRate)evt.previousValue + (long)_refreshRate;
+
+            var displayStyle = _refreshRate == RefreshRate.Manual ? DisplayStyle.Flex : DisplayStyle.None;
+            _manualUpdateViewButton.style.display = displayStyle;
         }
 
         private void OnFrameAllButtonClicked()
         {
             _graphView.FrameAll();
-        }
-
-        private void ToggleAutoUpdate(ChangeEvent<bool> evt)
-        {
-            _autoUpdateView = evt.newValue;
-            _manualUpdateViewButton.style.display = _autoUpdateView ? DisplayStyle.None : DisplayStyle.Flex;
         }
 
         private void ToggleInspector(ChangeEvent<bool> evt)
