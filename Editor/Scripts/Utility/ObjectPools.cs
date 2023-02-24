@@ -8,7 +8,7 @@ namespace UnityEngine.Pool
     /// Generic object pool implementation.
     /// </summary>
     /// <typeparam name="T">Type of the object pool.</typeparam>
-    public class ObjectPool<T> : IDisposable, IObjectPool<T> where T : class
+    public class ObjectPool<T> : IDisposable/*, IObjectPool<T>*/ where T : class
     {
         internal readonly Stack<T> m_Stack;
         readonly Func<T> m_CreateFunc;
@@ -81,12 +81,12 @@ namespace UnityEngine.Pool
             return element;
         }
 
-        /// <summary>
-        /// Get a new <see cref="PooledObject"/> which can be used to return the instance back to the pool when the PooledObject is disposed.
-        /// </summary>
-        /// <param name="v">Output new typed object.</param>
-        /// <returns>New PooledObject</returns>
-        public PooledObject<T> Get(out T v) => new PooledObject<T>(v = Get(), this);
+        // /// <summary>
+        // /// Get a new <see cref="PooledObject"/> which can be used to return the instance back to the pool when the PooledObject is disposed.
+        // /// </summary>
+        // /// <param name="v">Output new typed object.</param>
+        // /// <returns>New PooledObject</returns>
+        // public PooledObject<T> Get(out T v) => new PooledObject<T>(v = Get(), this);
 
         /// <summary>
         /// Release an object to the pool.

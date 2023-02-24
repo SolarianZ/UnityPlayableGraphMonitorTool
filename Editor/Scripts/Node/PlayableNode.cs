@@ -1,31 +1,30 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor.Experimental.GraphView;
-using UnityEngine;
 using UnityEngine.Playables;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
 {
     public class PlayableNode : GraphViewNode
     {
-        public Playable Playable { get; }
-
-        public Type PlayableType => Playable.IsValid() ? Playable.GetPlayableType() : null;
+        public Playable Playable { get; private set; }
 
 
-        public PlayableNode(Playable playable)
+        public void Update(Playable playable)
         {
-            Playable = playable;
+            var playableChanged = false;
+            if (Playable.GetHandle() != playable.GetHandle())
+            {
+                Playable = playable;
+                playableChanged = true;
 
-            PreparePorts();
-            RefreshPorts();
-            RefreshExpandedState();
-        }
+                // Expensive operations
+                var playableTypeName = Playable.GetPlayableType().Name;
+                // var playableHandleTypeName = Playable.GetHandle().GetPlayableType();
+                title = playableTypeName;
 
-        public override void Update()
-        {
-            base.Update();
+                this.SetNodeStyle(playable.GetPlayableNodeColor());
+            }
 
             if (!Playable.IsValid())
             {
@@ -33,222 +32,155 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 return;
             }
 
-            PreparePorts();
-
-            // mark all child nodes inactive
-            for (int i = 0; i < InternalInputs.Count; i++)
-            {
-                InternalInputs[i].Node.RemoveFlag(NodeFlag.Active);
-            }
-
-            // diff child nodes
-            var skipPort = 0;
-            for (int i = 0; i < Playable.GetInputCount(); i++)
-            {
-                // update self port color
-                var inputWeight = Playable.GetInputWeight(i);
-                InternalInputPorts[i].portColor = GraphTool.GetPortColor(inputWeight);
-
-                var inputPlayable = Playable.GetInput(i);
-                if (!inputPlayable.IsValid())
-                {
-                    skipPort++;
-                    continue;
-                }
-
-                // TODO FIXME: A Playable may has multi output ports,
-                // and if all these output ports connected to same input port,
-                // 'i' will be greater than InternalInputs.Count, so there is a skipPort check.
-                var index = i - skipPort;
-                if (index < InternalInputs.Count)
-                {
-                    var childNodeIndex = FindChildPlayableNode(inputPlayable);
-                    if (childNodeIndex >= 0)
-                    {
-                        var input = InternalInputs[index];
-                        input.Node.AddFlag(NodeFlag.Active);
-                        InternalInputs[index] = new NodeInput(input.Edge, input.Node, i);
-                        continue;
-                    }
-                }
-
-                // create new node
-                var inputPlayableNode = PlayableNodeFactory.CreateNode(inputPlayable);
-                inputPlayableNode.AddToView(Container, this);
-                inputPlayableNode.AddFlag(NodeFlag.Active);
-
-                var inputPlayableNodeOutputPort = inputPlayableNode.OutputPorts[0];
-                var selfInputPort = InternalInputPorts[i];
-                var edge = selfInputPort.ConnectTo(inputPlayableNodeOutputPort);
-                Container.AddElement(edge);
-                edge.capabilities &= ~Capabilities.Movable;
-                edge.capabilities &= ~Capabilities.Deletable;
-                edge.capabilities &= ~Capabilities.Selectable;
-                InternalInputs.Add(new NodeInput(edge, inputPlayableNode, i));
-
-                AddFlag(NodeFlag.HierarchyDirty);
-            }
-
-            // check and update children
-            for (int i = InternalInputs.Count - 1; i >= 0; i--)
-            {
-                var input = InternalInputs[i];
-
-                // remove inactive child node
-                if (!input.Node.CheckFlag(NodeFlag.Active))
-                {
-                    Container.RemoveElement(input.Edge);
-                    input.Node.RemoveFromView();
-
-                    InternalInputs.RemoveAt(i);
-
-                    AddFlag(NodeFlag.HierarchyDirty);
-
-                    continue;
-                }
-
-                // update child port color
-                var inputWeight = Playable.GetInputWeight(input.PortIndex);
-                input.Node.OutputPorts[0].portColor = GraphTool.GetPortColor(inputWeight);
-                input.Edge.UpdateEdgeControl();
-
-                InternalInputs[i].Node.Update();
-            }
-        }
-
-
-        protected int FindChildPlayableNode(Playable playable)
-        {
-            for (int i = 0; i < InternalInputs.Count; i++)
-            {
-                if (((PlayableNode)InternalInputs[i].Node).Playable.Equals(playable))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        protected void PreparePorts()
-        {
-            // Input ports
-            var realInputCount = Playable.GetInputCount();
-            var cachedInputCount = InternalInputPorts.Count;
-            var portChanged = realInputCount != cachedInputCount;
-            if (realInputCount < cachedInputCount)
-            {
-                var count = cachedInputCount - realInputCount;
-                for (int i = 0; i < count; i++)
-                {
-                    var index = cachedInputCount - i - 1;
-                    InternalInputPorts.RemoveAt(index);
-                    inputContainer.RemoveAt(index);
-                }
-            }
-            else if (realInputCount > cachedInputCount)
-            {
-                var count = realInputCount - cachedInputCount;
-                for (int i = 0; i < count; i++)
-                {
-                    var index = i + cachedInputCount;
-                    var inputPort = InstantiatePort<Playable>(Direction.Input);
-                    inputPort.portName = $"Input {index}";
-                    inputPort.portColor = GraphTool.GetPortColor(Playable.GetInputWeight(index));
-                    InternalInputPorts.Add(inputPort);
-                    inputContainer.Add(inputPort);
-                }
-            }
-
-            // Output ports
-            var realOutputCount = Playable.GetOutputCount();
-            if (realOutputCount > 1)
-            {
-                Debug.LogError("Playable Graph Monitor doesn't support node with multiple output port.");
-            }
-
-            var cachedOutputCount = InternalOutputPorts.Count;
-            portChanged |= realOutputCount != cachedOutputCount;
-            if (realOutputCount < cachedOutputCount)
-            {
-                var count = cachedOutputCount - realOutputCount;
-                for (int i = 0; i < count; i++)
-                {
-                    var index = cachedOutputCount - i - 1;
-                    InternalOutputPorts.RemoveAt(index);
-                    outputContainer.RemoveAt(index);
-                }
-            }
-            else if (realOutputCount > cachedOutputCount)
-            {
-                var count = realOutputCount - cachedOutputCount;
-                for (int i = 0; i < count; i++)
-                {
-                    var index = i + cachedOutputCount;
-                    var outputPort = InstantiatePort<Playable>(Direction.Output);
-                    outputPort.portName = $"Output {index}";
-                    outputPort.portColor = GraphTool.GetPortColor(1);
-                    InternalOutputPorts.Add(outputPort);
-                    outputContainer.Add(outputPort);
-                }
-            }
-
+            SyncPorts(out var portChanged);
+            // RefreshExpandedState(); // Expensive
             if (portChanged)
             {
                 RefreshPorts();
             }
+
+            OnUpdate(playableChanged);
         }
 
-
-        // ReSharper disable once UnusedMember.Local
-        [Obsolete]
-        private void CreatePorts()
+        protected virtual void OnUpdate(bool playableChanged)
         {
-            if (!Playable.IsValid())
-            {
-                return;
-            }
-
-            for (int i = 0; i < Playable.GetInputCount(); i++)
-            {
-                var inputPort = InstantiatePort<Playable>(Direction.Input);
-                inputPort.portName = $"Input {i}";
-                inputPort.portColor = GraphTool.GetPortColor(Playable.GetInputWeight(i));
-                inputContainer.Add(inputPort);
-                InternalInputPorts.Add(inputPort);
-            }
-
-            for (int i = 0; i < Playable.GetOutputCount(); i++)
-            {
-                var outputPort = InstantiatePort<Playable>(Direction.Output);
-                outputPort.portName = $"Output {i}";
-                outputPort.portColor = GraphTool.GetPortColor(1);
-                outputContainer.Add(outputPort);
-                InternalOutputPorts.Add(outputPort);
-            }
         }
 
 
         #region Description
 
-        protected override void AppendStateDescriptions(StringBuilder descBuilder)
+        // For debugging
+        public override string ToString()
         {
-            descBuilder.Append("Type: ").AppendLine(PlayableType.Name)
-                .Append("IsValid: ").AppendLine(Playable.IsValid().ToString());
             if (Playable.IsValid())
             {
-                descBuilder.Append("IsDone: ").AppendLine(Playable.IsDone().ToString())
-                    .Append("PlayState: ").AppendLine(Playable.GetPlayState().ToString())
-                    .Append("Speed: ").Append(Playable.GetSpeed().ToString("F3")).AppendLine("x")
-                    .Append("Duration: ").Append(Playable.DurationToString()).AppendLine("(s)")
-                    .Append("Time: ").Append(Playable.GetTime().ToString("F3")).AppendLine("(s)");
-                for (int i = 0; i < Playable.GetInputCount(); i++)
-                {
-                    descBuilder.Append("#").Append(i.ToString()).Append(" InputWeight: ")
-                        .AppendLine(Playable.GetInputWeight(i).ToString("F3"));
-                }
+                return Playable.GetPlayableType().Name;
+            }
 
-                descBuilder.Append("OutputCount: ").AppendLine(Playable.GetOutputCount().ToString());
+            return GetType().Name;
+        }
+
+        protected override void AppendNodeDescription(StringBuilder descBuilder)
+        {
+            if (!Playable.IsValid())
+            {
+                descBuilder.AppendLine("Invalid Playable");
+                return;
+            }
+
+            AppendPlayableTypeDescription(descBuilder);
+            descBuilder.AppendLine(LINE)
+                .AppendLine("IsValid: True")
+                .Append("IsNull: ").AppendLine(Playable.IsNull().ToString())
+                .Append("IsDone: ").AppendLine(Playable.IsDone().ToString())
+                .Append("PlayState: ").AppendLine(Playable.GetPlayState().ToString())
+                .Append("Duration: ").Append(Playable.DurationToString()).AppendLine("(s)")
+                .Append("Time: ").Append(Playable.GetTime().ToString("F3")).AppendLine("(s)")
+                .Append("Speed: ").Append(Playable.GetSpeed().ToString("F3")).AppendLine("x");
+
+            // Inputs
+            descBuilder.AppendLine(LINE);
+            var inputCount = Playable.GetInputCount();
+            descBuilder.AppendLine(
+                inputCount == 0
+                    ? "No Input"
+                    : (inputCount == 1 ? "1 Input:" : $"{inputCount} Inputs:")
+            );
+            AppendInputPortDescription(descBuilder);
+
+            // Outputs
+            descBuilder.AppendLine(LINE);
+            var playableOutputCount = Playable.GetOutputCount();
+            descBuilder.AppendLine(
+                playableOutputCount == 0
+                    ? "No Output"
+                    : (playableOutputCount == 1 ? "1 Output" : $"{playableOutputCount} Outputs")
+            );
+        }
+
+        protected virtual void AppendPlayableTypeDescription(StringBuilder descBuilder)
+        {
+            descBuilder.Append("Type: ").AppendLine(Playable.GetPlayableType()?.Name ?? "");
+        }
+
+        protected virtual void AppendInputPortDescription(StringBuilder descBuilder)
+        {
+            var playableInputCount = Playable.GetInputCount();
+            for (int i = 0; i < playableInputCount; i++)
+            {
+                descBuilder.Append("    #").Append(i.ToString()).Append(" Weight: ")
+                    .AppendLine(Playable.GetInputWeight(i).ToString("F3"));
+            }
+        }
+
+        #endregion
+
+
+        #region Port
+
+        public Port FindConnectedOutputPort(Playable connectedOutputPlayable)
+        {
+            for (int i = 0; i < Playable.GetOutputCount(); i++)
+            {
+                var output = Playable.GetOutput(i);
+                if (output.GetHandle() == connectedOutputPlayable.GetHandle())
+                {
+                    return OutputPorts[i];
+                }
+            }
+
+            return null;
+        }
+
+        private void SyncPorts(out bool portChanged)
+        {
+            portChanged = false;
+            var isPlayableValid = Playable.IsValid();
+
+            // Input ports
+            var inputCount = isPlayableValid ? Playable.GetInputCount() : 0;
+            var redundantInputPortCount = InputPorts.Count - inputCount;
+            for (int i = 0; i < redundantInputPortCount; i++)
+            {
+                // Port won't change frequently, so there's no PortPool
+                inputContainer.Remove(InputPorts[i]);
+                InputPorts.RemoveAt(i);
+                portChanged = true;
+            }
+
+            var missingInputPortCount = inputCount - InputPorts.Count;
+            for (int i = 0; i < missingInputPortCount; i++)
+            {
+                var inputPort = InstantiatePort<Playable>(Direction.Input);
+                inputPort.portName = $"Input {InputPorts.Count}";
+                inputPort.portColor = GraphTool.GetPortColor(Playable.GetInputWeight(i));
+
+                inputContainer.Add(inputPort);
+                InputPorts.Add(inputPort);
+                portChanged = true;
+            }
+
+            // Output ports
+            var outputCount = isPlayableValid ? Playable.GetOutputCount() : 0;
+            var redundantOutputPortCount = OutputPorts.Count - outputCount;
+            for (int i = 0; i < redundantOutputPortCount; i++)
+            {
+                // Port won't change frequently, so there's no PortPool
+                outputContainer.Remove(OutputPorts[i]);
+                OutputPorts.RemoveAt(i);
+                portChanged = true;
+            }
+
+            var missingOutputPortCount = outputCount - OutputPorts.Count;
+            for (int i = 0; i < missingOutputPortCount; i++)
+            {
+                var outputPort = InstantiatePort<Playable>(Direction.Output);
+                outputPort.portName = $"Output {OutputPorts.Count}";
+                outputPort.portColor = GraphTool.GetPortColor(1);
+
+                outputContainer.Add(outputPort);
+                OutputPorts.Add(outputPort);
+                portChanged = true;
             }
         }
 

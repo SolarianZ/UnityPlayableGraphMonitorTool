@@ -1,70 +1,115 @@
 ﻿using System.Collections.Generic;
 using GBG.PlayableGraphMonitor.Editor.Node;
-using UnityEngine.Pool;
+using UnityEngine.Playables;
 using UGraphView = UnityEditor.Experimental.GraphView.GraphView;
 
 namespace GBG.PlayableGraphMonitor.Editor.Pool
 {
-    public class PlayableNodePool
+    public class PlayableNodePool<T> : IPlayableNodePool where T : PlayableNode, new()
     {
-        private readonly UGraphView _container;
+        private readonly UGraphView _graphView;
 
-        private readonly ObjectPool<PlayableNode_New> _nodePool;
+        private readonly Dictionary<PlayableHandle, T> _activePlayableNodeTable =
+            new Dictionary<PlayableHandle, T>();
 
-        private readonly List<PlayableNode_New> _activeNodes = new List<PlayableNode_New>();
+        private readonly Dictionary<PlayableHandle, T> _dormantPlayableNodeTable =
+            new Dictionary<PlayableHandle, T>();
 
 
-        public PlayableNodePool(UGraphView container)
+        public PlayableNodePool(UGraphView graphView)
         {
-            _container = container;
-            _nodePool = new ObjectPool<PlayableNode_New>(
-                CreateNode, ActiveNode, RecycleNode, DestroyNode
-            );
+            _graphView = graphView;
         }
 
-        public PlayableNode_New Alloc()
+        public T GetActiveNode(Playable playable)
         {
-            var node = _nodePool.Get();
-            _activeNodes.Add(node);
+            return _activePlayableNodeTable[playable.GetHandle()];
+        }
+
+        public IEnumerable<T> GetActiveNodes()
+        {
+            return _activePlayableNodeTable.Values;
+        }
+
+        public T Alloc(Playable playable)
+        {
+            var handle = playable.GetHandle();
+            if (_activePlayableNodeTable.TryGetValue(handle, out var node))
+            {
+                return node;
+            }
+
+            // if (!_dormantPlayableNodeTable.Remove(handle, out node)) // Unavailable in Unity 2019
+            // {
+            //     node = new PlayableNode_New();
+            //     _graphView.AddElement(node);
+            // }
+            if (_dormantPlayableNodeTable.TryGetValue(handle, out node))
+            {
+                _dormantPlayableNodeTable.Remove(handle);
+            }
+            else
+            {
+                node = new T();
+                _graphView.AddElement(node);
+            }
+
+            _activePlayableNodeTable.Add(handle, node);
 
             return node;
         }
 
-        public void Recycle(PlayableNode_New node)
+        public void Recycle(T node)
         {
-            _activeNodes.Remove(node);
-            _nodePool.Release(node);
+            node.Release();
+            var handle = node.Playable.GetHandle();
+            _activePlayableNodeTable.Remove(handle);
+
+            // _dormantPlayableNodeTable.TryAdd(handle, node); // Unavailable in Unity 2019
+            _dormantPlayableNodeTable[handle] = node;
         }
 
         public void RecycleAllActiveNodes()
         {
-            for (int i = _activeNodes.Count - 1; i >= 0; i--)
+            foreach (var node in _activePlayableNodeTable.Values)
             {
-                _nodePool.Release(_activeNodes[i]);
-                _activeNodes.RemoveAt(i);
+                node.Release();
+                var handle = node.Playable.GetHandle();
+                _dormantPlayableNodeTable.Add(handle, node);
             }
+
+            _activePlayableNodeTable.Clear();
         }
 
-
-        // todo: Create concrete node by Playable type
-        private PlayableNode_New CreateNode()
+        public void RemoveDormantNodesFromView()
         {
-            return new PlayableNode_New();
+            _graphView.DeleteElements(_dormantPlayableNodeTable.Values);
+            _dormantPlayableNodeTable.Clear();
         }
 
-        private void ActiveNode(PlayableNode_New node)
+
+        #region Interface
+
+        PlayableNode IPlayableNodePool.GetActiveNode(Playable playable)
         {
-            _container.AddElement(node);
+            return GetActiveNode(playable);
         }
 
-        private void RecycleNode(PlayableNode_New node)
+        IEnumerable<PlayableNode> IPlayableNodePool.GetActiveNodes()
         {
-            _container.RemoveElement(node);
-            node.Release();
+            return GetActiveNodes();
         }
 
-        private void DestroyNode(PlayableNode_New node)
+        PlayableNode IPlayableNodePool.Alloc(Playable playable)
         {
+            return Alloc(playable);
         }
+
+        void IPlayableNodePool.Recycle(PlayableNode node)
+        {
+            Recycle((T)node);
+        }
+
+        #endregion
     }
 }

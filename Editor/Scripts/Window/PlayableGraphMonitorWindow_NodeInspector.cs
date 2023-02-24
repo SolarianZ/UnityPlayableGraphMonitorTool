@@ -39,7 +39,8 @@ namespace GBG.PlayableGraphMonitor.Editor
                 name = "node-desc-label",
                 style =
                 {
-                    color = GraphTool.GetNodeInspectorTextColor()
+                    color = GraphTool.GetNodeInspectorTextColor(),
+                    whiteSpace = WhiteSpace.Normal
                 }
             };
             scrollView.Add(_nodeDescriptionLabel);
@@ -58,7 +59,7 @@ namespace GBG.PlayableGraphMonitor.Editor
             if (_graphView.selection.Count == 1 &&
                 _graphView.selection[0] is GraphViewNode node)
             {
-                _nodeDescriptionLabel.text = node.GetStateDescription();
+                _nodeDescriptionLabel.text = node.GetNodeDescription();
                 return;
             }
 

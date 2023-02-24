@@ -6,25 +6,15 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 {
     public class AnimationLayerMixerPlayableNode : PlayableNode
     {
-        public AnimationLayerMixerPlayableNode(Playable playable) : base(playable)
+        protected override void AppendInputPortDescription(StringBuilder descBuilder)
         {
-        }
-
-
-        protected override void AppendStateDescriptions(StringBuilder descBuilder)
-        {
-            base.AppendStateDescriptions(descBuilder);
-
-            if (Playable.IsValid())
+            var layerMixer = (AnimationLayerMixerPlayable)Playable;
+            var inputCount = layerMixer.GetInputCount();
+            for (int i = 0; i < inputCount; i++)
             {
-                descBuilder.AppendLine();
-
-                var layerMixer = (AnimationLayerMixerPlayable)Playable;
-                for (uint i = 0; i < layerMixer.GetInputCount(); i++)
-                {
-                    descBuilder.Append("#").Append(i.ToString()).Append(" IsLayerAdditive: ")
-                        .AppendLine(layerMixer.IsLayerAdditive(i).ToString());
-                }
+                descBuilder.Append("    #").Append(i.ToString())
+                    .Append(" Weight: ").Append(Playable.GetInputWeight(i).ToString("F3"))
+                    .Append(" Additive: ").AppendLine(layerMixer.IsLayerAdditive((uint)i).ToString());
             }
         }
     }

@@ -14,22 +14,17 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         private readonly ProgressBar _progressBar;
 
 
-        public AudioClipPlayableNode(Playable playable) : base(playable)
+        public AudioClipPlayableNode()
         {
-            title = Playable.GetPlayableType().Name;
-            var titleLabel = titleContainer.Q<Label>(name: "title-label");
-            titleLabel.style.maxWidth = 220;
-
             var banner = mainContainer.Q("divider");
             banner.style.height = StyleKeyword.Auto;
 
             _progressBar = new ProgressBar();
             banner.Add(_progressBar);
 
-            _clipField = new ObjectField()
+            _clipField = new ObjectField
             {
                 objectType = typeof(AudioClip),
-                value = ((AudioClipPlayable)Playable).GetClip(),
             };
             // clipField.SetEnabled(false);
             var clipFieldSelector = _clipField.Q(className: "unity-object-field__selector");
@@ -37,40 +32,64 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             banner.Add(_clipField);
         }
 
-        public override void Update()
+        protected override void OnUpdate(bool playableChanged)
         {
-            if (Playable.IsValid())
-            {
-                var clipPlayable = (AudioClipPlayable)Playable;
-                var clip = clipPlayable.GetClip();
-                _clipField.SetValueWithoutNotify(clip);
+            base.OnUpdate(playableChanged);
 
-                var duration = clip ? clip.length : float.PositiveInfinity;
-                var progress = (float)(Playable.GetTime() / duration) % 1.0f * 100;
-                _progressBar.SetValueWithoutNotify(progress);
-                _progressBar.MarkDirtyRepaint();
+            if (!Playable.IsValid())
+            {
+                return;
             }
 
-            base.Update();
+            // TODO OPTIMIZABLE: Expensive operations
+
+            var clipPlayable = (AudioClipPlayable)Playable;
+            var clip = clipPlayable.GetClip();
+            _clipField.SetValueWithoutNotify(clip);
+
+            var duration = clip ? clip.length : float.PositiveInfinity;
+            var progress = (float)(Playable.GetTime() / duration) % 1.0f * 100;
+            _progressBar.SetValueWithoutNotify(progress);
+            _progressBar.MarkDirtyRepaint();
+        }
+
+        public override void Release()
+        {
+            base.Release();
+
+            _clipField.SetValueWithoutNotify(null);
         }
 
 
-        protected override void AppendStateDescriptions(StringBuilder descBuilder)
+        protected override void AppendNodeDescription(StringBuilder descBuilder)
         {
-            base.AppendStateDescriptions(descBuilder);
+            base.AppendNodeDescription(descBuilder);
 
-            if (Playable.IsValid())
+            if (!Playable.IsValid())
             {
-                var clipPlayable = (AudioClipPlayable)Playable;
-                descBuilder.Append("Looped: ").AppendLine(clipPlayable.GetLooped().ToString());
-
-                var clip = clipPlayable.GetClip();
-                descBuilder.Append("Clip: ").AppendLine(clip ? clip.name : "None");
-                if (clip)
-                {
-                    descBuilder.Append("Length: ").Append(clip.length.ToString("F3")).AppendLine("(s)");
-                }
+                return;
             }
+
+            var clipPlayable = (AudioClipPlayable)Playable;
+            descBuilder.AppendLine(LINE);
+            var clip = clipPlayable.GetClip();
+            if (!clip)
+            {
+                descBuilder.AppendLine("Clip: None");
+                return;
+            }
+
+            descBuilder.Append("Clip: ").AppendLine(clip.name)
+                .Append("Length: ").Append(clip.length.ToString("F3")).AppendLine("(s)")
+                .Append("Looped: ").AppendLine(clipPlayable.GetLooped().ToString())
+                .Append("Channels: ").AppendLine(clip.channels.ToString())
+                .Append("Ambisonic: ").AppendLine(clip.ambisonic.ToString())
+                .Append("Frequency: ").AppendLine(clip.frequency.ToString())
+                .Append("Samples: ").AppendLine(clip.samples.ToString())
+                .Append("LoadState: ").AppendLine(clip.loadState.ToString())
+                .Append("LoadType: ").AppendLine(clip.loadType.ToString())
+                .Append("LoadInBackground: ").AppendLine(clip.loadInBackground.ToString())
+                .Append("PreloadAudioData: ").AppendLine(clip.preloadAudioData.ToString());
         }
     }
 }

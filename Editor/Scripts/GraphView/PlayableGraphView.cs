@@ -1,9 +1,10 @@
-﻿using GBG.PlayableGraphMonitor.Editor.Node;
-using GBG.PlayableGraphMonitor.Editor.Utility;
-using System.Collections.Generic;
+﻿using System;
+using GBG.PlayableGraphMonitor.Editor.Node;
 using GBG.PlayableGraphMonitor.Editor.Pool;
+using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
 using UGraphView = UnityEditor.Experimental.GraphView.GraphView;
@@ -13,117 +14,58 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 {
     public class PlayableGraphView : UGraphView
     {
-        class PlayableNodeBuffer
-        {
-            private readonly UGraphView _graphView;
-
-            private readonly Dictionary<PlayableHandle, PlayableNode_New> _activePlayableNodeTable =
-                new Dictionary<PlayableHandle, PlayableNode_New>();
-
-            private readonly Dictionary<PlayableHandle, PlayableNode_New> _dormantPlayableNodeTable =
-                new Dictionary<PlayableHandle, PlayableNode_New>();
-
-
-            public PlayableNodeBuffer(UGraphView graphView)
-            {
-                _graphView = graphView;
-            }
-
-            public PlayableNode_New GetActiveNode(Playable playable)
-            {
-                return _activePlayableNodeTable[playable.GetHandle()];
-            }
-
-            public IEnumerable<PlayableNode_New> GetActiveNodes()
-            {
-                return _activePlayableNodeTable.Values;
-            }
-
-            public PlayableNode_New Alloc(Playable playable)
-            {
-                var handle = playable.GetHandle();
-                if (_activePlayableNodeTable.TryGetValue(handle, out var node))
-                {
-                    return node;
-                }
-
-                if (!_dormantPlayableNodeTable.Remove(handle, out node))
-                {
-                    node = new PlayableNode_New();
-                    _graphView.AddElement(node);
-                }
-
-                _activePlayableNodeTable.Add(handle, node);
-
-                return node;
-            }
-
-            public void Recycle(PlayableNode_New node)
-            {
-                node.Release();
-                var handle = node.Playable.GetHandle();
-                _activePlayableNodeTable.Remove(handle);
-                _dormantPlayableNodeTable.TryAdd(handle, node);
-            }
-
-            public void RecycleAllActiveNodes()
-            {
-                foreach (var node in _activePlayableNodeTable.Values)
-                {
-                    node.Release();
-                    var handle = node.Playable.GetHandle();
-                    _dormantPlayableNodeTable.Add(handle, node);
-                }
-
-                _activePlayableNodeTable.Clear();
-            }
-
-            public void RemoveDormantNodesFromView()
-            {
-                _graphView.DeleteElements(_dormantPlayableNodeTable.Values);
-                _dormantPlayableNodeTable.Clear();
-            }
-        }
-
-
         private PlayableGraph _playableGraph;
-
-        private readonly List<PlayableOutputNode> _rootOutputNodes = new List<PlayableOutputNode>();
-
 
         private readonly EdgePool _edgePool;
 
         private readonly PlayableOutputNodePool _outputNodePool;
 
-        private readonly List<PlayableOutputNode_New> _outputNodeList = new List<PlayableOutputNode_New>();
+        private readonly PlayableNodePoolFactory _playableNodePoolFactory;
 
-        private readonly PlayableNodeBuffer _playableNodeBuffer;
+        private readonly Action _frameAllAction;
+
+        private bool _isViewFocused;
 
 
-        public void Update_New(PlayableGraph playableGraph)
+        public PlayableGraphView()
         {
-            RecycleAllNodesAndEdges();
+            SetupZoom(0.1f, ContentZoomer.DefaultMaxScale);
+            this.AddManipulator(new ContentDragger());
+            //this.AddManipulator(new SelectionDragger());
+            this.AddManipulator(new RectangleSelector());
 
+            _edgePool = new EdgePool(this);
+            _outputNodePool = new PlayableOutputNodePool(this);
+            _playableNodePoolFactory = new PlayableNodePoolFactory(this);
+            _frameAllAction = () => FrameAll();
+
+            RegisterCallback<PointerEnterEvent>(OnPointerEnter);
+            RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
+        }
+
+        public void Update(PlayableGraph playableGraph)
+        {
+            var newPlayableGraph = !GraphTool.IsEqual(ref _playableGraph, ref playableGraph);
             _playableGraph = playableGraph;
-            if (!_playableGraph.IsValid())
-            {
-                return;
-            }
 
+            RecycleAllNodesAndEdges();
             AllocAndSetupAllNodes();
             ConnectNodes();
-            CalculateLayout_New();
+            CalculateLayout();
+            UpdateActiveEdges();
+            RemoveUnusedElementsFromView();
 
-            _playableNodeBuffer.RemoveDormantNodesFromView();
+            if (newPlayableGraph)
+            {
+                schedule.Execute(_frameAllAction);
+            }
         }
 
         private void RecycleAllNodesAndEdges()
         {
             _edgePool.RecycleAllActiveEdges();
             _outputNodePool.RecycleAllActiveNodes();
-            _playableNodeBuffer.RecycleAllActiveNodes();
-
-            _outputNodeList.Clear();
+            _playableNodePoolFactory.RecycleAllActiveNodes();
         }
 
         private void AllocAndSetupAllNodes()
@@ -137,10 +79,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             for (int i = 0; i < _playableGraph.GetOutputCount(); i++)
             {
                 var playableOutput = _playableGraph.GetOutput(i);
-                var outputNode = _outputNodePool.Alloc();
-                _outputNodeList.Add(outputNode);
-
-                outputNode.Setup(playableOutput);
+                var outputNode = _outputNodePool.Alloc(playableOutput);
+                outputNode.Update(playableOutput);
             }
 
             // PlayableNodes
@@ -159,10 +99,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                 return;
             }
 
-            // todo: Playable in timeline may appears more than once
-            var playableNode = _playableNodeBuffer.Alloc(rootPlayable);
-
-            playableNode.Setup(rootPlayable);
+            var playableNode = _playableNodePoolFactory.Alloc(rootPlayable);
+            playableNode.Update(rootPlayable);
 
             for (int i = 0; i < rootPlayable.GetInputCount(); i++)
             {
@@ -174,54 +112,73 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         private void ConnectNodes()
         {
             // PlayableOutputNodes
-            for (int i = 0; i < _outputNodeList.Count; i++)
+            foreach (var parentNode in _outputNodePool.GetActiveNodes())
             {
-                var outputNode = _outputNodeList[i];
-                foreach (var inputPlayable in outputNode.GetInputPlayables())
+                var childPlayable = parentNode.PlayableOutput.GetSourcePlayable();
+                if (!childPlayable.IsValid())
                 {
-                    if (!inputPlayable.IsValid())
-                    {
-                        continue;
-                    }
-
-                    var inputNode = _playableNodeBuffer.GetActiveNode(inputPlayable);
-                    // todo: outputNode.PlayableOutput.GetSourceOutputPort() returns 1 but source playable only has ONE output!
-                    // var inputNodeOutputIndex = outputNode.PlayableOutput.GetSourceOutputPort();
-                    var inputNodeOutputIndex = 0;
-                    var inputNodeOutputPort = inputNode.GetOutputPort(inputNodeOutputIndex);
-                    var edge = _edgePool.Alloc();
-                    edge.input = outputNode.InputPort;
-                    edge.output = inputNodeOutputPort;
+                    continue;
                 }
+
+                var childNode = _playableNodePoolFactory.GetActiveNode(childPlayable);
+                var childNodeOutputIndex = parentNode.PlayableOutput.GetSourceOutputPort();
+                var childNodeOutputPort = childNode.GetOutputPort(childNodeOutputIndex, true);
+                var edge = _edgePool.Alloc(parentNode.InputPort, childNodeOutputPort);
+                Connect(edge, parentNode.InputPort, childNodeOutputPort, 1);
             }
 
             // PlayableNodes
-            foreach (var playableNode in _playableNodeBuffer.GetActiveNodes())
+            foreach (var parentNode in _playableNodePoolFactory.GetActiveNodes())
             {
-                var inputIndex = -1;
-                foreach (var inputPlayable in playableNode.GetInputPlayables())
+                var parentPlayable = parentNode.Playable;
+                var inputCount = parentPlayable.GetInputCount();
+                for (int i = 0; i < inputCount; i++)
                 {
-                    inputIndex++;
-                    if (!inputPlayable.IsValid())
+                    var childPlayable = parentPlayable.GetInput(i);
+                    if (!childPlayable.IsValid())
                     {
                         continue;
                     }
 
-                    var inputNode = _playableNodeBuffer.GetActiveNode(inputPlayable);
-                    var inputNodeOutputPort = inputNode.FindConnectedOutputPort(playableNode.Playable);
-                    var edge = _edgePool.Alloc();
-                    edge.input = playableNode.GetInputPort(inputIndex);
-                    edge.output = inputNodeOutputPort;
+                    var childNode = _playableNodePoolFactory.GetActiveNode(childPlayable);
+                    var childNodeOutputPort = childNode.FindConnectedOutputPort(parentNode.Playable);
+                    var parentNodeInputPort = parentNode.GetInputPort(i);
+                    var edge = _edgePool.Alloc(parentNodeInputPort, childNodeOutputPort);
+                    var weight = parentPlayable.GetInputWeight(i);
+                    Connect(edge, parentNodeInputPort, childNodeOutputPort, weight);
                 }
             }
         }
 
-        private void CalculateLayout_New()
+        private static void Connect(UEdge edge, Port inputPort, Port outputPort, float weight)
+        {
+            Assert.IsTrue(outputPort.direction == Direction.Output);
+            Assert.IsTrue(inputPort.direction == Direction.Input);
+
+            var portColor = GraphTool.GetPortColor(weight);
+            inputPort.portColor = portColor;
+            outputPort.portColor = portColor;
+
+            if (edge.input != inputPort)
+            {
+                edge.input?.Disconnect(edge);
+                edge.input = inputPort;
+                inputPort.Connect(edge);
+            }
+
+            if (edge.output != outputPort)
+            {
+                edge.output?.Disconnect(edge);
+                edge.output = outputPort;
+                outputPort.Connect(edge);
+            }
+        }
+
+        private void CalculateLayout()
         {
             var origin = Vector2.zero;
-            for (int i = 0; i < _outputNodeList.Count; i++)
+            foreach (var outputNode in _outputNodePool.GetActiveNodes())
             {
-                var outputNode = _outputNodeList[i];
                 var treeSize = outputNode.GetHierarchySize();
 
                 outputNode.CalculateLayout(origin);
@@ -230,18 +187,27 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             }
         }
 
-
-        public PlayableGraphView()
+        private void UpdateActiveEdges()
         {
-            SetupZoom(0.1f, ContentZoomer.DefaultMaxScale);
-            this.AddManipulator(new ContentDragger());
-            //this.AddManipulator(new SelectionDragger());
-            this.AddManipulator(new RectangleSelector());
+            if (_isViewFocused)
+            {
+                return;
+            }
 
-            _edgePool = new EdgePool(this);
-            _outputNodePool = new(this);
-            _playableNodeBuffer = new PlayableNodeBuffer(this);
+            foreach (var edge in _edgePool.GetActiveEdges())
+            {
+                // TODO OPTIMIZABLE: Expensive operations
+                edge.UpdateEdgeControl();
+            }
         }
+
+        private void RemoveUnusedElementsFromView()
+        {
+            _edgePool.RemoveDormantEdgesFromView();
+            _outputNodePool.RemoveDormantNodesFromView();
+            _playableNodePoolFactory.RemoveDormantNodesFromView();
+        }
+
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
@@ -249,112 +215,14 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         }
 
 
-        // --------------- OLD ----------------------
-
-        public void Update(PlayableGraph playableGraph)
+        private void OnPointerEnter(PointerEnterEvent evt)
         {
-            var needFrameAll = !GraphTool.IsEqual(ref _playableGraph, ref playableGraph);
-
-            _playableGraph = playableGraph;
-
-            if (!_playableGraph.IsValid())
-            {
-                ClearView();
-            }
-
-            UpdateView();
-
-            CalculateLayout();
-
-            if (needFrameAll)
-            {
-                schedule.Execute(() => FrameAll());
-            }
+            _isViewFocused = true;
         }
 
-        private void ClearView()
+        private void OnPointerLeave(PointerLeaveEvent evt)
         {
-            foreach (var playableOutputNode in _rootOutputNodes)
-            {
-                playableOutputNode.RemoveFromView();
-            }
-
-            _rootOutputNodes.Clear();
-        }
-
-        private void UpdateView()
-        {
-            if (!_playableGraph.IsValid())
-            {
-                return;
-            }
-
-            // mark all root nodes inactive
-            for (int i = 0; i < _rootOutputNodes.Count; i++)
-            {
-                _rootOutputNodes[i].RemoveFlag(NodeFlag.Active);
-            }
-
-            // diff nodes
-            for (int i = 0; i < _playableGraph.GetOutputCount(); i++)
-            {
-                var playableOutput = _playableGraph.GetOutput(i);
-                var rootOutputNodeIndex = FindRootOutputNodeIndex(playableOutput);
-                if (rootOutputNodeIndex >= 0)
-                {
-                    _rootOutputNodes[i].AddFlag(NodeFlag.Active);
-                    continue;
-                }
-
-                // create new node
-                var playableOutputNode = PlayableOutputNodeFactory.CreateNode(playableOutput);
-                playableOutputNode.AddToView(this, null);
-                playableOutputNode.AddFlag(NodeFlag.Active);
-
-                _rootOutputNodes.Add(playableOutputNode);
-            }
-
-            // check and update nodes
-            for (int i = _rootOutputNodes.Count - 1; i >= 0; i--)
-            {
-                var rootOutputNode = _rootOutputNodes[i];
-                if (!rootOutputNode.CheckFlag(NodeFlag.Active))
-                {
-                    rootOutputNode.RemoveFromView();
-
-                    _rootOutputNodes.RemoveAt(i);
-                    continue;
-                }
-
-                rootOutputNode.Update();
-            }
-        }
-
-        private int FindRootOutputNodeIndex(PlayableOutput playableOutput)
-        {
-            for (int i = 0; i < _rootOutputNodes.Count; i++)
-            {
-                if (_rootOutputNodes[i].PlayableOutput.Equals(playableOutput))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        private void CalculateLayout()
-        {
-            var origin = Vector2.zero;
-            for (int i = 0; i < _rootOutputNodes.Count; i++)
-            {
-                var outputNode = _rootOutputNodes[i];
-                var treeSize = outputNode.GetHierarchySize();
-
-                outputNode.CalculateLayout(origin);
-
-                origin.y += treeSize.y + GraphViewNode.VERTICAL_SPACE;
-            }
+            _isViewFocused = false;
         }
     }
 }

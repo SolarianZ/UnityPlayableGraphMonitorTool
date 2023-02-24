@@ -13,7 +13,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
 {
     public static class GraphTool
     {
-        // todo: try to use PlayableGraph.m_Handle
         public static bool IsEqual(ref PlayableGraph a, ref PlayableGraph b)
         {
             if (!a.IsValid())
@@ -30,6 +29,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
             var nameB = b.GetEditorName();
 
             return nameA.Equals(nameB);
+
+            // Try to use PlayableGraph.m_Handle and PlayableGraph.m_Version
         }
 
         public static string DurationToString(this Playable playable, string format = "F3")
@@ -41,17 +42,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
         }
 
         public static void SetNodeStyle(this GraphViewNode node, Color nodeColor,
-            float titleFontSize = 15, Color? titleColor = null)
-        {
-            // title
-            var titleLabel = node.Q("title-label");
-            titleLabel.style.fontSize = titleFontSize;
-            titleLabel.style.color = titleColor ?? Color.black;
-            var titlePanel = node.Q("title");
-            titlePanel.style.backgroundColor = nodeColor;
-        }
-        
-        public static void SetNodeStyle(this GraphViewNode_New node, Color nodeColor,
             float titleFontSize = 15, Color? titleColor = null)
         {
             // title

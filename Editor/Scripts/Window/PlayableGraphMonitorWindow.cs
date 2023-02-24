@@ -1,5 +1,5 @@
-using GBG.PlayableGraphMonitor.Editor.Utility;
 using System.Collections.Generic;
+using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
@@ -22,6 +22,10 @@ namespace GBG.PlayableGraphMonitor.Editor
         {
             new PlayableGraph() // an invalid graph, for compatible with Unity 2019
         };
+
+        private bool _autoUpdateView;
+
+        private bool _updateViewOnce;
 
 
         private void OnEnable()
@@ -49,9 +53,11 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void Update()
         {
-            // _graphView.Update(_graphPopupField.value);
-            _graphView.Update_New(_graphPopupField.value);
-
+            if (_autoUpdateView || _updateViewOnce)
+            {
+                _updateViewOnce = false;
+                _graphView.Update(_graphPopupField.value);
+            }
 
             DrawGraphNodeInspector();
         }

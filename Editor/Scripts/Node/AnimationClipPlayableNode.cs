@@ -14,22 +14,17 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         private readonly ProgressBar _progressBar;
 
 
-        public AnimationClipPlayableNode(Playable playable) : base(playable)
+        public AnimationClipPlayableNode()
         {
-            title = Playable.GetPlayableType().Name;
-            var titleLabel = titleContainer.Q<Label>(name: "title-label");
-            titleLabel.style.maxWidth = 220;
-
             var banner = mainContainer.Q("divider");
             banner.style.height = StyleKeyword.Auto;
 
             _progressBar = new ProgressBar();
             banner.Add(_progressBar);
 
-            _clipField = new ObjectField()
+            _clipField = new ObjectField
             {
                 objectType = typeof(Motion),
-                value = ((AnimationClipPlayable)Playable).GetAnimationClip(),
             };
             // clipField.SetEnabled(false);
             var clipFieldSelector = _clipField.Q(className: "unity-object-field__selector");
@@ -37,43 +32,79 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             banner.Add(_clipField);
         }
 
-        public override void Update()
+        protected override void OnUpdate(bool playableChanged)
         {
-            if (Playable.IsValid())
+            base.OnUpdate(playableChanged);
+
+            if (!Playable.IsValid())
             {
-                var clipPlayable = (AnimationClipPlayable)Playable;
-                var clip = clipPlayable.GetAnimationClip();
-                _clipField.SetValueWithoutNotify(clip);
-                
-                var duration = clip ? clip.length : float.PositiveInfinity;
-                var progress = (float)(Playable.GetTime() / duration) % 1.0f * 100;
-                _progressBar.SetValueWithoutNotify(progress);
-                _progressBar.MarkDirtyRepaint();
+                return;
             }
 
-            base.Update();
+            // TODO OPTIMIZABLE: Expensive operations
+            
+            var clipPlayable = (AnimationClipPlayable)Playable;
+            var clip = clipPlayable.GetAnimationClip();
+            _clipField.SetValueWithoutNotify(clip);
+
+            var duration = clip ? clip.length : float.PositiveInfinity;
+            var progress = (float)(Playable.GetTime() / duration) % 1.0f * 100;
+            _progressBar.SetValueWithoutNotify(progress);
+            _progressBar.MarkDirtyRepaint();
         }
 
-
-        protected override void AppendStateDescriptions(StringBuilder descBuilder)
+        public override void Release()
         {
-            base.AppendStateDescriptions(descBuilder);
+            base.Release();
 
-            if (Playable.IsValid())
+            _clipField.SetValueWithoutNotify(null);
+        }
+
+        protected override void AppendNodeDescription(StringBuilder descBuilder)
+        {
+            base.AppendNodeDescription(descBuilder);
+
+            if (!Playable.IsValid())
             {
-                var clipPlayable = (AnimationClipPlayable)Playable;
-                descBuilder.Append("ApplyFootIK: ").AppendLine(clipPlayable.GetApplyFootIK().ToString())
-                    .Append("ApplyPlayableIK: ").AppendLine(clipPlayable.GetApplyPlayableIK().ToString())
-                    .AppendLine();
-
-                var clip = clipPlayable.GetAnimationClip();
-                descBuilder.Append("Clip: ").AppendLine(clip ? clip.name : "None");
-                if (clip)
-                {
-                    descBuilder.Append("Looped: ").AppendLine(clip.isLooping.ToString())
-                        .Append("Length: ").Append(clip.length.ToString("F3")).AppendLine("(s)");
-                }
+                return;
             }
+
+            var animClipPlayable = (AnimationClipPlayable)Playable;
+
+            // IK
+            descBuilder.AppendLine(LINE)
+                .Append("ApplyFootIK: ").AppendLine(animClipPlayable.GetApplyFootIK().ToString())
+                .Append("ApplyPlayableIK: ").AppendLine(animClipPlayable.GetApplyPlayableIK().ToString());
+
+            // Clip
+            descBuilder.AppendLine(LINE);
+            var clip = animClipPlayable.GetAnimationClip();
+            if (!clip)
+            {
+                descBuilder.AppendLine("Clip: None");
+                return;
+            }
+
+            descBuilder.Append("Clip: ").AppendLine(clip.name)
+                .Append("Length: ").Append(clip.length.ToString("F3")).AppendLine("(s)")
+                .Append("Looped: ").AppendLine(clip.isLooping.ToString())
+                .Append("WrapMode: ").AppendLine(clip.wrapMode.ToString())
+                .Append("FrameRate: ").AppendLine(clip.frameRate.ToString("F3"))
+                .Append("Empty: ").AppendLine(clip.empty.ToString())
+                .Append("Legacy: ").AppendLine(clip.legacy.ToString())
+                .Append("HumanMotion: ").AppendLine(clip.humanMotion.ToString())
+                .Append("HasMotionCurves: ").AppendLine(clip.hasMotionCurves.ToString())
+                .Append("HasRootCurves: ").AppendLine(clip.hasRootCurves.ToString())
+                .Append("HasGenericRootTransform: ").AppendLine(clip.hasGenericRootTransform.ToString())
+                .Append("HasMotionFloatCurves: ").AppendLine(clip.hasMotionFloatCurves.ToString())
+                .AppendLine("LocalBounds: ")
+                .Append("    Center: ").AppendLine(clip.localBounds.center.ToString())
+                .Append("    Extends: ").AppendLine(clip.localBounds.extents.ToString())
+                .Append("ApparentSpeed: ").AppendLine(clip.apparentSpeed.ToString("F3")) // Motion.cs
+                .Append("AverageSpeed: ").AppendLine(clip.averageSpeed.ToString())
+                .Append("AverageAngularSpeed: ").AppendLine(clip.averageAngularSpeed.ToString("F3"))
+                .Append("AverageDuration: ").AppendLine(clip.averageDuration.ToString("F3"))
+                .Append("IsHumanMotion: ").AppendLine(clip.isHumanMotion.ToString());
         }
     }
 }

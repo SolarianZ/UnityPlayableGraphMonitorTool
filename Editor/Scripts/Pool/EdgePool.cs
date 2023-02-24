@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
-using UnityEngine.Pool;
+using UnityEngine.Assertions;
 using UGraphView = UnityEditor.Experimental.GraphView.GraphView;
 using UEdge = UnityEditor.Experimental.GraphView.Edge;
 
@@ -8,68 +8,93 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
 {
     public class EdgePool
     {
-        private readonly UGraphView _container;
+        private readonly UGraphView _graphView;
 
-        private readonly ObjectPool<UEdge> _edgePool;
+        private readonly Dictionary<int, UEdge> _activeEdgeTable = new Dictionary<int, UEdge>();
 
-        private readonly List<UEdge> _activeEdges = new List<UEdge>();
+        private readonly Dictionary<int, UEdge> _dormantEdgeTable = new Dictionary<int, UEdge>();
 
 
-        public EdgePool(UGraphView container)
+        public EdgePool(UGraphView graphView)
         {
-            _container = container;
-            _edgePool = new ObjectPool<UEdge>(
-                CreateEdge, ActiveEdge, RecycleEdge, DestroyEdge
-            );
+            _graphView = graphView;
         }
 
-        public UEdge Alloc()
+        public UEdge GetActiveEdge(Port inputPort, Port outputPort)
         {
-            var edge = _edgePool.Get();
-            _activeEdges.Add(edge);
+            return _activeEdgeTable[GetEdgeKey(inputPort, outputPort)];
+        }
+
+        public IEnumerable<UEdge> GetActiveEdges()
+        {
+            return _activeEdgeTable.Values;
+        }
+
+        public UEdge Alloc(Port inputPort, Port outputPort)
+        {
+            var key = GetEdgeKey(inputPort, outputPort);
+            if (_activeEdgeTable.TryGetValue(key, out var edge))
+            {
+                return edge;
+            }
+
+            // if (!_dormantPlayableNodeTable.Remove(key, out edge)) // Unavailable in Unity 2019
+            // {
+            //     edge = new UEdge();
+            //     _graphView.AddElement(edge);
+            // }
+            if (_dormantEdgeTable.TryGetValue(key, out edge))
+            {
+                _dormantEdgeTable.Remove(key);
+            }
+            else
+            {
+                edge = new UEdge();
+                _graphView.AddElement(edge);
+            }
+
+            _activeEdgeTable.Add(key, edge);
 
             return edge;
         }
 
         public void Recycle(UEdge edge)
         {
-            _activeEdges.Remove(edge);
-            _edgePool.Release(edge);
+            var key = GetEdgeKey(edge.input, edge.output);
+            _activeEdgeTable.Remove(key);
+
+            // _dormantPlayableNodeTable.TryAdd(key, edge); // Unavailable in Unity 2019
+            _dormantEdgeTable[key] = edge;
         }
 
         public void RecycleAllActiveEdges()
         {
-            for (int i = _activeEdges.Count - 1; i >= 0; i--)
+            foreach (var edge in _activeEdgeTable.Values)
             {
-                _edgePool.Release(_activeEdges[i]);
-                _activeEdges.RemoveAt(i);
+                var key = GetEdgeKey(edge.input, edge.output);
+                _dormantEdgeTable.Add(key, edge);
             }
+
+            _activeEdgeTable.Clear();
+        }
+
+        public void RemoveDormantEdgesFromView()
+        {
+            _graphView.DeleteElements(_dormantEdgeTable.Values);
+            _dormantEdgeTable.Clear();
         }
 
 
-        private UEdge CreateEdge()
+        public static int GetEdgeKey(Port inputPort, Port outputPort)
         {
-            var edge = new UEdge();
-            edge.capabilities &= ~Capabilities.Movable;
-            edge.capabilities &= ~Capabilities.Deletable;
-            edge.capabilities &= ~Capabilities.Selectable;
-            return edge;
-        }
+            Assert.IsTrue(inputPort == null || inputPort.direction == Direction.Input);
+            Assert.IsTrue(outputPort == null || outputPort.direction == Direction.Output);
 
-        private void ActiveEdge(UEdge edge)
-        {
-            _container.AddElement(edge);
-        }
-
-        private void RecycleEdge(UEdge edge)
-        {
-            edge.input = null;
-            edge.output = null;
-            _container.RemoveElement(edge);
-        }
-
-        private void DestroyEdge(UEdge edge)
-        {
+            unchecked
+            {
+                return ((inputPort?.GetHashCode() ?? 0) * 397) ^
+                       (outputPort?.GetHashCode() ?? 0);
+            }
         }
     }
 }
