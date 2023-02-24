@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using GBG.PlayableGraphMonitor.Editor.Node;
 using GBG.PlayableGraphMonitor.Editor.Pool;
 using GBG.PlayableGraphMonitor.Editor.Utility;
@@ -23,6 +24,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         private readonly PlayableNodePoolFactory _playableNodePoolFactory;
 
         private readonly Action _frameAllAction;
+
+        private IReadOnlyDictionary<PlayableHandle, string> _extraNodeLabelTable;
 
         private bool _isViewFocused;
 
@@ -100,7 +103,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             }
 
             var playableNode = _playableNodePoolFactory.Alloc(rootPlayable);
-            playableNode.Update(rootPlayable);
+            var playableNodeExtraLabel = GetExtraNodeLabel(rootPlayable);
+            playableNode.Update(rootPlayable, playableNodeExtraLabel);
 
             for (int i = 0; i < rootPlayable.GetInputCount(); i++)
             {
@@ -209,6 +213,24 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             _playableNodePoolFactory.RemoveDormantNodesFromView();
         }
 
+
+        public void SetExtraNodeLabelTable(IReadOnlyDictionary<PlayableHandle, string> extraNodeLabelTable)
+        {
+            _extraNodeLabelTable = extraNodeLabelTable;
+        }
+
+        public string GetExtraNodeLabel(Playable playable)
+        {
+            if (_extraNodeLabelTable == null || !playable.IsValid())
+            {
+                return null;
+            }
+
+            var playableHandle = playable.GetHandle();
+            _extraNodeLabelTable.TryGetValue(playableHandle, out var label);
+
+            return label;
+        }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {

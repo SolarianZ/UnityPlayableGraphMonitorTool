@@ -17,6 +17,13 @@ namespace GBG.PlayableGraphMonitor.Editor
             return GetWindow<PlayableGraphMonitorWindow>("Playable Graph Monitor");
         }
 
+        public static PlayableGraphMonitorWindow Open(IReadOnlyDictionary<PlayableHandle, string> extraLabelTable)
+        {
+            var window = Open();
+            window.SetNodeExtraLabelTable(extraLabelTable);
+            return window;
+        }
+
 
         private readonly List<PlayableGraph> _graphs = new List<PlayableGraph>
         {
@@ -26,6 +33,12 @@ namespace GBG.PlayableGraphMonitor.Editor
         private RefreshRate _refreshRate;
 
         private long _nextUpdateViewTimeMS;
+
+
+        public void SetNodeExtraLabelTable(IReadOnlyDictionary<PlayableHandle, string> extraNodeLabelTable)
+        {
+            _graphView.SetExtraNodeLabelTable(extraNodeLabelTable);
+        }
 
 
         private void OnEnable()

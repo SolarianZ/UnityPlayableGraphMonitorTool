@@ -9,8 +9,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
     {
         public Playable Playable { get; private set; }
 
+        private string _extraLabel;
 
-        public void Update(Playable playable)
+
+        public void Update(Playable playable, string extraLabel)
         {
             var playableChanged = false;
             if (Playable.GetHandle() != playable.GetHandle())
@@ -18,12 +20,20 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 Playable = playable;
                 playableChanged = true;
 
-                // Expensive operations
-                var playableTypeName = Playable.GetPlayableType().Name;
-                // var playableHandleTypeName = Playable.GetHandle().GetPlayableType();
-                title = playableTypeName;
-
                 this.SetNodeStyle(playable.GetPlayableNodeColor());
+            }
+
+            if (playableChanged || _extraLabel != extraLabel)
+            {
+                _extraLabel = extraLabel;
+
+                var playableTypeName = Playable.GetPlayableType().Name;
+                var nodeTitle = string.IsNullOrEmpty(_extraLabel)
+                    ? playableTypeName
+                    : $"[{_extraLabel}]\n{playableTypeName}";
+
+                // Expensive operation
+                title = nodeTitle;
             }
 
             if (!Playable.IsValid())
@@ -54,7 +64,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         {
             if (Playable.IsValid())
             {
-                return Playable.GetPlayableType().Name;
+                if (string.IsNullOrEmpty(_extraLabel))
+                {
+                    return Playable.GetPlayableType().Name;
+                }
+
+                return $"[{_extraLabel}] {Playable.GetPlayableType().Name}";
             }
 
             return GetType().Name;
@@ -68,7 +83,17 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 return;
             }
 
+            // Extra label
+            if (!string.IsNullOrEmpty(_extraLabel))
+            {
+                descBuilder.Append("ExtraLabel: ").AppendLine(_extraLabel)
+                    .AppendLine(LINE);
+            }
+
+            // Type
             AppendPlayableTypeDescription(descBuilder);
+
+            // Playable
             descBuilder.AppendLine(LINE)
                 .AppendLine("IsValid: True")
                 .Append("IsNull: ").AppendLine(Playable.IsNull().ToString())
