@@ -70,10 +70,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 .AppendLine(LINE)
                 .AppendLine("IsValid: True")
                 .Append("IsNull: ").AppendLine(PlayableOutput.IsOutputNull().ToString())
-                .Append("Weight: ").AppendLine(PlayableOutput.GetWeight().ToString("F3"))
                 .Append("ReferenceObject: ").AppendLine(PlayableOutput.GetReferenceObject()?.name ?? "Null")
                 .Append("UserData: ").AppendLine(PlayableOutput.GetUserData()?.name ?? "Null")
-                .Append("SourceOutputPort: ").AppendLine(PlayableOutput.GetSourceOutputPort().ToString());
+                .AppendLine(LINE)
+                .AppendLine("Source Input:")
+                .Append("    SourceOutputPort: ").AppendLine(PlayableOutput.GetSourceOutputPort().ToString())
+                .Append("    Weight: ").AppendLine(PlayableOutput.GetWeight().ToString("F3"));
         }
 
         #endregion
