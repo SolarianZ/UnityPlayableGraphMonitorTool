@@ -1,0 +1,16 @@
+{
+    "name": "GBG.PlayableGraphMonitor.Tests",
+    "rootNamespace": "GBG.PlayableGraphMonitor.Tests",
+    "references": [
+        "GUID:95eb2fe3966c3484ba67b229d5d62820"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

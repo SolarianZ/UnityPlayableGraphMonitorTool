@@ -17,12 +17,25 @@ namespace GBG.PlayableGraphMonitor.Editor
             return GetWindow<PlayableGraphMonitorWindow>("Playable Graph Monitor");
         }
 
-        public static PlayableGraphMonitorWindow Open(IReadOnlyDictionary<PlayableHandle, string> extraLabelTable)
+        public static PlayableGraphMonitorWindow Open(IReadOnlyDictionary<PlayableHandle, string> nodeExtraLabelTable)
         {
             var window = Open();
-            window.SetNodeExtraLabelTable(extraLabelTable);
+            window.SetNodeExtraLabelTable(nodeExtraLabelTable);
             return window;
         }
+
+        public static bool TrySetNodeExtraLabelTable(IReadOnlyDictionary<PlayableHandle, string> nodeExtraLabelTable)
+        {
+            if (_instance == null)
+            {
+                return false;
+            }
+
+            _instance.SetNodeExtraLabelTable(nodeExtraLabelTable);
+            return true;
+        }
+
+        private static PlayableGraphMonitorWindow _instance;
 
 
         private readonly List<PlayableGraph> _graphs = new List<PlayableGraph>
@@ -35,14 +48,15 @@ namespace GBG.PlayableGraphMonitor.Editor
         private long _nextUpdateViewTimeMS;
 
 
-        public void SetNodeExtraLabelTable(IReadOnlyDictionary<PlayableHandle, string> extraNodeLabelTable)
+        public void SetNodeExtraLabelTable(IReadOnlyDictionary<PlayableHandle, string> nodeExtraLabelTable)
         {
-            _graphView.SetExtraNodeLabelTable(extraNodeLabelTable);
+            _graphView.SetNodeExtraLabelTable(nodeExtraLabelTable);
         }
 
 
         private void OnEnable()
         {
+            _instance = this;
             _graphs.AddRange(PlayableUtility.GetAllGraphs());
             PlayableUtility.graphCreated += OnGraphCreated;
             PlayableUtility.destroyingGraph += OnDestroyingGraph;
@@ -58,6 +72,11 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void OnDisable()
         {
+            if (_instance == this)
+            {
+                _instance = null;
+            }
+
             PlayableUtility.graphCreated -= OnGraphCreated;
             PlayableUtility.destroyingGraph -= OnDestroyingGraph;
 

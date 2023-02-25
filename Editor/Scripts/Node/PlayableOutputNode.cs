@@ -30,7 +30,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 // Expensive operations
                 var playableOutputTypeName = playableOutput.GetPlayableOutputType().Name;
                 var playableOutputEditorName = playableOutput.GetEditorName();
-                title = $"{playableOutputTypeName}\n({playableOutputEditorName})";
+                title = $"[{playableOutputEditorName}]\n{playableOutputTypeName}";
 
                 this.SetNodeStyle(playableOutput.GetPlayableOutputNodeColor());
             }

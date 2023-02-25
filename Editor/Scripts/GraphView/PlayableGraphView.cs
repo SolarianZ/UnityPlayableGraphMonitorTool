@@ -25,7 +25,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         private readonly Action _frameAllAction;
 
-        private IReadOnlyDictionary<PlayableHandle, string> _extraNodeLabelTable;
+        private IReadOnlyDictionary<PlayableHandle, string> _nodeExtraLabelTable;
 
         private bool _isViewFocused;
 
@@ -214,20 +214,20 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         }
 
 
-        public void SetExtraNodeLabelTable(IReadOnlyDictionary<PlayableHandle, string> extraNodeLabelTable)
+        public void SetNodeExtraLabelTable(IReadOnlyDictionary<PlayableHandle, string> nodeExtraLabelTable)
         {
-            _extraNodeLabelTable = extraNodeLabelTable;
+            _nodeExtraLabelTable = nodeExtraLabelTable;
         }
 
         public string GetExtraNodeLabel(Playable playable)
         {
-            if (_extraNodeLabelTable == null || !playable.IsValid())
+            if (_nodeExtraLabelTable == null || !playable.IsValid())
             {
                 return null;
             }
 
             var playableHandle = playable.GetHandle();
-            _extraNodeLabelTable.TryGetValue(playableHandle, out var label);
+            _nodeExtraLabelTable.TryGetValue(playableHandle, out var label);
 
             return label;
         }
