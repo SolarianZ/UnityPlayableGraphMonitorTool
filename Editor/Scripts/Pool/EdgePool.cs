@@ -50,6 +50,18 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
             else
             {
                 edge = new UEdge();
+                var edgeCapabilities = edge.capabilities;
+                edgeCapabilities &= ~Capabilities.Selectable;
+                edgeCapabilities &= ~Capabilities.Collapsible;
+                edgeCapabilities &= ~Capabilities.Movable;
+                edgeCapabilities &= ~Capabilities.Deletable;
+                edgeCapabilities &= ~Capabilities.Droppable;
+                edgeCapabilities &= ~Capabilities.Renamable;
+#if UNITY_2021_1_OR_NEWER
+                edgeCapabilities &= ~Capabilities.Copiable;
+#endif
+                edge.capabilities = edgeCapabilities;
+
                 _graphView.AddElement(edge);
             }
 

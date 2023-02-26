@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
 using PlayableUtility = UnityEditor.Playables.Utility;
@@ -9,6 +11,8 @@ namespace GBG.PlayableGraphMonitor.Editor
 {
     public partial class PlayableGraphMonitorWindow : EditorWindow
     {
+        #region Static
+
         // ReSharper disable once Unity.IncorrectMethodSignature
         [MenuItem("Tools/Bamboo/PlayableGraph Monitor")]
         [MenuItem("Window/Analysis/PlayableGraph Monitor")]
@@ -37,13 +41,14 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private static PlayableGraphMonitorWindow _instance;
 
+        #endregion
+
 
         private readonly List<PlayableGraph> _graphs = new List<PlayableGraph>
         {
-            new PlayableGraph() // an invalid graph, for compatible with Unity 2019
+            // An invalid graph, for compatible with Unity 2019
+            new PlayableGraph()
         };
-
-        private RefreshRate _refreshRate;
 
         private long _nextUpdateViewTimeMS;
 
@@ -85,14 +90,44 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void Update()
         {
+            UpdateGraphView();
+            DrawGraphNodeInspector();
+        }
+
+        private void UpdateGraphView()
+        {
             var currentTimeMS = GetCurrentEditorTimeMs();
-            if (currentTimeMS >= _nextUpdateViewTimeMS)
+            if (currentTimeMS < _nextUpdateViewTimeMS)
             {
-                _nextUpdateViewTimeMS = currentTimeMS + (long)_refreshRate;
-                _graphView.Update(_graphPopupField.value);
+                return;
             }
 
-            DrawGraphNodeInspector();
+            _nextUpdateViewTimeMS = currentTimeMS + (long)(RefreshRate)_refreshRateField.value;
+
+            // Clear error message
+            _errorTipLabel.style.display = DisplayStyle.None;
+
+            try
+            {
+                _graphView.Update(_graphPopupField.value, _autoLayoutToggle.value);
+            }
+            catch (StackOverflowException soe)
+            {
+                // Stop refreshing and calculating layout
+                _refreshRateField.value = RefreshRate.Manual;
+                _autoLayoutToggle.value = false;
+
+                // Log errors
+                var playableGraphName = _graphPopupField.value.GetEditorName();
+                var message = $"There may be cycles in the PlayableGraph '{playableGraphName}'," +
+                              $"you can set refresh rate to '{RefreshRate.Manual}' and disable 'Auto Layout'" +
+                              "and drag node layout manually to find out the cycle.";
+                Debug.LogError(message, this);
+                Debug.LogException(soe, this);
+
+                // Display error message
+                _errorTipLabel.style.display = DisplayStyle.Flex;
+            }
         }
 
         private VisualElement CreateGraphViewAndInspectorContainer()

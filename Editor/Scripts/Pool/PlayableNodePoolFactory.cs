@@ -35,10 +35,22 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
             return playableNodePool.Alloc(playable);
         }
 
+        public bool IsNodeActive(Playable playable)
+        {
+            var playableNodePool = GetOrCreatePlayableNodePool(playable);
+            return playableNodePool.IsNodeActive(playable);
+        }
+
         public PlayableNode GetActiveNode(Playable playable)
         {
             var playableNodePool = GetOrCreatePlayableNodePool(playable);
             return playableNodePool.GetActiveNode(playable);
+        }
+
+        public bool GetActiveNode(Playable playable, out PlayableNode node)
+        {
+            var playableNodePool = GetOrCreatePlayableNodePool(playable);
+            return playableNodePool.TryGetActiveNode(playable, out node);
         }
 
         public IEnumerable<PlayableNode> GetActiveNodes()

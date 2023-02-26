@@ -21,9 +21,19 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
             _graphView = graphView;
         }
 
+        public bool IsNodeActive(Playable playable)
+        {
+            return _activePlayableNodeTable.ContainsKey(playable.GetHandle());
+        }
+
         public T GetActiveNode(Playable playable)
         {
             return _activePlayableNodeTable[playable.GetHandle()];
+        }
+
+        public bool TryGetActiveNode(Playable playable, out T node)
+        {
+            return _activePlayableNodeTable.TryGetValue(playable.GetHandle(), out node);
         }
 
         public IEnumerable<T> GetActiveNodes()
@@ -93,6 +103,18 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
         PlayableNode IPlayableNodePool.GetActiveNode(Playable playable)
         {
             return GetActiveNode(playable);
+        }
+
+        bool IPlayableNodePool.TryGetActiveNode(Playable playable, out PlayableNode node)
+        {
+            if (TryGetActiveNode(playable, out var tNode))
+            {
+                node = tNode;
+                return true;
+            }
+
+            node = null;
+            return false;
         }
 
         IEnumerable<PlayableNode> IPlayableNodePool.GetActiveNodes()

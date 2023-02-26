@@ -29,20 +29,37 @@ namespace GBG.PlayableGraphMonitor.Editor
 
     public partial class PlayableGraphMonitorWindow
     {
+        // Toolbar
         private Toolbar _toolbar;
 
+        // PlayableGraph popup
         private PopupField<PlayableGraph> _graphPopupField;
 
+        // Refresh rate
+        private static readonly RefreshRate _defaultRefreshRate = RefreshRate.Fps_20;
         private EnumField _refreshRateField;
-
+        private TextElement _refreshRateLabel;
+        private StyleColor _refreshRateTextNormalColor;
         private ToolbarButton _manualUpdateViewButton;
 
+        // Inspector
         private ToolbarToggle _inspectorToggle;
+
+        // Auto layout
+        private ToolbarToggle _autoLayoutToggle;
+        private TextElement _autoLayoutLabel;
+        private StyleColor _autoLayoutTextNormalColor;
+
+        // Error
+        private Label _errorTipLabel;
+
+        // Common data
+        private static readonly Color _notableTextColor = Color.yellow;
 
 
         private void CreateToolbar()
         {
-            _refreshRate = RefreshRate.Fps_20;
+            // Toolbar
             _toolbar = new Toolbar();
             rootVisualElement.Add(_toolbar);
 
@@ -63,12 +80,28 @@ namespace GBG.PlayableGraphMonitor.Editor
             _inspectorToggle.RegisterValueChangedCallback(ToggleInspector);
             _toolbar.Add(_inspectorToggle);
 
+            // Auto layout toggle
+            _autoLayoutToggle = new ToolbarToggle()
+            {
+                name = "auto-layout-toggle",
+                text = "Auto Layout",
+                value = true,
+                tooltip = $"Disable auto layout and set refresh rate to {RefreshRate.Manual}, " +
+                          "then you can drag node layout manually."
+            };
+            _autoLayoutToggle.RegisterValueChangedCallback(ToggleAutoLayout);
+            _autoLayoutLabel = _autoLayoutToggle.Q<TextElement>(className: "unity-text-element");
+            _autoLayoutTextNormalColor = _autoLayoutLabel.style.color;
+            _toolbar.Add(_autoLayoutToggle);
+
             // Refresh rate popup
-            _refreshRateField = new EnumField(_refreshRate)
+            _refreshRateField = new EnumField(_defaultRefreshRate)
             {
                 name = "refresh-rate-popup"
             };
             _refreshRateField.RegisterValueChangedCallback(OnRefreshRateChanged);
+            _refreshRateLabel = _refreshRateField.Q<TextElement>(className: "unity-text-element");
+            _refreshRateTextNormalColor = _refreshRateLabel.style.color;
             _toolbar.Add(_refreshRateField);
 
             // Manual update button
@@ -78,7 +111,9 @@ namespace GBG.PlayableGraphMonitor.Editor
                 text = "Update View",
                 style =
                 {
-                    display = _refreshRate == RefreshRate.Manual ? DisplayStyle.Flex : DisplayStyle.None
+                    display = (RefreshRate)_refreshRateField.value == RefreshRate.Manual
+                        ? DisplayStyle.Flex
+                        : DisplayStyle.None
                 }
             };
             _toolbar.Add(_manualUpdateViewButton);
@@ -91,6 +126,22 @@ namespace GBG.PlayableGraphMonitor.Editor
                 text = "Frame All",
             };
             _toolbar.Add(frameAllButton);
+
+            // Error label
+            _toolbar.Add(new ToolbarSpacer());
+            _errorTipLabel = new Label
+            {
+                name = "error-label",
+                text = "Please check the console logs.",
+                style =
+                {
+                    color = Color.red,
+                    alignSelf = Align.Center,
+                    unityFontStyleAndWeight = FontStyle.Bold,
+                    display = DisplayStyle.None
+                }
+            };
+            _toolbar.Add(_errorTipLabel);
         }
 
         private string GraphPopupFieldFormatter(PlayableGraph graph)
@@ -120,6 +171,7 @@ namespace GBG.PlayableGraphMonitor.Editor
         private void OnSelectedPlayableGraphChanged(ChangeEvent<PlayableGraph> evt)
         {
             _nextUpdateViewTimeMS = GetCurrentEditorTimeMs();
+            _refreshRateField.value = _defaultRefreshRate;
         }
 
         private void OnManualUpdateButtonClicked()
@@ -129,11 +181,17 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void OnRefreshRateChanged(ChangeEvent<Enum> evt)
         {
-            _refreshRate = (RefreshRate)evt.newValue;
-            _nextUpdateViewTimeMS = _nextUpdateViewTimeMS - (long)(RefreshRate)evt.previousValue + (long)_refreshRate;
+            var refreshRate = (RefreshRate)evt.newValue;
+            _nextUpdateViewTimeMS = _nextUpdateViewTimeMS - (long)(RefreshRate)evt.previousValue + (long)refreshRate;
 
-            var displayStyle = _refreshRate == RefreshRate.Manual ? DisplayStyle.Flex : DisplayStyle.None;
+            var displayStyle = refreshRate == RefreshRate.Manual ? DisplayStyle.Flex : DisplayStyle.None;
             _manualUpdateViewButton.style.display = displayStyle;
+
+            _refreshRateLabel.style.color = refreshRate == RefreshRate.Manual
+                ? _notableTextColor
+                : _refreshRateTextNormalColor;
+
+            _graphView.SetNodesMovability(refreshRate == RefreshRate.Manual);
         }
 
         private void OnFrameAllButtonClicked()
@@ -145,6 +203,13 @@ namespace GBG.PlayableGraphMonitor.Editor
         {
             var showInspector = evt.newValue;
             _nodeInspectorPanel.style.display = showInspector ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private void ToggleAutoLayout(ChangeEvent<bool> evt)
+        {
+            _autoLayoutLabel.style.color = evt.newValue
+                ? _autoLayoutTextNormalColor
+                : _notableTextColor;
         }
     }
 }

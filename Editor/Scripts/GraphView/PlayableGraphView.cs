@@ -34,7 +34,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         {
             SetupZoom(0.1f, ContentZoomer.DefaultMaxScale);
             this.AddManipulator(new ContentDragger());
-            //this.AddManipulator(new SelectionDragger());
+            this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
 
             _edgePool = new EdgePool(this);
@@ -46,7 +46,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
         }
 
-        public void Update(PlayableGraph playableGraph)
+        public void Update(PlayableGraph playableGraph, bool autoLayout)
         {
             var newPlayableGraph = !GraphTool.IsEqual(ref _playableGraph, ref playableGraph);
             _playableGraph = playableGraph;
@@ -54,7 +54,12 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             RecycleAllNodesAndEdges();
             AllocAndSetupAllNodes();
             ConnectNodes();
-            CalculateLayout();
+            if (autoLayout)
+            {
+                // If there are cycles in PlayableGraph, here will throw a StackOverflowException
+                CalculateLayout();
+            }
+
             UpdateActiveEdges();
             RemoveUnusedElementsFromView();
 
@@ -109,6 +114,11 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             for (int i = 0; i < rootPlayable.GetInputCount(); i++)
             {
                 var inputPlayable = rootPlayable.GetInput(i);
+                if (_playableNodePoolFactory.IsNodeActive(inputPlayable))
+                {
+                    continue;
+                }
+
                 AllocAndSetupPlayableNodeTree(inputPlayable);
             }
         }
@@ -214,6 +224,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         }
 
 
+        #region Node Control
+
         public void SetNodeExtraLabelTable(IReadOnlyDictionary<PlayableHandle, string> nodeExtraLabelTable)
         {
             _nodeExtraLabelTable = nodeExtraLabelTable;
@@ -231,6 +243,29 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
             return label;
         }
+
+
+        public void SetNodesMovability(bool movable)
+        {
+            foreach (var outputNode in _outputNodePool.GetActiveNodes())
+            {
+                var nodeCaps = outputNode.capabilities;
+                if (movable) nodeCaps |= Capabilities.Movable;
+                else nodeCaps &= ~Capabilities.Movable;
+                outputNode.capabilities = nodeCaps;
+            }
+
+            foreach (var playableNode in _playableNodePoolFactory.GetActiveNodes())
+            {
+                var nodeCaps = playableNode.capabilities;
+                if (movable) nodeCaps |= Capabilities.Movable;
+                else nodeCaps &= ~Capabilities.Movable;
+                playableNode.capabilities = nodeCaps;
+            }
+        }
+
+        #endregion
+
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
