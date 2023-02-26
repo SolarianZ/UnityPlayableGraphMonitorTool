@@ -77,7 +77,26 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         private Vector2? _hierarchySize;
 
 
-        public Vector2 GetHierarchySize()
+        public void CalculateLayout(Vector2 origin, out Vector2 hierarchySize)
+        {
+            hierarchySize = GetHierarchySize();
+            var nodePos = CalculateSubTreeRootNodePosition(hierarchySize, origin);
+            SetPosition(new Rect(nodePos, Vector2.zero));
+
+            origin.x -= GetNodeSize().x - HORIZONTAL_SPACE;
+            for (int i = 0; i < InputPorts.Count; i++)
+            {
+                var childNode = GetFirstConnectedInputNode(InputPorts[i]);
+                if (childNode != null)
+                {
+                    childNode.CalculateLayout(origin, out var childHierarchySize);
+
+                    origin.y += childHierarchySize.y;
+                }
+            }
+        }
+
+        private Vector2 GetHierarchySize()
         {
             if (_hierarchySize != null)
             {
@@ -106,26 +125,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             _hierarchySize = hierarchySize;
 
             return _hierarchySize.Value;
-        }
-
-        public void CalculateLayout(Vector2 origin)
-        {
-            var subTreeSize = GetHierarchySize();
-            var nodePos = CalculateSubTreeRootNodePosition(subTreeSize, origin);
-            SetPosition(new Rect(nodePos, Vector2.zero));
-
-            origin.x -= GetNodeSize().x - HORIZONTAL_SPACE;
-            for (int i = 0; i < InputPorts.Count; i++)
-            {
-                var childNode = GetFirstConnectedInputNode(InputPorts[i]);
-                if (childNode != null)
-                {
-                    var childHierarchySize = childNode.GetHierarchySize();
-                    childNode.CalculateLayout(origin);
-
-                    origin.y += childHierarchySize.y;
-                }
-            }
         }
 
         private Vector2 GetNodeSize()

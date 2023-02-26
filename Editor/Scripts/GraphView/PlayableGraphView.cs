@@ -194,10 +194,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             var origin = Vector2.zero;
             foreach (var outputNode in _outputNodePool.GetActiveNodes())
             {
-                var treeSize = outputNode.GetHierarchySize();
-
-                outputNode.CalculateLayout(origin);
-
+                outputNode.CalculateLayout(origin, out var treeSize);
                 origin.y += treeSize.y + GraphViewNode.VERTICAL_SPACE;
             }
         }
