@@ -88,7 +88,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             {
                 var playableOutput = _playableGraph.GetOutput(i);
                 var outputNode = _outputNodePool.Alloc(playableOutput);
-                outputNode.Update(playableOutput);
+                outputNode.Update(playableOutput, i);
             }
 
             // PlayableNodes

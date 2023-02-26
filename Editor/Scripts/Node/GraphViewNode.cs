@@ -33,6 +33,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         public virtual void Release()
         {
+            CachedHierarchySize = null;
+            LayoutCalculated = false;
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
@@ -74,10 +76,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         public static readonly Vector2 StandardNodeSize = new Vector2(400, 150);
 
-        private Vector2? _hierarchySize;
+        public Vector2? CachedHierarchySize { get; protected set; }
+        
+        public bool LayoutCalculated { get; protected set; }
 
 
-        public void CalculateLayout(Vector2 origin, out Vector2 hierarchySize)
+        public virtual void CalculateLayout(Vector2 origin, out Vector2 hierarchySize)
         {
             hierarchySize = GetHierarchySize();
             var nodePos = CalculateSubTreeRootNodePosition(hierarchySize, origin);
@@ -87,26 +91,29 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             for (int i = 0; i < InputPorts.Count; i++)
             {
                 var childNode = GetFirstConnectedInputNode(InputPorts[i]);
-                if (childNode != null)
+                if (childNode == null)
                 {
-                    childNode.CalculateLayout(origin, out var childHierarchySize);
-
-                    origin.y += childHierarchySize.y;
+                    continue;
                 }
+
+                childNode.CalculateLayout(origin, out var childHierarchySize);
+                origin.y += childHierarchySize.y;
             }
+
+            LayoutCalculated = true;
         }
 
-        private Vector2 GetHierarchySize()
+        public virtual Vector2 GetHierarchySize()
         {
-            if (_hierarchySize != null)
+            if (CachedHierarchySize != null)
             {
-                return _hierarchySize.Value;
+                return CachedHierarchySize.Value;
             }
 
             if (InputPorts.Count == 0)
             {
-                _hierarchySize = GetNodeSize();
-                return _hierarchySize.Value;
+                CachedHierarchySize = GetNodeSize();
+                return CachedHierarchySize.Value;
             }
 
             var subHierarchySize = Vector2.zero;
@@ -122,25 +129,25 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             var hierarchySize = GetNodeSize() + new Vector2(HORIZONTAL_SPACE, 0);
             hierarchySize.y = Mathf.Max(hierarchySize.y, subHierarchySize.y);
-            _hierarchySize = hierarchySize;
+            CachedHierarchySize = hierarchySize;
 
-            return _hierarchySize.Value;
+            return CachedHierarchySize.Value;
         }
 
-        private Vector2 GetNodeSize()
+        protected Vector2 GetNodeSize()
         {
             return StandardNodeSize;
             //return worldBound.size;
         }
 
-        private static Vector2 CalculateSubTreeRootNodePosition(Vector2 subTreeSize, Vector2 subTreeOrigin)
+        protected static Vector2 CalculateSubTreeRootNodePosition(Vector2 subTreeSize, Vector2 subTreeOrigin)
         {
             var subTreePos = subTreeOrigin;
             subTreePos.y += subTreeSize.y / 2;
             return subTreePos;
         }
 
-        private static GraphViewNode GetFirstConnectedInputNode(Port port)
+        protected static GraphViewNode GetFirstConnectedInputNode(Port port)
         {
             Assert.IsTrue(port.direction == Direction.Input);
             var connectedEdge = port.connections.FirstOrDefault();
