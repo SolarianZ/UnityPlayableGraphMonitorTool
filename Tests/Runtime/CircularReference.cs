@@ -35,16 +35,34 @@ namespace GBG.PlayableGraphMonitor.Tests
             _graph = PlayableGraph.Create(nameof(CircularReference));
 
             // Playable A
-            var playableA = AnimationMixerPlayable.Create(_graph, 1);
-            playableA.SetOutputCount(2);
+            var playableA = AnimationMixerPlayable.Create(_graph, 2);
+            playableA.SetOutputCount(3);
             _extraLabelTable.Add(playableA.GetHandle(), "A");
 
             // Playable B
-            var playableB = AnimationMixerPlayable.Create(_graph, 1);
+            var playableB = AnimationMixerPlayable.Create(_graph, 2);
+            playableB.SetOutputCount(2);
             _extraLabelTable.Add(playableB.GetHandle(), "B");
 
+            // Playable C
+            var playableC = AnimationMixerPlayable.Create(_graph, 2);
+            playableC.SetOutputCount(2);
+            _extraLabelTable.Add(playableC.GetHandle(), "C");
+
+            // Connection
+            // A0 -> AnimationPlayableOutput
+            // A1 -> B0
+            // A2 -> C0
+            // B0 -> A0
+            // B1 -> C1
+            // C0 -> A1
+            // C1 -> B1
             playableA.ConnectInput(0, playableB, 0, 1f);
+            playableA.ConnectInput(1, playableC, 0, 1f);
             playableB.ConnectInput(0, playableA, 1, 1f);
+            playableB.ConnectInput(1, playableC, 1, 1f);
+            playableC.ConnectInput(0, playableA, 2, 1f);
+            playableC.ConnectInput(1, playableB, 1, 1f);
 
             // Outputs
             var animator = GetComponent<Animator>();
