@@ -32,7 +32,7 @@ namespace GBG.PlayableGraphMonitor.Tests
 
         private void Start()
         {
-            _graph = PlayableGraph.Create(nameof(LargeAnimationGraph));
+            _graph = PlayableGraph.Create(nameof(MultiOutput));
 
             // Outputs
             var animator = GetComponent<Animator>();
