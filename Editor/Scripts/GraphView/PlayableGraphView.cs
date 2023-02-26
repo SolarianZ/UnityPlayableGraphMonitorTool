@@ -189,6 +189,13 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             }
         }
 
+        // One Playable to many PlayableOutputs layout:
+        //   1. Group PlayableOutputs by their input
+        //   2. Each group has a min y size(Playable count times standard node y size),
+        //      input tree's y size should be equal or greater than this min y size
+        //   3. Each group has a anchor point(their input Playable's position)
+        //   4. In each group, layout PlayableOutputs on both sides of the anchor point
+
         private void CalculateLayout()
         {
             var origin = Vector2.zero;
