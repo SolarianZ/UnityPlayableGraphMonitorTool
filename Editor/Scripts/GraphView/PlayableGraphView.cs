@@ -28,6 +28,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         private readonly Dictionary<PlayableHandle, PlayableOutputGroup> _outputGroups =
             new Dictionary<PlayableHandle, PlayableOutputGroup>();
 
+        private readonly List<PlayableOutputGroup> _dormantOutputGroups = new List<PlayableOutputGroup>();
+
         private IReadOnlyDictionary<PlayableHandle, string> _nodeExtraLabelTable;
 
         private bool _isViewFocused;
@@ -194,8 +196,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         private void CalculateLayout()
         {
-            // TODO: Use pool
-            _outputGroups.Clear();
+            RecycleOutputGroups();
 
             if (!_playableGraph.IsValid())
             {
@@ -217,8 +218,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                 var sourcePlayableHandle = sourcePlayable.GetHandle();
                 if (!_outputGroups.TryGetValue(sourcePlayableHandle, out var outputGroup))
                 {
-                    // TODO: Use pool
-                    outputGroup = new PlayableOutputGroup();
+                    outputGroup = AllocOutputGroup();
                     _outputGroups.Add(sourcePlayableHandle, outputGroup);
                 }
 
@@ -267,6 +267,34 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             // }
         }
 
+        private void RecycleOutputGroups()
+        {
+            foreach (var outputGroup in _outputGroups.Values)
+            {
+                outputGroup.OutputNodes.Clear();
+                _dormantOutputGroups.Add(outputGroup);
+            }
+
+            _outputGroups.Clear();
+        }
+
+        private PlayableOutputGroup AllocOutputGroup()
+        {
+            PlayableOutputGroup outputGroup;
+            var dormantOutputGroupCount = _dormantOutputGroups.Count;
+            if (dormantOutputGroupCount > 0)
+            {
+                outputGroup = _dormantOutputGroups[dormantOutputGroupCount - 1];
+                _dormantOutputGroups.RemoveAt(dormantOutputGroupCount - 1);
+            }
+            else
+            {
+                outputGroup = new PlayableOutputGroup();
+            }
+
+            return outputGroup;
+        }
+
         private void UpdateActiveEdges()
         {
             if (_isViewFocused)
@@ -310,6 +338,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         }
 
 
+        // ReSharper disable once IdentifierTypo
         public void SetNodesMovability(bool movable)
         {
             foreach (var outputNode in _outputNodePool.GetActiveNodes())
@@ -418,11 +447,6 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                         outputNodeB.SetPosition(new Rect(outputPositionB, Vector2.zero));
                     }
                 }
-            }
-
-            public void Clear()
-            {
-                OutputNodes.Clear();
             }
         }
     }
