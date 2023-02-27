@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using GBG.PlayableGraphMonitor.Editor.GraphView;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -36,9 +37,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             banner.Add(_clipField);
         }
 
-        protected override void OnUpdate(bool playableChanged)
+        protected override void OnUpdate(PlayableGraphViewUpdateContext updateContext, bool playableChanged)
         {
-            base.OnUpdate(playableChanged);
+            base.OnUpdate(updateContext, playableChanged);
 
             if (!Playable.IsValid())
             {
@@ -49,10 +50,18 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var clip = clipPlayable.GetClip();
             _clipField.SetValueWithoutNotify(clip);
 
-            var duration = clip ? clip.length : float.PositiveInfinity;
-            var progress = (float)(Playable.GetTime() / duration) % 1.0f * 100;
-            // Expensive operations
-            _progressBar.SetValueWithoutNotify(progress);
+            if (updateContext.ShowClipProgressBar)
+            {
+                _progressBar.style.display = DisplayStyle.Flex;
+                var duration = clip ? clip.length : float.PositiveInfinity;
+                var progress = (float)(Playable.GetTime() / duration) % 1.0f * 100;
+                // Expensive operations
+                _progressBar.SetValueWithoutNotify(progress);
+            }
+            else
+            {
+                _progressBar.style.display = DisplayStyle.None;
+            }
         }
 
         // public override void Release()

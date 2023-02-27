@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using GBG.PlayableGraphMonitor.Editor.GraphView;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.Playables;
@@ -12,7 +13,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         private string _extraLabel;
 
 
-        public void Update(Playable playable, string extraLabel)
+        public void Update(PlayableGraphViewUpdateContext updateContext, Playable playable, string extraLabel)
         {
             var playableChanged = false;
             if (Playable.GetHandle() != playable.GetHandle())
@@ -49,10 +50,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 RefreshPorts();
             }
 
-            OnUpdate(playableChanged);
+            OnUpdate(updateContext, playableChanged);
         }
 
-        protected virtual void OnUpdate(bool playableChanged)
+        protected virtual void OnUpdate(PlayableGraphViewUpdateContext updateContext, bool playableChanged)
         {
         }
 

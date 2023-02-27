@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using GBG.PlayableGraphMonitor.Editor.GraphView;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor;
 using UnityEngine;
@@ -9,7 +10,7 @@ using PlayableUtility = UnityEditor.Playables.Utility;
 
 namespace GBG.PlayableGraphMonitor.Editor
 {
-    public partial class PlayableGraphMonitorWindow : EditorWindow
+    public partial class PlayableGraphMonitorWindow : EditorWindow, IHasCustomMenu
     {
         #region Static
 
@@ -39,6 +40,11 @@ namespace GBG.PlayableGraphMonitor.Editor
             return true;
         }
 
+        private static long GetCurrentEditorTimeMs()
+        {
+            return (long)(EditorApplication.timeSinceStartup * 1000);
+        }
+
         private static PlayableGraphMonitorWindow _instance;
 
         #endregion
@@ -49,6 +55,9 @@ namespace GBG.PlayableGraphMonitor.Editor
             // An invalid graph, for compatible with Unity 2019
             new PlayableGraph()
         };
+
+        [SerializeField]
+        private PlayableGraphViewUpdateContext _viewUpdateContext = new PlayableGraphViewUpdateContext();
 
         private long _nextUpdateViewTimeMS;
 
@@ -109,7 +118,9 @@ namespace GBG.PlayableGraphMonitor.Editor
 
             try
             {
-                _graphView.Update(_graphPopupField.value, _autoLayoutToggle.value);
+                _viewUpdateContext.PlayableGraph = _graphPopupField.value;
+                _viewUpdateContext.AutoLayout = _autoLayoutToggle.value;
+                _graphView.Update(_viewUpdateContext);
             }
             catch (StackOverflowException soe)
             {
@@ -165,9 +176,15 @@ namespace GBG.PlayableGraphMonitor.Editor
         }
 
 
-        private static long GetCurrentEditorTimeMs()
+        void IHasCustomMenu.AddItemsToMenu(GenericMenu menu)
         {
-            return (long)(EditorApplication.timeSinceStartup * 1000);
+            menu.AddItem(new GUIContent("Keep updating edges when mouse leave GraphView(will degrade performance)"),
+                _viewUpdateContext.KeepUpdatingEdges, OnToggleKeepUpdatingEdges);
+        }
+
+        private void OnToggleKeepUpdatingEdges()
+        {
+            _viewUpdateContext.KeepUpdatingEdges = !_viewUpdateContext.KeepUpdatingEdges;
         }
     }
 }

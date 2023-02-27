@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Text;
+using GBG.PlayableGraphMonitor.Editor.GraphView;
 using UnityEngine;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
@@ -12,9 +13,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         private Func<Type> _getJobTypeFunc;
 
 
-        protected override void OnUpdate(bool playableChanged)
+        protected override void OnUpdate(PlayableGraphViewUpdateContext updateContext, bool playableChanged)
         {
-            base.OnUpdate(playableChanged);
+            base.OnUpdate(updateContext, playableChanged);
 
             if (playableChanged)
             {

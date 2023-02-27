@@ -80,6 +80,16 @@ namespace GBG.PlayableGraphMonitor.Editor
             _inspectorToggle.RegisterValueChangedCallback(ToggleInspector);
             _toolbar.Add(_inspectorToggle);
 
+            // Clip ProgressBar toggle
+            var clipProgressBarToggle = new ToolbarToggle()
+            {
+                name = "clip-progress-bar-toggle",
+                text = "Clip Progress",
+                value = _viewUpdateContext.ShowClipProgressBar,
+            };
+            clipProgressBarToggle.RegisterValueChangedCallback(ToggleDisplayClipProgressBar);
+            _toolbar.Add(clipProgressBarToggle);
+
             // Auto layout toggle
             _autoLayoutToggle = new ToolbarToggle()
             {
@@ -203,6 +213,11 @@ namespace GBG.PlayableGraphMonitor.Editor
         {
             var showInspector = evt.newValue;
             _nodeInspectorPanel.style.display = showInspector ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private void ToggleDisplayClipProgressBar(ChangeEvent<bool> evt)
+        {
+            _viewUpdateContext.ShowClipProgressBar = evt.newValue;
         }
 
         private void ToggleAutoLayout(ChangeEvent<bool> evt)

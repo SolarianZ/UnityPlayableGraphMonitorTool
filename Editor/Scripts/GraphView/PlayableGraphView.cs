@@ -13,6 +13,21 @@ using UEdge = UnityEditor.Experimental.GraphView.Edge;
 
 namespace GBG.PlayableGraphMonitor.Editor.GraphView
 {
+    [Serializable]
+    public class PlayableGraphViewUpdateContext
+    {
+        public PlayableGraph PlayableGraph;
+
+        public bool AutoLayout;
+
+        /// <summary>
+        /// Keep updating edges when mouse leave GraphView(will degrade performance).
+        /// </summary>
+        public bool KeepUpdatingEdges = true;
+
+        public bool ShowClipProgressBar = true;
+    }
+
     public class PlayableGraphView : UGraphView
     {
         private PlayableGraph _playableGraph;
@@ -51,21 +66,21 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
         }
 
-        public void Update(PlayableGraph playableGraph, bool autoLayout)
+        public void Update(PlayableGraphViewUpdateContext updateContext)
         {
-            var newPlayableGraph = !GraphTool.IsEqual(ref _playableGraph, ref playableGraph);
-            _playableGraph = playableGraph;
+            var newPlayableGraph = !GraphTool.IsEqual(ref _playableGraph, ref updateContext.PlayableGraph);
+            _playableGraph = updateContext.PlayableGraph;
 
             RecycleAllNodesAndEdges();
-            AllocAndSetupAllNodes();
+            AllocAndSetupAllNodes(updateContext);
             ConnectNodes();
-            if (autoLayout)
+            if (updateContext.AutoLayout)
             {
                 // If there are cycles in PlayableGraph, here will throw a StackOverflowException
                 CalculateLayout();
             }
 
-            UpdateActiveEdges();
+            UpdateActiveEdges(updateContext);
             RemoveUnusedElementsFromView();
 
             if (newPlayableGraph)
@@ -81,7 +96,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             _playableNodePoolFactory.RecycleAllActiveNodes();
         }
 
-        private void AllocAndSetupAllNodes()
+        private void AllocAndSetupAllNodes(PlayableGraphViewUpdateContext updateContext)
         {
             if (!_playableGraph.IsValid())
             {
@@ -101,11 +116,11 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             {
                 var playableOutput = _playableGraph.GetOutput(i);
                 var inputPlayable = playableOutput.GetSourcePlayable();
-                AllocAndSetupPlayableNodeTree(inputPlayable);
+                AllocAndSetupPlayableNodeTree(updateContext, inputPlayable);
             }
         }
 
-        private void AllocAndSetupPlayableNodeTree(Playable rootPlayable)
+        private void AllocAndSetupPlayableNodeTree(PlayableGraphViewUpdateContext updateContext, Playable rootPlayable)
         {
             if (!rootPlayable.IsValid())
             {
@@ -114,7 +129,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
             var playableNode = _playableNodePoolFactory.Alloc(rootPlayable);
             var playableNodeExtraLabel = GetExtraNodeLabel(rootPlayable);
-            playableNode.Update(rootPlayable, playableNodeExtraLabel);
+            playableNode.Update(updateContext, rootPlayable, playableNodeExtraLabel);
 
             for (int i = 0; i < rootPlayable.GetInputCount(); i++)
             {
@@ -124,7 +139,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                     continue;
                 }
 
-                AllocAndSetupPlayableNodeTree(inputPlayable);
+                AllocAndSetupPlayableNodeTree(updateContext, inputPlayable);
             }
         }
 
@@ -295,9 +310,9 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             return outputGroup;
         }
 
-        private void UpdateActiveEdges()
+        private void UpdateActiveEdges(PlayableGraphViewUpdateContext updateContext)
         {
-            if (_isViewFocused)
+            if (_isViewFocused || !updateContext.KeepUpdatingEdges)
             {
                 return;
             }
