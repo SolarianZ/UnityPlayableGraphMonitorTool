@@ -25,6 +25,9 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         private readonly Action _frameAllAction;
 
+        private readonly Dictionary<PlayableHandle, PlayableOutputGroup> _outputGroups =
+            new Dictionary<PlayableHandle, PlayableOutputGroup>();
+
         private IReadOnlyDictionary<PlayableHandle, string> _nodeExtraLabelTable;
 
         private bool _isViewFocused;
@@ -189,21 +192,79 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             }
         }
 
-        // One Playable to many PlayableOutputs layout:
-        //   1. Group PlayableOutputs by their input
-        //   2. Each group has a min y size(Playable count times standard node y size),
-        //      input tree's y size should be equal or greater than this min y size
-        //   3. Each group has a anchor point(their input Playable's position)
-        //   4. In each group, layout PlayableOutputs on both sides of the anchor point
-
         private void CalculateLayout()
         {
-            var origin = Vector2.zero;
-            foreach (var outputNode in _outputNodePool.GetActiveNodes())
+            // TODO: Use pool
+            _outputGroups.Clear();
+
+            if (!_playableGraph.IsValid())
             {
-                outputNode.CalculateLayout(origin, out var treeSize);
-                origin.y += treeSize.y + GraphViewNode.VERTICAL_SPACE;
+                return;
             }
+
+            // Collect PlayableOutput groups
+            var rootPlayableCount = _playableGraph.GetRootPlayableCount();
+            var outputCount = _playableGraph.GetOutputCount();
+            for (int i = 0; i < outputCount; i++)
+            {
+                var playableOutput = _playableGraph.GetOutput(i);
+                var sourcePlayable = playableOutput.GetSourcePlayable();
+                if (!sourcePlayable.IsValid())
+                {
+                    sourcePlayable = default;
+                }
+
+                var sourcePlayableHandle = sourcePlayable.GetHandle();
+                if (!_outputGroups.TryGetValue(sourcePlayableHandle, out var outputGroup))
+                {
+                    // TODO: Use pool
+                    outputGroup = new PlayableOutputGroup();
+                    _outputGroups.Add(sourcePlayableHandle, outputGroup);
+                }
+
+                var outputNode = _outputNodePool.GetActiveNode(playableOutput);
+                outputGroup.OutputNodes.Add(outputNode);
+            }
+
+            // Layout root Playables and PlayableOutputs
+            var rootPlayableOrigin = Vector2.zero;
+            for (int i = 0; i < rootPlayableCount; i++)
+            {
+                // Layout root Playables
+                var playable = _playableGraph.GetRootPlayable(i);
+                var playableNode = _playableNodePoolFactory.GetActiveNode(playable);
+                playableNode.CalculateLayout(rootPlayableOrigin,
+                    out var playableNodePosition, out var playableTreeSize);
+
+                var playableHandle = playable.GetHandle();
+                var outputGroup = _outputGroups[playableHandle];
+                var minVerticalSize = outputGroup.GetOutputsVerticalSize();
+                if (playableTreeSize.y < minVerticalSize)
+                {
+                    playableTreeSize.y = minVerticalSize;
+                }
+
+                rootPlayableOrigin.y += playableTreeSize.y + GraphViewNode.VERTICAL_SPACE;
+
+                // Layout PlayableOutputs
+                outputGroup.LayoutOutputNodes(playableNodePosition);
+                _outputGroups.Remove(playableHandle);
+            }
+
+            // Layout PlayableOutputs which has no source Playable
+            Playable invalidPlayable = default;
+            if (_outputGroups.TryGetValue(invalidPlayable.GetHandle(), out var isolatedInputOutputGroup))
+            {
+                isolatedInputOutputGroup.LayoutOutputNodes(rootPlayableOrigin);
+            }
+
+            // OLD VERSION
+            // var origin = Vector2.zero;
+            // foreach (var outputNode in _outputNodePool.GetActiveNodes())
+            // {
+            //     outputNode.CalculateLayout(origin, out var treeSize);
+            //     origin.y += treeSize.y + GraphViewNode.VERTICAL_SPACE;
+            // }
         }
 
         private void UpdateActiveEdges()
@@ -285,6 +346,84 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         private void OnPointerLeave(PointerLeaveEvent evt)
         {
             _isViewFocused = false;
+        }
+
+
+        class PlayableOutputGroup
+        {
+            public readonly List<PlayableOutputNode> OutputNodes = new List<PlayableOutputNode>();
+
+
+            public float GetOutputsVerticalSize()
+            {
+                var verticalSize = 0f;
+                foreach (var outputNode in OutputNodes)
+                {
+                    verticalSize += outputNode.GetNodeSize().y + GraphViewNode.VERTICAL_SPACE;
+                }
+
+                return verticalSize;
+            }
+
+            public void LayoutOutputNodes(Vector2 outputAnchor)
+            {
+                var outputOrigin = new Vector2(
+                    outputAnchor.x + GraphViewNode.HORIZONTAL_SPACE + GraphViewNode.MaxNodeSize.x,
+                    outputAnchor.y
+                );
+
+                var outputCount = OutputNodes.Count;
+                var mid = outputCount / 2;
+                if ((outputCount & 1) == 1) // Odd
+                {
+                    OutputNodes[mid].SetPosition(new Rect(outputOrigin, Vector2.zero));
+
+                    for (int i = 1; i <= mid; i++)
+                    {
+                        // Upward
+                        var outputNodeA = OutputNodes[mid - i];
+                        var outputPositionA = new Vector2(
+                            outputOrigin.x,
+                            outputOrigin.y - (GraphViewNode.VERTICAL_SPACE + outputNodeA.GetNodeSize().y) * i
+                        );
+                        outputNodeA.SetPosition(new Rect(outputPositionA, Vector2.zero));
+
+                        // Downward
+                        var outputNodeB = OutputNodes[mid + i];
+                        var outputPositionB = new Vector2(
+                            outputOrigin.x,
+                            outputOrigin.y + (GraphViewNode.VERTICAL_SPACE + outputNodeB.GetNodeSize().y) * i
+                        );
+                        outputNodeB.SetPosition(new Rect(outputPositionB, Vector2.zero));
+                    }
+                }
+                else // Even
+                {
+                    for (int i = 0; i < mid; i++)
+                    {
+                        // Upward
+                        var outputNodeA = OutputNodes[mid - i - 1];
+                        var outputPositionA = new Vector2(
+                            outputOrigin.x,
+                            outputOrigin.y - GraphViewNode.VERTICAL_SPACE * (i + 1.5f) - outputNodeA.GetNodeSize().y * i
+                        );
+                        outputNodeA.SetPosition(new Rect(outputPositionA, Vector2.zero));
+
+                        // Downward
+                        var outputNodeB = OutputNodes[mid + i];
+                        var outputPositionB = new Vector2(
+                            outputOrigin.x,
+                            outputOrigin.y + GraphViewNode.VERTICAL_SPACE * (i + 1.5f) + outputNodeB.GetNodeSize().y * i
+                        );
+                        outputNodeB.SetPosition(new Rect(outputPositionB, Vector2.zero));
+                    }
+                }
+            }
+
+            public void Clear()
+            {
+                OutputNodes.Clear();
+            }
         }
     }
 }

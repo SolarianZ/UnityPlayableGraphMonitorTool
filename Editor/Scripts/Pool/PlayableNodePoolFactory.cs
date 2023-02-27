@@ -41,13 +41,18 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
             {
                 return false;
             }
-            
+
             var playableNodePool = GetOrCreatePlayableNodePool(playable);
             return playableNodePool.IsNodeActive(playable);
         }
 
         public PlayableNode GetActiveNode(Playable playable)
         {
+            if (!playable.IsValid())
+            {
+                return null;
+            }
+
             var playableNodePool = GetOrCreatePlayableNodePool(playable);
             return playableNodePool.GetActiveNode(playable);
         }

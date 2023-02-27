@@ -22,7 +22,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             capabilities &= ~Capabilities.Copiable;
 #endif
 
-            style.maxWidth = StandardNodeSize.x - 100;
+            style.maxWidth = MaxNodeSize.x - 100;
 
             // Hide collapse button
             titleButtonContainer.Clear();
@@ -33,8 +33,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         public virtual void Release()
         {
-            CachedHierarchySize = null;
-            LayoutCalculated = false;
+            _cachedHierarchySize = null;
         }
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
@@ -74,18 +73,16 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         public const int VERTICAL_SPACE = 60;
 
-        public static readonly Vector2 StandardNodeSize = new Vector2(400, 150);
+        public static readonly Vector2 MaxNodeSize = new Vector2(400, 150);
 
-        public Vector2? CachedHierarchySize { get; protected set; }
-        
-        public bool LayoutCalculated { get; protected set; }
+        private Vector2? _cachedHierarchySize;
 
 
-        public virtual void CalculateLayout(Vector2 origin, out Vector2 hierarchySize)
+        public void CalculateLayout(Vector2 origin, out Vector2 nodePosition, out Vector2 hierarchySize)
         {
             hierarchySize = GetHierarchySize();
-            var nodePos = CalculateSubTreeRootNodePosition(hierarchySize, origin);
-            SetPosition(new Rect(nodePos, Vector2.zero));
+            nodePosition = CalculateSubTreeRootNodePosition(hierarchySize, origin);
+            SetPosition(new Rect(nodePosition, Vector2.zero));
 
             origin.x -= GetNodeSize().x - HORIZONTAL_SPACE;
             for (int i = 0; i < InputPorts.Count; i++)
@@ -96,24 +93,22 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                     continue;
                 }
 
-                childNode.CalculateLayout(origin, out var childHierarchySize);
+                childNode.CalculateLayout(origin, out var _, out var childHierarchySize);
                 origin.y += childHierarchySize.y;
             }
-
-            LayoutCalculated = true;
         }
 
-        public virtual Vector2 GetHierarchySize()
+        public Vector2 GetHierarchySize()
         {
-            if (CachedHierarchySize != null)
+            if (_cachedHierarchySize != null)
             {
-                return CachedHierarchySize.Value;
+                return _cachedHierarchySize.Value;
             }
 
             if (InputPorts.Count == 0)
             {
-                CachedHierarchySize = GetNodeSize();
-                return CachedHierarchySize.Value;
+                _cachedHierarchySize = GetNodeSize();
+                return _cachedHierarchySize.Value;
             }
 
             var subHierarchySize = Vector2.zero;
@@ -129,14 +124,14 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             var hierarchySize = GetNodeSize() + new Vector2(HORIZONTAL_SPACE, 0);
             hierarchySize.y = Mathf.Max(hierarchySize.y, subHierarchySize.y);
-            CachedHierarchySize = hierarchySize;
+            _cachedHierarchySize = hierarchySize;
 
-            return CachedHierarchySize.Value;
+            return _cachedHierarchySize.Value;
         }
 
-        protected Vector2 GetNodeSize()
+        public Vector2 GetNodeSize()
         {
-            return StandardNodeSize;
+            return MaxNodeSize;
             //return worldBound.size;
         }
 
