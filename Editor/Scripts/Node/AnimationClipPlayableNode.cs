@@ -20,6 +20,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             banner.style.height = StyleKeyword.Auto;
 
             _progressBar = new ProgressBar();
+#if !UNITY_2021_1_OR_NEWER
+            var progressBarBg = _progressBar.Q<VisualElement>(className: "unity-progress-bar__background");
+            progressBarBg.style.height = 17;
+#endif
             banner.Add(_progressBar);
 
             _clipField = new ObjectField
@@ -41,24 +45,23 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 return;
             }
 
-            // TODO OPTIMIZABLE: Expensive operations
-            
+
             var clipPlayable = (AnimationClipPlayable)Playable;
             var clip = clipPlayable.GetAnimationClip();
             _clipField.SetValueWithoutNotify(clip);
 
             var duration = clip ? clip.length : float.PositiveInfinity;
             var progress = (float)(Playable.GetTime() / duration) % 1.0f * 100;
+            // Expensive operations
             _progressBar.SetValueWithoutNotify(progress);
-            _progressBar.MarkDirtyRepaint();
         }
 
-        public override void Release()
-        {
-            base.Release();
-
-            _clipField.SetValueWithoutNotify(null);
-        }
+        // public override void Release()
+        // {
+        //     base.Release();
+        //     // Change the value of the ObjectField is expensive, so we dont clear referenced clip asset to save performance 
+        //     // _clipField.SetValueWithoutNotify(null);
+        // }
 
         protected override void AppendNodeDescription(StringBuilder descBuilder)
         {
