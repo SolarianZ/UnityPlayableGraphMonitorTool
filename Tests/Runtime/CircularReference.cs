@@ -9,7 +9,7 @@ namespace GBG.PlayableGraphMonitor.Tests
     [RequireComponent(typeof(Animator))]
     public class CircularReference : MonoBehaviour
     {
-        public bool ExtraLabel = false;
+        public bool ExtraLabel;
 
         private PlayableGraph _graph;
 
@@ -68,6 +68,16 @@ namespace GBG.PlayableGraphMonitor.Tests
             var animator = GetComponent<Animator>();
             var animOutput = AnimationPlayableOutput.Create(_graph, "AnimOutput", animator);
             animOutput.SetSourcePlayable(playableA, 0);
+
+            // Playable D and E, with cycle and do not connect to PlayableOutput
+            // D and E will not show in PlayableGraph Monitor
+            var playableD = AnimationMixerPlayable.Create(_graph, 1);
+            _extraLabelTable.Add(playableD.GetHandle(), "D");
+            var playableE = AnimationMixerPlayable.Create(_graph, 1);
+            _extraLabelTable.Add(playableE.GetHandle(), "E");
+            playableD.ConnectInput(0, playableE, 0, 1f);
+            playableE.ConnectInput(0, playableD, 0, 1f);
+            Debug.LogError("D and E will not show in PlayableGraph Monitor!", this);
 
             _graph.Play();
 

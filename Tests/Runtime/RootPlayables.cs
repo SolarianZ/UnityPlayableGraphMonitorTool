@@ -9,7 +9,7 @@ namespace GBG.PlayableGraphMonitor.Tests
     [RequireComponent(typeof(Animator))]
     public class RootPlayables : MonoBehaviour
     {
-        public bool ExtraLabel = false;
+        public bool ExtraLabel;
 
         private PlayableGraph _graph;
 
@@ -38,6 +38,7 @@ namespace GBG.PlayableGraphMonitor.Tests
             var animator = GetComponent<Animator>();
             var animOutput0 = AnimationPlayableOutput.Create(_graph, "AnimOutput0", animator);
             var animOutput1 = AnimationPlayableOutput.Create(_graph, "AnimOutput1", animator);
+            var animOutput2 = AnimationPlayableOutput.Create(_graph, "AnimOutput2", animator);
 
             // Playable A
             var playableA = AnimationMixerPlayable.Create(_graph, 1);
@@ -48,6 +49,19 @@ namespace GBG.PlayableGraphMonitor.Tests
             playableB.SetOutputCount(2);
             _extraLabelTable.Add(playableB.GetHandle(), "B");
 
+            // Playable C
+            var playableC = AnimationMixerPlayable.Create(_graph);
+            _extraLabelTable.Add(playableC.GetHandle(), "C");
+
+            // Playable D
+            var playableD = AnimationMixerPlayable.Create(_graph);
+            playableD.SetOutputCount(2);
+            _extraLabelTable.Add(playableD.GetHandle(), "D");
+
+            // Playable E
+            var playableE = AnimationMixerPlayable.Create(_graph, 1);
+            _extraLabelTable.Add(playableE.GetHandle(), "E");
+
             // Connection
             // A0 -> Output0
             // B0 -> A0
@@ -55,6 +69,11 @@ namespace GBG.PlayableGraphMonitor.Tests
             animOutput0.SetSourcePlayable(playableA, 0);
             playableA.ConnectInput(0, playableB, 0, 1f);
             animOutput1.SetSourcePlayable(playableB, 1);
+            // C0 -> null
+            // D0 -> Output2
+            // D1 -> E1
+            animOutput2.SetSourcePlayable(playableD, 0);
+            playableE.ConnectInput(0, playableD, 1, 1f);
 
             _graph.Play();
 

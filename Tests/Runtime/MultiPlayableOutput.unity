@@ -131,9 +131,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1291265026}
   - component: {fileID: 1291265028}
+  - component: {fileID: 1291265029}
   - component: {fileID: 1291265027}
   m_Layer: 0
-  m_Name: LargeAnimationGraph
+  m_Name: MultiPlayableOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -162,12 +163,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1291265025}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48cbde75c9b06c5499cc486d2f498525, type: 3}
+  m_Script: {fileID: 11500000, guid: 8768eea7de804d448bf4df6b6945de50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Clip: {fileID: 7400000, guid: 6bd20d1a359ea7e4e8c8d5e36aea1dbc, type: 2}
-  Depth: 5
-  Branch: 3
   ExtraLabel: 0
 --- !u!95 &1291265028
 Animator:
@@ -188,6 +186,26 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!320 &1291265029
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1291265025}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 8e0b575e530334f479e7aee6dffcbc91, type: 2}
+  m_InitialState: 1
+  m_WrapMode: 1
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings:
+  - key: {fileID: -98448463785153464, guid: 8e0b575e530334f479e7aee6dffcbc91, type: 2}
+    value: {fileID: 1291265028}
+  m_ExposedReferences:
+    m_References:
+    - b57f06f2363ad1f479633e4922d25359: {fileID: 1607492139}
 --- !u!1 &1503105226
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,9 +7,9 @@ using UnityEngine.Playables;
 namespace GBG.PlayableGraphMonitor.Tests
 {
     [RequireComponent(typeof(Animator))]
-    public class MultiOutput : MonoBehaviour
+    public class PlayableWithMultiOutputs : MonoBehaviour
     {
-        public bool ExtraLabel = false;
+        public bool ExtraLabel;
 
         private PlayableGraph _graph;
 
@@ -32,7 +32,7 @@ namespace GBG.PlayableGraphMonitor.Tests
 
         private void Start()
         {
-            _graph = PlayableGraph.Create(nameof(MultiOutput));
+            _graph = PlayableGraph.Create(nameof(PlayableWithMultiOutputs));
 
             // Outputs
             var animator = GetComponent<Animator>();

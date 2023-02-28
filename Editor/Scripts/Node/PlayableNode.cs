@@ -1,7 +1,10 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using GBG.PlayableGraphMonitor.Editor.GraphView;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.Playables;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
@@ -10,10 +13,16 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
     {
         public Playable Playable { get; private set; }
 
+        public bool IsRootPlayable { get; set; }
+
+        public Vector2 Position { get; private set; }
+
+        public PlayableNode ParentNode { get; set; }
+
         private string _extraLabel;
 
 
-        public void Update(PlayableGraphViewUpdateContext updateContext, Playable playable, string extraLabel)
+        public void Update(PlayableGraphViewUpdateContext updateContext, Playable playable)
         {
             var playableChanged = false;
             if (Playable.GetHandle() != playable.GetHandle())
@@ -24,6 +33,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 this.SetNodeStyle(playable.GetPlayableNodeColor());
             }
 
+            var extraLabel = GetExtraNodeLabel(updateContext.NodeExtraLabelTable);
             if (playableChanged || _extraLabel != extraLabel)
             {
                 _extraLabel = extraLabel;
@@ -57,6 +67,36 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         {
         }
 
+        public PlayableNode FindRootPlayableNode()
+        {
+            var node = this;
+            while (node != null)
+            {
+                if (node.IsRootPlayable)
+                {
+                    return node;
+                }
+
+                node = node.ParentNode;
+            }
+
+            throw new Exception("This should not happen!");
+        }
+
+        public override void Release()
+        {
+            base.Release();
+            IsRootPlayable = false;
+            Position = default;
+            ParentNode = null;
+        }
+
+        public override void SetPosition(Rect newPos)
+        {
+            Position = newPos.position;
+            base.SetPosition(newPos);
+        }
+
 
         #region Description
 
@@ -75,6 +115,20 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             return GetType().Name;
         }
+
+        public string GetExtraNodeLabel(IReadOnlyDictionary<PlayableHandle, string> nodeExtraLabelTable)
+        {
+            if (nodeExtraLabelTable == null || !Playable.IsValid())
+            {
+                return null;
+            }
+
+            var playableHandle = Playable.GetHandle();
+            nodeExtraLabelTable.TryGetValue(playableHandle, out var label);
+
+            return label;
+        }
+
 
         protected override void AppendNodeDescription(StringBuilder descBuilder)
         {

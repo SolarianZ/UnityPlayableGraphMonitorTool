@@ -48,17 +48,18 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
 
         public PlayableNode GetActiveNode(Playable playable)
         {
-            if (!playable.IsValid())
-            {
-                return null;
-            }
-
             var playableNodePool = GetOrCreatePlayableNodePool(playable);
             return playableNodePool.GetActiveNode(playable);
         }
 
-        public bool GetActiveNode(Playable playable, out PlayableNode node)
+        public bool TryGetActiveNode(Playable playable, out PlayableNode node)
         {
+            if (!playable.IsValid())
+            {
+                node = null;
+                return false;
+            }
+
             var playableNodePool = GetOrCreatePlayableNodePool(playable);
             return playableNodePool.TryGetActiveNode(playable, out node);
         }

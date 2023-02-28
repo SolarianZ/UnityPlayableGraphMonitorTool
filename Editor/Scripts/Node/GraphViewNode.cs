@@ -80,11 +80,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         public void CalculateLayout(Vector2 origin, out Vector2 nodePosition, out Vector2 hierarchySize)
         {
+            var nodeSize = GetNodeSize();
             hierarchySize = CalculateHierarchySize();
-            nodePosition = CalculateSubTreeRootNodePosition(hierarchySize, origin);
+            nodePosition = CalculateTreeRootNodePosition(origin, hierarchySize, nodeSize);
             SetPosition(new Rect(nodePosition, Vector2.zero));
 
-            origin.x -= GetNodeSize().x - HORIZONTAL_SPACE;
+            origin.x -= nodeSize.x - HORIZONTAL_SPACE;
             for (int i = 0; i < InputPorts.Count; i++)
             {
                 var childNode = GetFirstConnectedInputNode(InputPorts[i]);
@@ -122,8 +123,11 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             subHierarchySize.y += (InputPorts.Count - 1) * VERTICAL_SPACE;
 
-            var hierarchySize = GetNodeSize() + new Vector2(HORIZONTAL_SPACE, 0);
-            hierarchySize.y = Mathf.Max(hierarchySize.y, subHierarchySize.y);
+            var nodeSize = GetNodeSize();
+            var hierarchySize = new Vector2(
+                nodeSize.x + subHierarchySize.x + HORIZONTAL_SPACE,
+                Mathf.Max(nodeSize.y, subHierarchySize.y)
+            );
             _cachedHierarchySize = hierarchySize;
 
             return _cachedHierarchySize.Value;
@@ -135,11 +139,11 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             //return worldBound.size;
         }
 
-        protected static Vector2 CalculateSubTreeRootNodePosition(Vector2 subTreeSize, Vector2 subTreeOrigin)
+        protected static Vector2 CalculateTreeRootNodePosition(Vector2 treeOrigin, Vector2 treeSize,
+            Vector2 rootNodeSize)
         {
-            var subTreePos = subTreeOrigin;
-            subTreePos.y += subTreeSize.y / 2;
-            return subTreePos;
+            var rootNodePosition = new Vector2(treeOrigin.x, treeOrigin.y + treeSize.y / 2f - rootNodeSize.y / 2f);
+            return rootNodePosition;
         }
 
         protected static GraphViewNode GetFirstConnectedInputNode(Port port)

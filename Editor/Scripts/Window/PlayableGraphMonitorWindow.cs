@@ -8,6 +8,7 @@ using UnityEngine.Playables;
 using UnityEngine.UIElements;
 using PlayableUtility = UnityEditor.Playables.Utility;
 
+
 namespace GBG.PlayableGraphMonitor.Editor
 {
     public partial class PlayableGraphMonitorWindow : EditorWindow, IHasCustomMenu
@@ -25,7 +26,7 @@ namespace GBG.PlayableGraphMonitor.Editor
         public static PlayableGraphMonitorWindow Open(IReadOnlyDictionary<PlayableHandle, string> nodeExtraLabelTable)
         {
             var window = Open();
-            window.SetNodeExtraLabelTable(nodeExtraLabelTable);
+            window._viewUpdateContext.NodeExtraLabelTable = nodeExtraLabelTable;
             return window;
         }
 
@@ -36,7 +37,7 @@ namespace GBG.PlayableGraphMonitor.Editor
                 return false;
             }
 
-            _instance.SetNodeExtraLabelTable(nodeExtraLabelTable);
+            _instance._viewUpdateContext.NodeExtraLabelTable = nodeExtraLabelTable;
             return true;
         }
 
@@ -61,11 +62,8 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private long _nextUpdateViewTimeMS;
 
-
-        public void SetNodeExtraLabelTable(IReadOnlyDictionary<PlayableHandle, string> nodeExtraLabelTable)
-        {
-            _graphView.SetNodeExtraLabelTable(nodeExtraLabelTable);
-        }
+        // ReSharper disable once IdentifierTypo
+        private bool _updateNodesMovability;
 
 
         private void OnEnable()
@@ -101,6 +99,11 @@ namespace GBG.PlayableGraphMonitor.Editor
         {
             UpdateGraphView();
             DrawGraphNodeInspector();
+
+            if (_updateNodesMovability)
+            {
+                _graphView.SetNodesMovability(_refreshRate == RefreshRate.Manual);
+            }
         }
 
         private void UpdateGraphView()
@@ -111,32 +114,31 @@ namespace GBG.PlayableGraphMonitor.Editor
                 return;
             }
 
-            _nextUpdateViewTimeMS = currentTimeMS + (long)(RefreshRate)_refreshRateField.value;
+            _nextUpdateViewTimeMS = currentTimeMS + (long)_refreshRate;
 
-            // Clear error message
+            // Hide error tip
             _errorTipLabel.style.display = DisplayStyle.None;
 
             try
             {
                 _viewUpdateContext.PlayableGraph = _graphPopupField.value;
-                _viewUpdateContext.AutoLayout = _autoLayoutToggle.value;
                 _graphView.Update(_viewUpdateContext);
             }
             catch (StackOverflowException soe)
             {
-                // Stop refreshing and calculating layout
+                // Stop refreshing and stop calculating layout
                 _refreshRateField.value = RefreshRate.Manual;
                 _autoLayoutToggle.value = false;
 
                 // Log errors
                 var playableGraphName = _graphPopupField.value.GetEditorName();
-                var message = $"There may be cycles in the PlayableGraph '{playableGraphName}'," +
-                              $"you can set refresh rate to '{RefreshRate.Manual}' and disable 'Auto Layout'" +
-                              "and drag node layout manually to find out the cycle.";
+                var message = $"There may be cycles in the PlayableGraph '{playableGraphName}'." +
+                              $"You can set the refresh rate to '{RefreshRate.Manual}' and disable 'Auto Layout'" +
+                              "and drag nodes manually to find out the cycle.";
                 Debug.LogError(message, this);
                 Debug.LogException(soe, this);
 
-                // Display error message
+                // Display error tip
                 _errorTipLabel.style.display = DisplayStyle.Flex;
             }
         }
@@ -160,6 +162,9 @@ namespace GBG.PlayableGraphMonitor.Editor
             return container;
         }
 
+
+        #region PlayableGraph Events
+
         private void OnGraphCreated(PlayableGraph graph)
         {
             if (!_graphs.Contains(graph))
@@ -175,6 +180,10 @@ namespace GBG.PlayableGraphMonitor.Editor
             UpdatePlayableGraphPopupField();
         }
 
+        #endregion
+
+
+        #region Context Menu
 
         void IHasCustomMenu.AddItemsToMenu(GenericMenu menu)
         {
@@ -186,5 +195,7 @@ namespace GBG.PlayableGraphMonitor.Editor
         {
             _viewUpdateContext.KeepUpdatingEdges = !_viewUpdateContext.KeepUpdatingEdges;
         }
+
+        #endregion
     }
 }

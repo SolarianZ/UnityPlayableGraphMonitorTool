@@ -16,7 +16,7 @@ namespace GBG.PlayableGraphMonitor.Tests
 
         public byte Branch = 3;
 
-        public bool ExtraLabel = false;
+        public bool ExtraLabel;
 
         private PlayableGraph _graph;
 
