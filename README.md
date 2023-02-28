@@ -14,6 +14,8 @@ PlayableGraph monitor tool inspired by [PlayableGraph Visualizer](https://github
 - Zoomable graph view
 - Show extra label on Playable node
 
+[Screenshots](Documents~/Screenshots.md)
+
 ## Supported Unity Version
 
 Unity 2019.4 and later.
