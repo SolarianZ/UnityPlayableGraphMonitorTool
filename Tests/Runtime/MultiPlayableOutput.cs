@@ -5,12 +5,15 @@ using UnityEngine.Animations;
 using UnityEngine.Assertions;
 using UnityEngine.Playables;
 
+
 namespace GBG.PlayableGraphMonitor.Tests
 {
     [RequireComponent(typeof(Animator))]
     [RequireComponent(typeof(PlayableDirector))]
     public class MultiPlayableOutput : MonoBehaviour
     {
+        public bool ConnectTimelinePlayableToMixer = true;
+
         public bool ExtraLabel;
 
         private PlayableGraph _graph;
@@ -60,7 +63,10 @@ namespace GBG.PlayableGraphMonitor.Tests
 
             var mixer1 = AnimationMixerPlayable.Create(_graph);
             _extraLabelTable.Add(mixer1.GetHandle(), "Mixer1");
-            mixer1.AddInput(rootPlayable, 6, 1f);
+            if (ConnectTimelinePlayableToMixer)
+            {
+                mixer1.AddInput(rootPlayable, 6, 1f);
+            }
 
             UpdateNodeExtraLabelTable();
         }

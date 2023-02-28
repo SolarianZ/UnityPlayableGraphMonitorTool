@@ -2,6 +2,7 @@ using GBG.PlayableGraphMonitor.Editor.Node;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEngine.UIElements;
 
+
 namespace GBG.PlayableGraphMonitor.Editor
 {
     public partial class PlayableGraphMonitorWindow
@@ -26,7 +27,8 @@ namespace GBG.PlayableGraphMonitor.Editor
                     paddingLeft = 4,
                     paddingRight = 4,
                     paddingTop = 4,
-                    paddingBottom = 4
+                    paddingBottom = 4,
+                    display = _displayInspector ? DisplayStyle.Flex : DisplayStyle.None,
                 }
             };
 
