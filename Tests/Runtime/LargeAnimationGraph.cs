@@ -5,8 +5,20 @@ using UnityEngine.Animations;
 using UnityEngine.Assertions;
 using UnityEngine.Playables;
 
+
 namespace GBG.PlayableGraphMonitor.Tests
 {
+    public struct EmptyAnimationJob : IAnimationJob
+    {
+        public void ProcessRootMotion(AnimationStream stream)
+        {
+        }
+
+        public void ProcessAnimation(AnimationStream stream)
+        {
+        }
+    }
+
     [RequireComponent(typeof(Animator))]
     public class LargeAnimationGraph : MonoBehaviour
     {
@@ -44,8 +56,11 @@ namespace GBG.PlayableGraphMonitor.Tests
             if (Depth == 1)
             {
                 var animPlayable = AnimationClipPlayable.Create(_graph, Clip);
-                animOutput.SetSourcePlayable(animPlayable);
-                _extraLabelTable.Add(animPlayable.GetHandle(), "Depth=0,Branch=0");
+                _extraLabelTable.Add(animPlayable.GetHandle(), "Depth=1,Branch=1");
+                var scriptPlayable = AnimationScriptPlayable.Create(_graph, new EmptyAnimationJob());
+                _extraLabelTable.Add(scriptPlayable.GetHandle(), "Depth=0,Branch=0");
+                scriptPlayable.AddInput(animPlayable, 0, 1f);
+                animOutput.SetSourcePlayable(scriptPlayable);
                 _graph.Play();
 
                 return;
@@ -77,9 +92,13 @@ namespace GBG.PlayableGraphMonitor.Tests
             {
                 for (int b = 0; b < Branch; b++)
                 {
-                    var anim = AnimationClipPlayable.Create(_graph, Clip);
-                    parent.AddInput(anim, 0, 1f / Branch);
-                    _extraLabelTable.Add(anim.GetHandle(), $"Depth={parentDepth + 1},Branch={b}");
+                    var animPlayable = AnimationClipPlayable.Create(_graph, Clip);
+                    _extraLabelTable.Add(animPlayable.GetHandle(), $"Depth={parentDepth + 2},Branch={b}");
+                    var scriptPlayable = AnimationScriptPlayable.Create(_graph, new EmptyAnimationJob());
+                    _extraLabelTable.Add(scriptPlayable.GetHandle(), $"Depth={parentDepth + 1},Branch={b}");
+                    scriptPlayable.AddInput(animPlayable, 0, 1f);
+
+                    parent.AddInput(scriptPlayable, 0, 1f / Branch);
                 }
 
                 return;
