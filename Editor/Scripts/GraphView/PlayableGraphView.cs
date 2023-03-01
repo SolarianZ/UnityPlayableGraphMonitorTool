@@ -152,15 +152,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                     AllocAndSetupPlayableNodeTree(context, fakeRootPlayable, true);
                 }
 
-                //Debug.LogError(
-                //    $"All Playable has a parent Playable, that means there is at least one cycle in the PlayableGraph '{_playableGraph.GetEditorName()}'!" +
-                //    "If each Playable in a group of Playables is an input to the other Playables in the group, " +
-                //    "and none of them are connected to a PlayableOutput, " +
-                //    "then this group of Playables will not be displayed in the view." +
-                //    $"You can set the refresh rate to '{RefreshRate.Manual}' and disable 'Auto Layout' and drag nodes manually to find out the displayed cycle.");
-
-                return false;
                 // throw new NoRootPlayableException();
+                return false;
             }
 
             for (int i = 0; i < rootPlayableCount; i++)

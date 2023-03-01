@@ -161,9 +161,8 @@ namespace GBG.PlayableGraphMonitor.Editor
 
                 var errorMessage =
                     $"All Playable has a parent Playable, that means there is at least one cycle in the PlayableGraph '{_viewUpdateContext.PlayableGraph.GetEditorName()}'!\n" +
-                    "If each Playable in a group of Playables is an input to the other Playables in the group, " +
-                    "and none of them are connected to a PlayableOutput, " +
-                    "then this group of Playables will not be displayed in the view.\n" +
+                    "If there is a group of Playables where each Playable serves as an input to another one or more Playables in the group (i.e., there is no root Playable), " +
+                    "and none of them are connected to a PlayableOutput, then this group of Playables will not appear in the graph view.\n" +
                     $"You can set the refresh rate to '{RefreshRate.Manual}' and disable 'Auto Layout' and drag nodes manually to find out the displayed cycle.";
                 // Display error message
 #if UNITY_2021_1_OR_NEWER
