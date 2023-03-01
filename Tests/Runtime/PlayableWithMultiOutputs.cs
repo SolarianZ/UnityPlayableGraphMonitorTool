@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
-using GBG.PlayableGraphMonitor.Editor;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+#if UNITY_EDITOR
+using GBG.PlayableGraphMonitor.Editor;
+#endif
 
 namespace GBG.PlayableGraphMonitor.Tests
 {

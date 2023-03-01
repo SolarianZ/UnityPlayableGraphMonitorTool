@@ -60,7 +60,13 @@ namespace GBG.PlayableGraphMonitor.Editor
         [SerializeField]
         private PlayableGraphViewUpdateContext _viewUpdateContext = new PlayableGraphViewUpdateContext();
 
+#if UNITY_2021_1_OR_NEWER
         private HelpBox _errorMessage;
+#else
+        private IMGUIContainer _errorMessageContainer;
+        private string _errorMessage;
+        private void DrawImGuiErrorMessage() => EditorGUILayout.HelpBox(_errorMessage, MessageType.Error);
+#endif
 
         private long _nextUpdateViewTimeMS;
 
@@ -75,6 +81,7 @@ namespace GBG.PlayableGraphMonitor.Editor
             PlayableUtility.graphCreated += OnGraphCreated;
             PlayableUtility.destroyingGraph += OnDestroyingGraph;
 
+#if UNITY_2021_1_OR_NEWER
             _errorMessage = new HelpBox()
             {
                 messageType = HelpBoxMessageType.Error,
@@ -84,6 +91,17 @@ namespace GBG.PlayableGraphMonitor.Editor
                 }
             };
             rootVisualElement.Add(_errorMessage);
+#else
+            _errorMessageContainer = new IMGUIContainer(DrawImGuiErrorMessage)
+            {
+                style =
+                {
+                    display = DisplayStyle.None,
+                }
+            };
+            rootVisualElement.Add(_errorMessageContainer);
+#endif
+
 
             CreateToolbar();
 
@@ -129,7 +147,11 @@ namespace GBG.PlayableGraphMonitor.Editor
             _nextUpdateViewTimeMS = currentTimeMS + (long)_refreshRate;
 
             // Hide error message
+#if UNITY_2021_1_OR_NEWER
             _errorMessage.style.display = DisplayStyle.None;
+#else
+            _errorMessageContainer.style.display = DisplayStyle.None;
+#endif
             _viewUpdateContext.PlayableGraph = _graphPopupField.value;
             if (!_graphView.Update(_viewUpdateContext))
             {
@@ -138,17 +160,21 @@ namespace GBG.PlayableGraphMonitor.Editor
                 _autoLayoutToggle.value = false;
 
                 var errorMessage =
-                        $"All Playable has a parent Playable, that means there is at least one cycle in the PlayableGraph '{_viewUpdateContext.PlayableGraph.GetEditorName()}'!\n" +
-                        "If each Playable in a group of Playables is an input to the other Playables in the group, " +
-                        "and none of them are connected to a PlayableOutput, " +
-                        "then this group of Playables will not be displayed in the view.\n" +
-                        $"You can set the refresh rate to '{RefreshRate.Manual}' and disable 'Auto Layout' and drag nodes manually to find out the displayed cycle.";
+                    $"All Playable has a parent Playable, that means there is at least one cycle in the PlayableGraph '{_viewUpdateContext.PlayableGraph.GetEditorName()}'!\n" +
+                    "If each Playable in a group of Playables is an input to the other Playables in the group, " +
+                    "and none of them are connected to a PlayableOutput, " +
+                    "then this group of Playables will not be displayed in the view.\n" +
+                    $"You can set the refresh rate to '{RefreshRate.Manual}' and disable 'Auto Layout' and drag nodes manually to find out the displayed cycle.";
                 // Display error message
+#if UNITY_2021_1_OR_NEWER
                 _errorMessage.text = errorMessage;
                 _errorMessage.style.display = DisplayStyle.Flex;
+#else
+                _errorMessage = errorMessage;
+                _errorMessageContainer.style.display = DisplayStyle.Flex;
+#endif
                 Debug.LogError(errorMessage);
             }
-
         }
 
         private VisualElement CreateGraphViewAndInspectorContainer()
