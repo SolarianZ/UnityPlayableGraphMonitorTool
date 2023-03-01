@@ -53,8 +53,6 @@ namespace GBG.PlayableGraphMonitor.Editor
         private TextElement _refreshRateLabel;
         private ToolbarButton _manualUpdateViewButton;
 
-        // Error
-        private Label _errorTipLabel;
 
         // Common data
         private static Color NotableTextColor => Color.yellow;
@@ -144,21 +142,6 @@ namespace GBG.PlayableGraphMonitor.Editor
             };
             frameAllButton.Q<TextElement>(className: "unity-text-element").style.color = NormalTextColor;
             _toolbar.Add(frameAllButton);
-
-            // Error label
-            _toolbar.Add(new ToolbarSpacer());
-            _errorTipLabel = new Label
-            {
-                text = "Please check the console logs.",
-                style =
-                {
-                    color = Color.red,
-                    alignSelf = Align.Center,
-                    unityFontStyleAndWeight = FontStyle.Bold,
-                    display = DisplayStyle.None
-                }
-            };
-            _toolbar.Add(_errorTipLabel);
         }
 
         private string GraphPopupFieldFormatter(PlayableGraph graph)

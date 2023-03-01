@@ -60,6 +60,8 @@ namespace GBG.PlayableGraphMonitor.Editor
         [SerializeField]
         private PlayableGraphViewUpdateContext _viewUpdateContext = new PlayableGraphViewUpdateContext();
 
+        private HelpBox _errorMessage;
+
         private long _nextUpdateViewTimeMS;
 
         // ReSharper disable once IdentifierTypo
@@ -72,6 +74,16 @@ namespace GBG.PlayableGraphMonitor.Editor
             _graphs.AddRange(PlayableUtility.GetAllGraphs());
             PlayableUtility.graphCreated += OnGraphCreated;
             PlayableUtility.destroyingGraph += OnDestroyingGraph;
+
+            _errorMessage = new HelpBox()
+            {
+                messageType = HelpBoxMessageType.Error,
+                style =
+                {
+                    display = DisplayStyle.None,
+                }
+            };
+            rootVisualElement.Add(_errorMessage);
 
             CreateToolbar();
 
@@ -116,31 +128,27 @@ namespace GBG.PlayableGraphMonitor.Editor
 
             _nextUpdateViewTimeMS = currentTimeMS + (long)_refreshRate;
 
-            // Hide error tip
-            _errorTipLabel.style.display = DisplayStyle.None;
-
-            try
-            {
-                _viewUpdateContext.PlayableGraph = _graphPopupField.value;
-                _graphView.Update(_viewUpdateContext);
-            }
-            catch (StackOverflowException soe)
+            // Hide error message
+            _errorMessage.style.display = DisplayStyle.None;
+            _viewUpdateContext.PlayableGraph = _graphPopupField.value;
+            if (!_graphView.Update(_viewUpdateContext))
             {
                 // Stop refreshing and stop calculating layout
                 _refreshRateField.value = RefreshRate.Manual;
                 _autoLayoutToggle.value = false;
 
-                // Log errors
-                var playableGraphName = _graphPopupField.value.GetEditorName();
-                var message = $"There may be cycles in the PlayableGraph '{playableGraphName}'." +
-                              $"You can set the refresh rate to '{RefreshRate.Manual}' and disable 'Auto Layout'" +
-                              "and drag nodes manually to find out the cycle.";
-                Debug.LogError(message, this);
-                Debug.LogException(soe, this);
-
-                // Display error tip
-                _errorTipLabel.style.display = DisplayStyle.Flex;
+                var errorMessage =
+                        $"All Playable has a parent Playable, that means there is at least one cycle in the PlayableGraph '{_viewUpdateContext.PlayableGraph.GetEditorName()}'!\n" +
+                        "If each Playable in a group of Playables is an input to the other Playables in the group, " +
+                        "and none of them are connected to a PlayableOutput, " +
+                        "then this group of Playables will not be displayed in the view.\n" +
+                        $"You can set the refresh rate to '{RefreshRate.Manual}' and disable 'Auto Layout' and drag nodes manually to find out the displayed cycle.";
+                // Display error message
+                _errorMessage.text = errorMessage;
+                _errorMessage.style.display = DisplayStyle.Flex;
+                Debug.LogError(errorMessage);
             }
+
         }
 
         private VisualElement CreateGraphViewAndInspectorContainer()
