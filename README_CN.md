@@ -38,9 +38,9 @@ Unity 2019.4或更新版本。
 
 # 如何使用
 
-从 **菜单** “Window/Analysis/PlayableGraph Monitor” 打开PlayableGraph监控窗口，
-在窗口左上角的 **弹出选框** 中选择一个PlayableGraph，即可查看此PlayableGraph的拓扑结构。
-选中PlayableGraph中的任意节点，可在窗口右侧的Inspector面板中查看节点详细数据。
+从Unity Editor菜单项 **Window/Analysis/PlayableGraph Monitor** 打开PlayableGraph监控窗口。
+在窗口左上角的弹出选框中选择一个PlayableGraph，即可查看此PlayableGraph的拓扑结构。
+使用鼠标左键选中PlayableGraph中的任意节点，可在窗口内嵌的Inspector面板中查看节点详细数据。
 
 
 ## 为Playable节点添加额外标签
@@ -50,21 +50,21 @@ Unity 2019.4或更新版本。
 
 ## 手动拖动节点调整布局
 
-在监控工具窗口的工具栏中，将最大刷新率设为“Manual”后，可以使用鼠标左键拖动选中的节点。点击工具栏中的“Update View”按钮会刷新一次视图，此时，如果启用了工具栏中的“Auto Layout”选项，将会重新计算所有节点的位置。如果希望在刷新时保留拖动后的节点布局，请禁用“Auto Layout”选项。
+在监控工具窗口的工具栏中，将最大刷新率设为 **Manual** 后，可以使用鼠标左键拖动选中的节点。点击工具栏中的 **Update View** 按钮会刷新一次视图，此时，如果启用了工具栏中的 **Auto Layout** 选项，将会重新计算所有节点的位置。如果希望在更新视图时保留拖动后的节点布局，请禁用 **Auto Layout **选项。
 
 
 ## 带有循环引用的PlayableGraph
 
-当PlayableGraph中节点含有循环引用时，监控工具无法自动计算节点布局。使用时如果发现监控工具未能正常排布节点，请查看控制台日志是否提示PlayableGraph中含有循环引用。在此情况下，可以将最大刷新率设为“Manual”并禁用“Auto Layout”选项，然后手动拖动节点来找出PlayableGraph中的循环引用。
+当PlayableGraph中节点含有循环引用时，监控工具无法自动计算节点布局。使用时如果发现监控工具未能正常排布节点，请查看控制台日志是否提示PlayableGraph中含有循环引用。在此情况下，可以将最大刷新率设为 **Manual** 并禁用 **Auto Layout** 选项，然后手动拖动节点来找出PlayableGraph中的循环引用。
 
-**需要注意**，如果PlayableGraph中有这样一组Playable，其中的每个Playable都是此组中另一个或多个Playable的输入（即没有根Playable），并且其中没有任何Playable连接到PlayableOutput，那么这组Playable将无法在监控工具中显示出来，控制台中也可能不会提示任何错误。
+**需要注意**，如果PlayableGraph中有这样一组Playable，其中的每个Playable都是此组中另一个或多个Playable的输入（即没有根Playable），并且其中没有任何Playable连接到PlayableOutput，那么这组Playable将无法在监控工具中显示出来，也可能不会有任何错误提示。
 
 
 ## 提升大型PlayableGraph的显示性能
 
 以下方式可以显著提升显示大型PlayableGraph时的性能：
 
-- 禁用工具栏中的“Inspector”选项（或者不要选中任何节点）
-- 禁用工具栏中的“Clip Progress”选项
+- 禁用工具栏中的 **Inspector** 选项（或者不要选中任何节点）
+- 禁用工具栏中的 **Clip Progress** 选项
 - 降低最大刷新率
-- 在监控工具窗口右上角的上下文菜单中禁用“Keep updating edges when mouse leave GraphView”选项（禁用后，鼠标离开拓扑图区域后，节点连接线的颜色不会再根据权重进行变化）
+- 在监控工具窗口右上角的上下文菜单中禁用 **Keep updating edges when mouse leave GraphView** 选项（禁用后，鼠标离开拓扑图区域后，节点连接线的颜色不会再根据权重进行变化）
