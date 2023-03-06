@@ -53,10 +53,27 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             if (updateContext.ShowClipProgressBar)
             {
                 _progressBar.style.display = DisplayStyle.Flex;
-                var duration = clip ? clip.length : float.PositiveInfinity;
-                var progress = (float)(Playable.GetTime() / duration) % 1.0f * 100;
-                // Expensive operations
-                _progressBar.SetValueWithoutNotify(progress);
+                if (clip)
+                {
+                    if (clipPlayable.GetLooped())
+                    {
+                        var progress = (float)(Playable.GetTime() / clip.length) % 1.0f * 100;
+                        // Expensive operations
+                        _progressBar.SetValueWithoutNotify(progress);
+                    }
+                    else
+                    {
+                        var progress = (float)(Playable.GetTime() / clip.length) * 100;
+                        progress = Mathf.Clamp(progress, 0, 100);
+                        // Expensive operations
+                        _progressBar.SetValueWithoutNotify(progress);
+                    }
+                }
+                else
+                {
+                    // Expensive operations
+                    _progressBar.SetValueWithoutNotify(0);
+                }
             }
             else
             {
