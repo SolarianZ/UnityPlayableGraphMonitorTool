@@ -5,15 +5,15 @@ using UGraphView = UnityEditor.Experimental.GraphView.GraphView;
 
 namespace GBG.PlayableGraphMonitor.Editor.Pool
 {
-    public class PlayableOutputNodePool
+    public class PlayableOutputNodePool<T> : IPlayableOutputNodePool where T : PlayableOutputNode, new()
     {
         private readonly UGraphView _graphView;
 
-        private readonly Dictionary<PlayableOutputHandle, PlayableOutputNode> _activePlayableNodeTable =
-            new Dictionary<PlayableOutputHandle, PlayableOutputNode>();
+        private readonly Dictionary<PlayableOutputHandle, T> _activeNodeTable =
+            new Dictionary<PlayableOutputHandle, T>();
 
-        private readonly Dictionary<PlayableOutputHandle, PlayableOutputNode> _dormantPlayableNodeTable =
-            new Dictionary<PlayableOutputHandle, PlayableOutputNode>();
+        private readonly Dictionary<PlayableOutputHandle, T> _dormantNodeTable =
+            new Dictionary<PlayableOutputHandle, T>();
 
 
         public PlayableOutputNodePool(UGraphView graphView)
@@ -21,70 +21,117 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
             _graphView = graphView;
         }
 
-        public PlayableOutputNode GetActiveNode(PlayableOutput playable)
+        public bool IsNodeActive(PlayableOutput playableOutput)
         {
-            return _activePlayableNodeTable[playable.GetHandle()];
+            return _activeNodeTable.ContainsKey(playableOutput.GetHandle());
         }
 
-        public IEnumerable<PlayableOutputNode> GetActiveNodes()
+        public T GetActiveNode(PlayableOutput playableOutput)
         {
-            return _activePlayableNodeTable.Values;
+            return _activeNodeTable[playableOutput.GetHandle()];
         }
 
-        public PlayableOutputNode Alloc(PlayableOutput playable)
+        public bool TryGetActiveNode(PlayableOutput playableOutput, out T node)
+        {
+            return _activeNodeTable.TryGetValue(playableOutput.GetHandle(), out node);
+        }
+
+        public IEnumerable<T> GetActiveNodes()
+        {
+            return _activeNodeTable.Values;
+        }
+
+        public T Alloc(PlayableOutput playable)
         {
             var handle = playable.GetHandle();
-            if (_activePlayableNodeTable.TryGetValue(handle, out var node))
+            if (_activeNodeTable.TryGetValue(handle, out var node))
             {
                 return node;
             }
 
-            // if (!_dormantPlayableNodeTable.Remove(handle, out node)) // Unavailable in Unity 2019
+            // if (!_dormantNodeTable.Remove(handle, out node)) // Unavailable in Unity 2019
             // {
-            //     node = new PlayableNode_New();
+            //     node = new T();
             //     _graphView.AddElement(node);
             // }
-            if (_dormantPlayableNodeTable.TryGetValue(handle, out node))
+            if (_dormantNodeTable.TryGetValue(handle, out node))
             {
-                _dormantPlayableNodeTable.Remove(handle);
+                _dormantNodeTable.Remove(handle);
             }
             else
             {
-                node = new PlayableOutputNode();
+                node = new T();
                 _graphView.AddElement(node);
             }
 
-            _activePlayableNodeTable.Add(handle, node);
+            _activeNodeTable.Add(handle, node);
 
             return node;
         }
 
-        public void Recycle(PlayableOutputNode node)
+        public void Recycle(T node)
         {
             node.Release();
             var handle = node.PlayableOutput.GetHandle();
-            _activePlayableNodeTable.Remove(handle);
+            _activeNodeTable.Remove(handle);
 
-            // _dormantPlayableNodeTable.TryAdd(handle, node); // Unavailable in Unity 2019
-            _dormantPlayableNodeTable[handle] = node;
+            // _dormantNodeTable.TryAdd(handle, node); // Unavailable in Unity 2019
+            _dormantNodeTable[handle] = node;
         }
 
         public void RecycleAllActiveNodes()
         {
-            foreach (var node in _activePlayableNodeTable.Values)
+            foreach (var node in _activeNodeTable.Values)
             {
                 node.Release();
                 var handle = node.PlayableOutput.GetHandle();
-                _dormantPlayableNodeTable.Add(handle, node);
+                _dormantNodeTable.Add(handle, node);
             }
 
-            _activePlayableNodeTable.Clear();
+            _activeNodeTable.Clear();
         }
 
         public void RemoveDormantNodesFromView()
         {
-            _graphView.DeleteElements(_dormantPlayableNodeTable.Values);
-            _dormantPlayableNodeTable.Clear();
+            _graphView.DeleteElements(_dormantNodeTable.Values);
+            _dormantNodeTable.Clear();
         }
+
+
+        #region Interface
+
+        PlayableOutputNode IPlayableOutputNodePool.GetActiveNode(PlayableOutput playableOutput)
+        {
+            return GetActiveNode(playableOutput);
+        }
+
+        bool IPlayableOutputNodePool.TryGetActiveNode(PlayableOutput playableOutput, out PlayableOutputNode node)
+        {
+            if (TryGetActiveNode(playableOutput, out var tNode))
+            {
+                node = tNode;
+                return true;
+            }
+
+            node = null;
+            return false;
+        }
+
+        IEnumerable<PlayableOutputNode> IPlayableOutputNodePool.GetActiveNodes()
+        {
+            return GetActiveNodes();
+        }
+
+        PlayableOutputNode IPlayableOutputNodePool.Alloc(PlayableOutput playableOutput)
+        {
+            return Alloc(playableOutput);
+        }
+
+        void IPlayableOutputNodePool.Recycle(PlayableOutputNode node)
+        {
+            Recycle((T)node);
+        }
+
+        #endregion
     }
 }

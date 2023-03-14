@@ -48,7 +48,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         private readonly EdgePool _edgePool;
 
-        private readonly PlayableOutputNodePool _outputNodePool;
+        private readonly PlayableOutputNodePoolFactory _outputNodePoolFactory;
 
         private readonly PlayableNodePoolFactory _playableNodePoolFactory;
 
@@ -70,7 +70,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             this.AddManipulator(new RectangleSelector());
 
             _edgePool = new EdgePool(this);
-            _outputNodePool = new PlayableOutputNodePool(this);
+            _outputNodePoolFactory = new PlayableOutputNodePoolFactory(this);
             _playableNodePoolFactory = new PlayableNodePoolFactory(this);
             _frameAllAction = () => FrameAll();
 
@@ -119,7 +119,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         private void RecycleAllNodesAndEdges()
         {
             _edgePool.RecycleAllActiveEdges();
-            _outputNodePool.RecycleAllActiveNodes();
+            _outputNodePoolFactory.RecycleAllActiveNodes();
             _playableNodePoolFactory.RecycleAllActiveNodes();
         }
 
@@ -132,7 +132,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             for (int i = 0; i < outputCount; i++)
             {
                 var playableOutput = _playableGraph.GetOutput(i);
-                var outputNode = _outputNodePool.Alloc(playableOutput);
+                var outputNode = _outputNodePoolFactory.Alloc(playableOutput);
                 outputNode.Update(playableOutput, i);
             }
 
@@ -203,7 +203,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         private void ConnectNodes()
         {
             // PlayableOutputNodes
-            foreach (var parentNode in _outputNodePool.GetActiveNodes())
+            foreach (var parentNode in _outputNodePoolFactory.GetActiveNodes())
             {
                 var childPlayable = parentNode.PlayableOutput.GetSourcePlayable();
                 if (!childPlayable.IsValid())
@@ -384,7 +384,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
                     }
                 }
 
-                var outputNode = _outputNodePool.GetActiveNode(playableOutput);
+                var outputNode = _outputNodePoolFactory.GetActiveNode(playableOutput);
                 outputGroup.OutputNodes.Add(outputNode);
             }
         }
@@ -411,7 +411,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         private void RemoveUnusedElementsFromView()
         {
             _edgePool.RemoveDormantEdgesFromView();
-            _outputNodePool.RemoveDormantNodesFromView();
+            _outputNodePoolFactory.RemoveDormantNodesFromView();
             _playableNodePoolFactory.RemoveDormantNodesFromView();
         }
 
@@ -423,7 +423,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         // ReSharper disable once IdentifierTypo
         public void SetNodesMovability(bool movable)
         {
-            foreach (var outputNode in _outputNodePool.GetActiveNodes())
+            foreach (var outputNode in _outputNodePoolFactory.GetActiveNodes())
             {
                 var nodeCaps = outputNode.capabilities;
                 if (movable) nodeCaps |= Capabilities.Movable;

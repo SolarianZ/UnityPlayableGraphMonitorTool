@@ -12,7 +12,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
     {
         private readonly UGraphView _graphView;
 
-        private readonly Dictionary<Type, IPlayableNodePool> _playableNodePoolTable =
+        private readonly Dictionary<Type, IPlayableNodePool> _nodePoolTable =
             new Dictionary<Type, IPlayableNodePool>(5);
 
 
@@ -23,16 +23,16 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
 
         public void RecycleAllActiveNodes()
         {
-            foreach (var playableNodePool in _playableNodePoolTable.Values)
+            foreach (var nodePool in _nodePoolTable.Values)
             {
-                playableNodePool.RecycleAllActiveNodes();
+                nodePool.RecycleAllActiveNodes();
             }
         }
 
         public PlayableNode Alloc(Playable playable)
         {
-            var playableNodePool = GetOrCreatePlayableNodePool(playable);
-            return playableNodePool.Alloc(playable);
+            var nodePool = GetOrCreateNodePool(playable);
+            return nodePool.Alloc(playable);
         }
 
         public bool IsNodeActive(Playable playable)
@@ -42,14 +42,14 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
                 return false;
             }
 
-            var playableNodePool = GetOrCreatePlayableNodePool(playable);
-            return playableNodePool.IsNodeActive(playable);
+            var nodePool = GetOrCreateNodePool(playable);
+            return nodePool.IsNodeActive(playable);
         }
 
         public PlayableNode GetActiveNode(Playable playable)
         {
-            var playableNodePool = GetOrCreatePlayableNodePool(playable);
-            return playableNodePool.GetActiveNode(playable);
+            var nodePool = GetOrCreateNodePool(playable);
+            return nodePool.GetActiveNode(playable);
         }
 
         public bool TryGetActiveNode(Playable playable, out PlayableNode node)
@@ -60,71 +60,70 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
                 return false;
             }
 
-            var playableNodePool = GetOrCreatePlayableNodePool(playable);
-            return playableNodePool.TryGetActiveNode(playable, out node);
+            var nodePool = GetOrCreateNodePool(playable);
+            return nodePool.TryGetActiveNode(playable, out node);
         }
 
         public IEnumerable<PlayableNode> GetActiveNodes()
         {
-            foreach (var playableNodePool in _playableNodePoolTable.Values)
+            foreach (var nodePool in _nodePoolTable.Values)
             {
-                foreach (var playableNode in playableNodePool.GetActiveNodes())
+                foreach (var node in nodePool.GetActiveNodes())
                 {
-                    yield return playableNode;
+                    yield return node;
                 }
             }
         }
 
         public void RemoveDormantNodesFromView()
         {
-            foreach (var playableNodePool in _playableNodePoolTable.Values)
+            foreach (var nodePool in _nodePoolTable.Values)
             {
-                playableNodePool.RemoveDormantNodesFromView();
+                nodePool.RemoveDormantNodesFromView();
             }
         }
 
 
-        private IPlayableNodePool GetOrCreatePlayableNodePool(Playable playable)
+        private IPlayableNodePool GetOrCreateNodePool(Playable playable)
         {
             var playableType = playable.GetPlayableType();
-            if (_playableNodePoolTable.TryGetValue(playableType, out var playableNodePool))
+            if (_nodePoolTable.TryGetValue(playableType, out var nodePool))
             {
-                return playableNodePool;
+                return nodePool;
             }
-
 
             if (playableType == typeof(AnimationClipPlayable))
             {
-                playableNodePool = new PlayableNodePool<AnimationClipPlayableNode>(_graphView);
-                _playableNodePoolTable.Add(playableType, playableNodePool);
-                return playableNodePool;
+                nodePool = new PlayableNodePool<AnimationClipPlayableNode>(_graphView);
+                _nodePoolTable.Add(playableType, nodePool);
+                return nodePool;
             }
 
             if (playableType == typeof(AnimationLayerMixerPlayable))
             {
-                playableNodePool = new PlayableNodePool<AnimationLayerMixerPlayableNode>(_graphView);
-                _playableNodePoolTable.Add(playableType, playableNodePool);
-                return playableNodePool;
+                nodePool = new PlayableNodePool<AnimationLayerMixerPlayableNode>(_graphView);
+                _nodePoolTable.Add(playableType, nodePool);
+                return nodePool;
             }
 
             if (playableType == typeof(AnimationScriptPlayable))
             {
-                playableNodePool = new PlayableNodePool<AnimationScriptPlayableNode>(_graphView);
-                _playableNodePoolTable.Add(playableType, playableNodePool);
-                return playableNodePool;
+                nodePool = new PlayableNodePool<AnimationScriptPlayableNode>(_graphView);
+                _nodePoolTable.Add(playableType, nodePool);
+                return nodePool;
             }
 
             if (playableType == typeof(AudioClipPlayable))
             {
-                playableNodePool = new PlayableNodePool<AudioClipPlayableNode>(_graphView);
-                _playableNodePoolTable.Add(playableType, playableNodePool);
-                return playableNodePool;
+                nodePool = new PlayableNodePool<AudioClipPlayableNode>(_graphView);
+                _nodePoolTable.Add(playableType, nodePool);
+                return nodePool;
             }
 
             // Default node pool
-            playableNodePool = new PlayableNodePool<PlayableNode>(_graphView);
-            _playableNodePoolTable.Add(playableType, playableNodePool);
-            return playableNodePool;
+            nodePool = new PlayableNodePool<PlayableNode>(_graphView);
+            _nodePoolTable.Add(playableType, nodePool);
+            return nodePool;
         }
     }
 }

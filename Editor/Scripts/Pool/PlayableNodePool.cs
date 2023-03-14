@@ -9,10 +9,10 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
     {
         private readonly UGraphView _graphView;
 
-        private readonly Dictionary<PlayableHandle, T> _activePlayableNodeTable =
+        private readonly Dictionary<PlayableHandle, T> _activeNodeTable =
             new Dictionary<PlayableHandle, T>();
 
-        private readonly Dictionary<PlayableHandle, T> _dormantPlayableNodeTable =
+        private readonly Dictionary<PlayableHandle, T> _dormantNodeTable =
             new Dictionary<PlayableHandle, T>();
 
 
@@ -23,40 +23,40 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
 
         public bool IsNodeActive(Playable playable)
         {
-            return _activePlayableNodeTable.ContainsKey(playable.GetHandle());
+            return _activeNodeTable.ContainsKey(playable.GetHandle());
         }
 
         public T GetActiveNode(Playable playable)
         {
-            return _activePlayableNodeTable[playable.GetHandle()];
+            return _activeNodeTable[playable.GetHandle()];
         }
 
         public bool TryGetActiveNode(Playable playable, out T node)
         {
-            return _activePlayableNodeTable.TryGetValue(playable.GetHandle(), out node);
+            return _activeNodeTable.TryGetValue(playable.GetHandle(), out node);
         }
 
         public IEnumerable<T> GetActiveNodes()
         {
-            return _activePlayableNodeTable.Values;
+            return _activeNodeTable.Values;
         }
 
         public T Alloc(Playable playable)
         {
             var handle = playable.GetHandle();
-            if (_activePlayableNodeTable.TryGetValue(handle, out var node))
+            if (_activeNodeTable.TryGetValue(handle, out var node))
             {
                 return node;
             }
 
-            // if (!_dormantPlayableNodeTable.Remove(handle, out node)) // Unavailable in Unity 2019
+            // if (!_dormantNodeTable.Remove(handle, out node)) // Unavailable in Unity 2019
             // {
-            //     node = new PlayableNode_New();
+            //     node = new T();
             //     _graphView.AddElement(node);
             // }
-            if (_dormantPlayableNodeTable.TryGetValue(handle, out node))
+            if (_dormantNodeTable.TryGetValue(handle, out node))
             {
-                _dormantPlayableNodeTable.Remove(handle);
+                _dormantNodeTable.Remove(handle);
             }
             else
             {
@@ -64,7 +64,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
                 _graphView.AddElement(node);
             }
 
-            _activePlayableNodeTable.Add(handle, node);
+            _activeNodeTable.Add(handle, node);
 
             return node;
         }
@@ -73,28 +73,28 @@ namespace GBG.PlayableGraphMonitor.Editor.Pool
         {
             node.Release();
             var handle = node.Playable.GetHandle();
-            _activePlayableNodeTable.Remove(handle);
+            _activeNodeTable.Remove(handle);
 
-            // _dormantPlayableNodeTable.TryAdd(handle, node); // Unavailable in Unity 2019
-            _dormantPlayableNodeTable[handle] = node;
+            // _dormantNodeTable.TryAdd(handle, node); // Unavailable in Unity 2019
+            _dormantNodeTable[handle] = node;
         }
 
         public void RecycleAllActiveNodes()
         {
-            foreach (var node in _activePlayableNodeTable.Values)
+            foreach (var node in _activeNodeTable.Values)
             {
                 node.Release();
                 var handle = node.Playable.GetHandle();
-                _dormantPlayableNodeTable.Add(handle, node);
+                _dormantNodeTable.Add(handle, node);
             }
 
-            _activePlayableNodeTable.Clear();
+            _activeNodeTable.Clear();
         }
 
         public void RemoveDormantNodesFromView()
         {
-            _graphView.DeleteElements(_dormantPlayableNodeTable.Values);
-            _dormantPlayableNodeTable.Clear();
+            _graphView.DeleteElements(_dormantNodeTable.Values);
+            _dormantNodeTable.Clear();
         }
 
 

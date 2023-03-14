@@ -2,8 +2,11 @@
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.Playables;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.UIElements;
+using UObject = UnityEngine.Object;
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
 {
@@ -11,11 +14,36 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
     {
         public PlayableOutput PlayableOutput { get; private set; }
 
+        private readonly ObjectField _refObjectField;
+
+        private readonly ObjectField _userDataField;
+
         private int _outputIndex = -1;
 
 
         public PlayableOutputNode()
         {
+            var banner = mainContainer.Q("divider");
+            banner.style.height = StyleKeyword.Auto;
+
+            _refObjectField = new ObjectField
+            {
+                objectType = typeof(UObject),
+                tooltip = "Reference Object",
+            };
+            var refObjectFieldSelector = _refObjectField.Q(className: "unity-object-field__selector");
+            refObjectFieldSelector.SetEnabled(false);
+            banner.Add(_refObjectField);
+
+            _userDataField = new ObjectField
+            {
+                objectType = typeof(UObject),
+                tooltip = "User Data",
+            };
+            var userDataFieldSelector = _userDataField.Q(className: "unity-object-field__selector");
+            userDataFieldSelector.SetEnabled(false);
+            banner.Add(_userDataField);
+
             CreatePorts();
             // RefreshExpandedState(); // Expensive
             RefreshPorts();
@@ -43,6 +71,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         protected virtual void OnUpdate(bool playableOutputChanged)
         {
+            var refObject = PlayableOutput.GetReferenceObject();
+            _refObjectField.style.display = refObject ? DisplayStyle.Flex : DisplayStyle.None;
+            _refObjectField.SetValueWithoutNotify(refObject);
+
+            var playableOutputUserData = PlayableOutput.GetUserData();
+            _userDataField.style.display = playableOutputUserData ? DisplayStyle.Flex : DisplayStyle.None;
+            _userDataField.SetValueWithoutNotify(playableOutputUserData);
         }
 
 
