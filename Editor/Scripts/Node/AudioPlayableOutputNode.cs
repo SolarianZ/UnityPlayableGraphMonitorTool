@@ -22,8 +22,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 objectType = typeof(AudioSource),
                 tooltip = "Target",
             };
-            var clipFieldSelector = _targetField.Q(className: "unity-object-field__selector");
-            clipFieldSelector.SetEnabled(false);
+            var targetFieldSelector = _targetField.Q(className: "unity-object-field__selector");
+            targetFieldSelector.style.display = DisplayStyle.None;
+            targetFieldSelector.SetEnabled(false);
             banner.Add(_targetField);
         }
 
@@ -54,7 +55,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var audioPlayableOutput = (AudioPlayableOutput)PlayableOutput;
             var evaluateOnSeek = audioPlayableOutput.GetEvaluateOnSeek();
             descBuilder.AppendLine(LINE);
-            descBuilder.Append("Evaluate on Seek: ").AppendLine(evaluateOnSeek.ToString());
+            descBuilder.Append("EvaluateOnSeek: ").AppendLine(evaluateOnSeek.ToString());
         }
     }
 }

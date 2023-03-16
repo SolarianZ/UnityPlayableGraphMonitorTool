@@ -31,8 +31,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 objectType = typeof(Motion),
             };
-            // clipField.SetEnabled(false);
             var clipFieldSelector = _clipField.Q(className: "unity-object-field__selector");
+            clipFieldSelector.style.display = DisplayStyle.None;
             clipFieldSelector.SetEnabled(false);
             banner.Add(_clipField);
         }
@@ -127,8 +127,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 .Append("HasGenericRootTransform: ").AppendLine(clip.hasGenericRootTransform.ToString())
                 .Append("HasMotionFloatCurves: ").AppendLine(clip.hasMotionFloatCurves.ToString())
                 .AppendLine("LocalBounds: ")
-                .Append("    Center: ").AppendLine(clip.localBounds.center.ToString())
-                .Append("    Extends: ").AppendLine(clip.localBounds.extents.ToString())
+                .Append("  Center: ").AppendLine(clip.localBounds.center.ToString())
+                .Append("  Extends: ").AppendLine(clip.localBounds.extents.ToString())
                 .Append("ApparentSpeed: ").AppendLine(clip.apparentSpeed.ToString("F3")) // Motion.cs
                 .Append("AverageSpeed: ").AppendLine(clip.averageSpeed.ToString())
                 .Append("AverageAngularSpeed: ").AppendLine(clip.averageAngularSpeed.ToString("F3"))

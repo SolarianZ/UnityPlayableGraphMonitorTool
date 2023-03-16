@@ -32,6 +32,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 tooltip = "Reference Object",
             };
             var refObjectFieldSelector = _refObjectField.Q(className: "unity-object-field__selector");
+            refObjectFieldSelector.style.display = DisplayStyle.None;
             refObjectFieldSelector.SetEnabled(false);
             banner.Add(_refObjectField);
 
@@ -41,6 +42,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 tooltip = "User Data",
             };
             var userDataFieldSelector = _userDataField.Q(className: "unity-object-field__selector");
+            userDataFieldSelector.style.display = DisplayStyle.None;
             userDataFieldSelector.SetEnabled(false);
             banner.Add(_userDataField);
 
@@ -102,8 +104,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 return;
             }
 
-            descBuilder.Append("#").Append(_outputIndex.ToString())
-                .Append(" Type: ").AppendLine(PlayableOutput.GetPlayableOutputType().Name)
+            descBuilder.Append("#").AppendLine(_outputIndex.ToString())
+                .Append("Type: ").AppendLine(PlayableOutput.GetPlayableOutputType().Name)
+                .Append("HashCode: ").AppendLine(PlayableOutput.GetHandle().GetHashCode().ToString())
                 .AppendLine(LINE)
                 .Append("Name: ").AppendLine(PlayableOutput.GetEditorName())
                 .AppendLine(LINE)
@@ -113,8 +116,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 .Append("UserData: ").AppendLine(PlayableOutput.GetUserData()?.name ?? "Null")
                 .AppendLine(LINE)
                 .AppendLine("Source Input:")
-                .Append("    SourceOutputPort: ").AppendLine(PlayableOutput.GetSourceOutputPort().ToString())
-                .Append("    Weight: ").AppendLine(PlayableOutput.GetWeight().ToString("F3"));
+                .Append("  SourceOutputPort: ").AppendLine(PlayableOutput.GetSourceOutputPort().ToString())
+                .Append("  Weight: ").AppendLine(PlayableOutput.GetWeight().ToString("F3"));
         }
 
         #endregion

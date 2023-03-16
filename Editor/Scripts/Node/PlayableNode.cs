@@ -154,9 +154,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 .Append("IsNull: ").AppendLine(Playable.IsNull().ToString())
                 .Append("IsDone: ").AppendLine(Playable.IsDone().ToString())
                 .Append("PlayState: ").AppendLine(Playable.GetPlayState().ToString())
+                .Append("Speed: ").Append(Playable.GetSpeed().ToString("F3")).AppendLine("x")
                 .Append("Duration: ").Append(Playable.DurationToString()).AppendLine("(s)")
+                .Append("PreviousTime: ").Append(Playable.GetPreviousTime().ToString("F3")).AppendLine("(s)")
                 .Append("Time: ").Append(Playable.GetTime().ToString("F3")).AppendLine("(s)")
-                .Append("Speed: ").Append(Playable.GetSpeed().ToString("F3")).AppendLine("x");
+                .Append("LeadTime: ").Append(Playable.GetLeadTime().ToString("F3")).AppendLine("s")
+                .Append("PropagateSetTime: ").AppendLine(Playable.GetPropagateSetTime().ToString())
+                .Append("TraversalMode: ").AppendLine(Playable.GetTraversalMode().ToString());
 
             // Inputs
             descBuilder.AppendLine(LINE);
@@ -180,7 +184,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         protected virtual void AppendPlayableTypeDescription(StringBuilder descBuilder)
         {
-            descBuilder.Append("Type: ").AppendLine(Playable.GetPlayableType()?.Name ?? "");
+            descBuilder.Append("Type: ").AppendLine(Playable.GetPlayableType()?.Name ?? "?")
+                .Append("HashCode: ").AppendLine(Playable.GetHandle().GetHashCode().ToString());
         }
 
         protected virtual void AppendInputPortDescription(StringBuilder descBuilder)
@@ -188,7 +193,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var playableInputCount = Playable.GetInputCount();
             for (int i = 0; i < playableInputCount; i++)
             {
-                descBuilder.Append("    #").Append(i.ToString()).Append(" Weight: ")
+                descBuilder.Append("  #").Append(i.ToString()).Append(" Weight: ")
                     .AppendLine(Playable.GetInputWeight(i).ToString("F3"));
             }
         }

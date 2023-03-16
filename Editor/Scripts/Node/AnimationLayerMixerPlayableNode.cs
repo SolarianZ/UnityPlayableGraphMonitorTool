@@ -12,7 +12,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var inputCount = layerMixer.GetInputCount();
             for (int i = 0; i < inputCount; i++)
             {
-                descBuilder.Append("    #").Append(i.ToString())
+                descBuilder.Append("  #").Append(i.ToString())
                     .Append(" Weight: ").Append(Playable.GetInputWeight(i).ToString("F3"))
                     .Append(" Additive: ").AppendLine(layerMixer.IsLayerAdditive((uint)i).ToString());
             }

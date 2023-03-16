@@ -21,8 +21,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 objectType = typeof(RenderTexture),
                 tooltip = "Target",
             };
-            var clipFieldSelector = _targetField.Q(className: "unity-object-field__selector");
-            clipFieldSelector.SetEnabled(false);
+            var targetFieldSelector = _targetField.Q(className: "unity-object-field__selector");
+            targetFieldSelector.style.display = DisplayStyle.None;
+            targetFieldSelector.SetEnabled(false);
             banner.Add(_targetField);
         }
 

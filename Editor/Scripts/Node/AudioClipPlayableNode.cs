@@ -31,8 +31,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 objectType = typeof(AudioClip),
             };
-            // clipField.SetEnabled(false);
             var clipFieldSelector = _clipField.Q(className: "unity-object-field__selector");
+            clipFieldSelector.style.display = DisplayStyle.None;
             clipFieldSelector.SetEnabled(false);
             banner.Add(_clipField);
         }

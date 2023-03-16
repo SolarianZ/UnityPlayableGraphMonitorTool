@@ -23,8 +23,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 objectType = typeof(Animator),
                 tooltip = "Target",
             };
-            var clipFieldSelector = _targetField.Q(className: "unity-object-field__selector");
-            clipFieldSelector.SetEnabled(false);
+            var targetFieldSelector = _targetField.Q(className: "unity-object-field__selector");
+            targetFieldSelector.style.display = DisplayStyle.None;
+            targetFieldSelector.SetEnabled(false);
             banner.Add(_targetField);
         }
 
@@ -56,8 +57,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var animationStreamSource = animationPlayableOutput.GetAnimationStreamSource();
             var sortingOrder = animationPlayableOutput.GetSortingOrder();
             descBuilder.AppendLine(LINE);
-            descBuilder.Append("Animation Stream Source: ").AppendLine(animationStreamSource.ToString())
-                .Append("Sorting Order: ").AppendLine(sortingOrder.ToString());
+            descBuilder.Append("AnimationStreamSource: ").AppendLine(animationStreamSource.ToString())
+                .Append("SortingOrder: ").AppendLine(sortingOrder.ToString());
         }
     }
 }

@@ -51,11 +51,11 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         protected override void AppendPlayableTypeDescription(StringBuilder descBuilder)
         {
-            descBuilder.Append("Type: ").AppendLine(Playable.GetPlayableType()?.Name ?? "");
+            base.AppendPlayableTypeDescription(descBuilder);
 
             // Job
             var jobType = GetJobType();
-            descBuilder.Append("Job: ").AppendLine(jobType?.Name ?? "");
+            descBuilder.Append("Job: ").AppendLine(jobType?.Name ?? "?");
         }
 
 
