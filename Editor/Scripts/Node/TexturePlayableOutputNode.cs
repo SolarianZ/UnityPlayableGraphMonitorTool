@@ -1,4 +1,5 @@
-﻿using UnityEditor.UIElements;
+﻿using System.Text;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Experimental.Playables;
 using UnityEngine.Playables;
@@ -40,6 +41,21 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var target = texturePlayableOutput.GetTarget();
             _targetField.style.display = target ? DisplayStyle.Flex : DisplayStyle.None;
             _targetField.SetValueWithoutNotify(target);
+        }
+
+        protected override void AppendNodeDescription(StringBuilder descBuilder)
+        {
+            base.AppendNodeDescription(descBuilder);
+
+            if (!PlayableOutput.IsOutputValid())
+            {
+                return;
+            }
+
+            var texturePlayableOutput = (TexturePlayableOutput)PlayableOutput;
+            var target = texturePlayableOutput.GetTarget();
+            descBuilder.AppendLine(LINE);
+            descBuilder.Append("Target: ").AppendLine(target?.name ?? "Null");
         }
     }
 }

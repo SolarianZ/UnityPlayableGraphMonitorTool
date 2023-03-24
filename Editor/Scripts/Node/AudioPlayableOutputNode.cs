@@ -53,9 +53,11 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             }
 
             var audioPlayableOutput = (AudioPlayableOutput)PlayableOutput;
+            var target = audioPlayableOutput.GetTarget();
             var evaluateOnSeek = audioPlayableOutput.GetEvaluateOnSeek();
             descBuilder.AppendLine(LINE);
-            descBuilder.Append("EvaluateOnSeek: ").AppendLine(evaluateOnSeek.ToString());
+            descBuilder.Append("Target: ").AppendLine(target?.name ?? "Null")
+                .Append("EvaluateOnSeek: ").AppendLine(evaluateOnSeek.ToString());
         }
     }
 }

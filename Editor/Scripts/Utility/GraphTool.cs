@@ -58,9 +58,24 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
         // Ensure edge is always visible.
         public static readonly float ColorAlphaFactor = 1f / 9;
 
+        public static readonly Color PortNegativeWeightColor = new Color32(0, 0, 0, 255);
+
+        public static readonly Color PortOverflowWeightColor = new Color32(177, 255, 255, 255);
+
 
         public static Color GetPortColor(float weight)
         {
+            if (weight < 0)
+            {
+                // In theory, there should be no inputs with negative weights in PlayableGraph
+                return PortNegativeWeightColor;
+            }
+
+            if (weight > 1)
+            {
+                return PortOverflowWeightColor;
+            }
+
             var alpha = (weight + ColorAlphaFactor) / (1 + ColorAlphaFactor);
             return new Color(1, 1, 1, alpha);
         }

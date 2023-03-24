@@ -54,10 +54,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             }
 
             var animationPlayableOutput = (AnimationPlayableOutput)PlayableOutput;
+            var target = animationPlayableOutput.GetTarget();
             var animationStreamSource = animationPlayableOutput.GetAnimationStreamSource();
             var sortingOrder = animationPlayableOutput.GetSortingOrder();
             descBuilder.AppendLine(LINE);
-            descBuilder.Append("AnimationStreamSource: ").AppendLine(animationStreamSource.ToString())
+            descBuilder.Append("Target: ").AppendLine(target?.name ?? "Null")
+                .Append("AnimationStreamSource: ").AppendLine(animationStreamSource.ToString())
                 .Append("SortingOrder: ").AppendLine(sortingOrder.ToString());
         }
     }
