@@ -107,7 +107,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 
             var container = CreateGraphViewAndInspectorContainer();
             CreateGraphView(container);
-            CreateNodeInspector(container);
+            CreateSidebar(container);
 
             UpdatePlayableGraphPopupField();
         }
@@ -128,7 +128,7 @@ namespace GBG.PlayableGraphMonitor.Editor
         private void Update()
         {
             UpdateGraphView();
-            DrawGraphNodeInspector();
+            DrawInspector();
 
             if (_updateNodesMovability)
             {

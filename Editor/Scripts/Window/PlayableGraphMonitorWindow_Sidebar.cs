@@ -1,5 +1,6 @@
 using GBG.PlayableGraphMonitor.Editor.Node;
 using GBG.PlayableGraphMonitor.Editor.Utility;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 
 
@@ -7,21 +8,24 @@ namespace GBG.PlayableGraphMonitor.Editor
 {
     public partial class PlayableGraphMonitorWindow
     {
-        private const float _NODE_INSPECTOR_WIDTH = 250f;
+        private const float _SIDEBAR_WIDTH = 250f;
 
-        private VisualElement _nodeInspectorPanel;
+        private VisualElement _sidebarPanel;
 
         private Label _nodeDescriptionLabel;
 
+        private MiniMap _graphMiniMap;
 
-        private void CreateNodeInspector(VisualElement container)
+
+        private void CreateSidebar(VisualElement container)
         {
-            _nodeInspectorPanel = new VisualElement
+            // Sidebar
+            _sidebarPanel = new VisualElement
             {
-                name = "node-inspector",
+                name = "side-bar",
                 style =
                 {
-                    width = new Length(_NODE_INSPECTOR_WIDTH, LengthUnit.Pixel),
+                    width = new Length(_SIDEBAR_WIDTH, LengthUnit.Pixel),
                     height = new Length(100, LengthUnit.Percent),
                     backgroundColor = GraphTool.GetNodeInspectorBackgroundColor(),
                     paddingLeft = 4,
@@ -31,10 +35,16 @@ namespace GBG.PlayableGraphMonitor.Editor
                     display = _displayInspector ? DisplayStyle.Flex : DisplayStyle.None,
                 }
             };
+            container.Add(_sidebarPanel);
 
+            // Node descriptions
             var scrollView = new ScrollView
             {
-                name = "node-desc-container"
+                name = "node-desc-container",
+                style =
+                {
+                    flexGrow = 1,
+                }
             };
             _nodeDescriptionLabel = new Label
             {
@@ -46,18 +56,32 @@ namespace GBG.PlayableGraphMonitor.Editor
                 }
             };
             scrollView.Add(_nodeDescriptionLabel);
-            _nodeInspectorPanel.Add(scrollView);
+            _sidebarPanel.Add(scrollView);
 
-            container.Add(_nodeInspectorPanel);
+            // MiniMap
+            _graphMiniMap = new MiniMap
+            {
+                anchored = true,
+                windowed = true,
+                graphView = _graphView,
+                style =
+                {
+                    width = new Length(100, LengthUnit.Percent),
+                    minHeight = 80,
+                    maxHeight = _SIDEBAR_WIDTH,
+                }
+            };
+            _sidebarPanel.Add(_graphMiniMap);
         }
 
-        private void DrawGraphNodeInspector()
+        private void DrawInspector()
         {
             if (!_inspectorToggle.value)
             {
                 return;
             }
 
+            // Node description
             if (_graphView.selection.Count == 1 &&
                 _graphView.selection[0] is GraphViewNode node)
             {
@@ -66,6 +90,9 @@ namespace GBG.PlayableGraphMonitor.Editor
             }
 
             _nodeDescriptionLabel.text = "Select one node to show details.";
+
+            // MiniMap
+            _graphMiniMap.MarkDirtyRepaint();
         }
     }
 }
