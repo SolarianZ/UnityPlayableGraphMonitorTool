@@ -177,7 +177,7 @@ namespace GBG.PlayableGraphMonitor.Editor
         private void ToggleInspector(ChangeEvent<bool> evt)
         {
             _displayInspector = evt.newValue;
-            _nodeInspectorPanel.style.display = _displayInspector ? DisplayStyle.Flex : DisplayStyle.None;
+            _sidebarPanel.style.display = _displayInspector ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void ToggleDisplayClipProgressBar(ChangeEvent<bool> evt)
