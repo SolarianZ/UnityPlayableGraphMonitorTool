@@ -251,9 +251,9 @@ namespace GBG.PlayableGraphMonitor.Editor
         }
 
 #if UNITY_2020_1_OR_NEWER
-        private void OnClickSelectOutputNodeMenu(ClickEvent _)
+        private void OnClickSelectOutputNodeMenu(ClickEvent evt)
 #else
-        private void OnClickSelectOutputNodeMenu(PointerDownEvent _)
+        private void OnClickSelectOutputNodeMenu(PointerDownEvent evt)
 #endif
         {
             var itemCount = _selectOutputNodeMenu.menu.MenuItems().Count;
@@ -281,9 +281,9 @@ namespace GBG.PlayableGraphMonitor.Editor
         }
 
 #if UNITY_2020_1_OR_NEWER
-        private void OnClickSelectRootNodeMenu(ClickEvent _)
+        private void OnClickSelectRootNodeMenu(ClickEvent evt)
 #else
-        private void OnClickSelectRootNodeMenu(PointerDownEvent _)
+        private void OnClickSelectRootNodeMenu(PointerDownEvent evt)
 #endif
         {
             var itemCount = _selectRootNodeMenu.menu.MenuItems().Count;
