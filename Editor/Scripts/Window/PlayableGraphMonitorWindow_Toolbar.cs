@@ -156,7 +156,11 @@ namespace GBG.PlayableGraphMonitor.Editor
             {
                 text = "Select Output Node"
             };
+#if UNITY_2020_1_OR_NEWER
+            _selectOutputNodeMenu.RegisterCallback<ClickEvent>(OnClickSelectOutputNodeMenu);
+#else
             _selectOutputNodeMenu.RegisterCallback<PointerDownEvent>(OnClickSelectOutputNodeMenu);
+#endif
             _toolbar.Add(_selectOutputNodeMenu);
 
             // Select root node
@@ -164,7 +168,11 @@ namespace GBG.PlayableGraphMonitor.Editor
             {
                 text = "Select Root Node"
             };
+#if UNITY_2020_1_OR_NEWER
+            _selectRootNodeMenu.RegisterCallback<ClickEvent>(OnClickSelectRootNodeMenu);
+#else
             _selectRootNodeMenu.RegisterCallback<PointerDownEvent>(OnClickSelectRootNodeMenu);
+#endif
             _toolbar.Add(_selectRootNodeMenu);
         }
 
@@ -242,7 +250,11 @@ namespace GBG.PlayableGraphMonitor.Editor
             _graphView.FrameAll();
         }
 
-        private void OnClickSelectOutputNodeMenu(PointerDownEvent evt)
+#if UNITY_2020_1_OR_NEWER
+        private void OnClickSelectOutputNodeMenu(ClickEvent _)
+#else
+        private void OnClickSelectOutputNodeMenu(PointerDownEvent _)
+#endif
         {
             var itemCount = _selectOutputNodeMenu.menu.MenuItems().Count;
             for (int i = itemCount - 1; i >= 0; i--)
@@ -268,7 +280,11 @@ namespace GBG.PlayableGraphMonitor.Editor
             }
         }
 
-        private void OnClickSelectRootNodeMenu(PointerDownEvent evt)
+#if UNITY_2020_1_OR_NEWER
+        private void OnClickSelectRootNodeMenu(ClickEvent _)
+#else
+        private void OnClickSelectRootNodeMenu(PointerDownEvent _)
+#endif
         {
             var itemCount = _selectRootNodeMenu.menu.MenuItems().Count;
             for (int i = itemCount - 1; i >= 0; i--)
