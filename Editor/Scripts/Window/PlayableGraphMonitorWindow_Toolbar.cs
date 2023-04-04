@@ -266,7 +266,8 @@ namespace GBG.PlayableGraphMonitor.Editor
             _graphView.nodes.ToList(nodeList);
             foreach (var node in nodeList)
             {
-                if (node is PlayableOutputNode outputNode)
+                if (node is PlayableOutputNode outputNode &&
+                    outputNode.PlayableOutput.IsOutputValid())
                 {
                     var nodeName = $"{outputNode.PlayableOutput.GetPlayableOutputType().Name}" +
                         $" ({outputNode.PlayableOutput.GetEditorName()})";
@@ -293,6 +294,11 @@ namespace GBG.PlayableGraphMonitor.Editor
             }
 
             var playableGraph = _graphPopupField.value;
+            if (!playableGraph.IsValid())
+            {
+                return;
+            }
+
             var rootPlayableCount = playableGraph.GetRootPlayableCount();
             var rootPlayableHandles = new HashSet<PlayableHandle>();
             for (int i = 0; i < rootPlayableCount; i++)
@@ -306,6 +312,7 @@ namespace GBG.PlayableGraphMonitor.Editor
             foreach (var node in nodeList)
             {
                 if (node is PlayableNode playableNode &&
+                    playableNode.Playable.IsValid() &&
                     rootPlayableHandles.Contains(playableNode.Playable.GetHandle()))
                 {
                     var nodeName = $"{playableNode.Playable.GetPlayableType()?.Name ?? "?"}";
