@@ -1,9 +1,13 @@
+using GBG.PlayableGraphMonitor.Editor.Node;
 using System;
+using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Playables;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
+using UNode = UnityEditor.Experimental.GraphView.Node;
 
 
 namespace GBG.PlayableGraphMonitor.Editor
@@ -53,6 +57,9 @@ namespace GBG.PlayableGraphMonitor.Editor
         private TextElement _refreshRateLabel;
         private ToolbarButton _manualUpdateViewButton;
 
+        // Node selection
+        private ToolbarMenu _selectOutputNodeMenu;
+        private ToolbarMenu _selectRootNodeMenu;
 
         // Common data
         private static Color NotableTextColor => Color.yellow;
@@ -142,6 +149,23 @@ namespace GBG.PlayableGraphMonitor.Editor
             };
             frameAllButton.Q<TextElement>(className: "unity-text-element").style.color = NormalTextColor;
             _toolbar.Add(frameAllButton);
+
+            // Select output node
+            _toolbar.Add(new ToolbarSpacer());
+            _selectOutputNodeMenu = new ToolbarMenu
+            {
+                text = "Select Output Node"
+            };
+            _selectOutputNodeMenu.RegisterCallback<PointerDownEvent>(OnClickSelectOutputNodeMenu);
+            _toolbar.Add(_selectOutputNodeMenu);
+
+            // Select root node
+            _selectRootNodeMenu = new ToolbarMenu
+            {
+                text = "Select Root Node"
+            };
+            _selectRootNodeMenu.RegisterCallback<PointerDownEvent>(OnClickSelectRootNodeMenu);
+            _toolbar.Add(_selectRootNodeMenu);
         }
 
         private string GraphPopupFieldFormatter(PlayableGraph graph)
@@ -216,6 +240,72 @@ namespace GBG.PlayableGraphMonitor.Editor
         private void OnFrameAllButtonClicked()
         {
             _graphView.FrameAll();
+        }
+
+        private void OnClickSelectOutputNodeMenu(PointerDownEvent evt)
+        {
+            var itemCount = _selectOutputNodeMenu.menu.MenuItems().Count;
+            for (int i = itemCount - 1; i >= 0; i--)
+            {
+                _selectOutputNodeMenu.menu.RemoveItemAt(i);
+            }
+
+            var nodeList = new List<UNode>();
+            _graphView.nodes.ToList(nodeList);
+            foreach (var node in nodeList)
+            {
+                if (node is PlayableOutputNode outputNode)
+                {
+                    var nodeName = $"{outputNode.PlayableOutput.GetPlayableOutputType().Name}" +
+                        $" ({outputNode.PlayableOutput.GetEditorName()})";
+                    _selectOutputNodeMenu.menu.AppendAction(nodeName, _ =>
+                    {
+                        _graphView.ClearSelection();
+                        _graphView.AddToSelection(outputNode);
+                        _graphView.FrameSelection();
+                    });
+                }
+            }
+        }
+
+        private void OnClickSelectRootNodeMenu(PointerDownEvent evt)
+        {
+            var itemCount = _selectRootNodeMenu.menu.MenuItems().Count;
+            for (int i = itemCount - 1; i >= 0; i--)
+            {
+                _selectRootNodeMenu.menu.RemoveItemAt(i);
+            }
+
+            var playableGraph = _graphPopupField.value;
+            var rootPlayableCount = playableGraph.GetRootPlayableCount();
+            var rootPlayableHandles = new HashSet<PlayableHandle>();
+            for (int i = 0; i < rootPlayableCount; i++)
+            {
+                var rootPlayableHandle = playableGraph.GetRootPlayable(i).GetHandle();
+                rootPlayableHandles.Add(rootPlayableHandle);
+            }
+
+            var nodeList = new List<UNode>();
+            _graphView.nodes.ToList(nodeList);
+            foreach (var node in nodeList)
+            {
+                if (node is PlayableNode playableNode &&
+                    rootPlayableHandles.Contains(playableNode.Playable.GetHandle()))
+                {
+                    var nodeName = $"{playableNode.Playable.GetPlayableType()?.Name ?? "?"}";
+                    if (!string.IsNullOrEmpty(playableNode.ExtraLabel))
+                    {
+                        nodeName = $"{nodeName} ({playableNode.ExtraLabel})";
+                    }
+
+                    _selectRootNodeMenu.menu.AppendAction(nodeName, _ =>
+                    {
+                        _graphView.ClearSelection();
+                        _graphView.AddToSelection(playableNode);
+                        _graphView.FrameSelection();
+                    });
+                }
+            }
         }
     }
 }

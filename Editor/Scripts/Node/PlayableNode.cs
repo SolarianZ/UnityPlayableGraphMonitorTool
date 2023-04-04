@@ -19,7 +19,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
         public PlayableNode ParentNode { get; set; }
 
-        private string _extraLabel;
+        public string ExtraLabel { get; private set; }
 
 
         public void Update(PlayableGraphViewUpdateContext updateContext, Playable playable)
@@ -34,14 +34,14 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             }
 
             var extraLabel = GetExtraNodeLabel(updateContext.NodeExtraLabelTable);
-            if (playableChanged || _extraLabel != extraLabel)
+            if (playableChanged || ExtraLabel != extraLabel)
             {
-                _extraLabel = extraLabel;
+                ExtraLabel = extraLabel;
 
                 var playableTypeName = Playable.GetPlayableType().Name;
-                var nodeTitle = string.IsNullOrEmpty(_extraLabel)
+                var nodeTitle = string.IsNullOrEmpty(ExtraLabel)
                     ? playableTypeName
-                    : $"[{_extraLabel}]\n{playableTypeName}";
+                    : $"[{ExtraLabel}]\n{playableTypeName}";
 
                 // Expensive operation
                 title = nodeTitle;
@@ -105,12 +105,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         {
             if (Playable.IsValid())
             {
-                if (string.IsNullOrEmpty(_extraLabel))
+                if (string.IsNullOrEmpty(ExtraLabel))
                 {
                     return Playable.GetPlayableType().Name;
                 }
 
-                return $"[{_extraLabel}] {Playable.GetPlayableType().Name}";
+                return $"[{ExtraLabel}] {Playable.GetPlayableType().Name}";
             }
 
             return GetType().Name;
@@ -139,9 +139,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             }
 
             // Extra label
-            if (!string.IsNullOrEmpty(_extraLabel))
+            if (!string.IsNullOrEmpty(ExtraLabel))
             {
-                descBuilder.Append("ExtraLabel: ").AppendLine(_extraLabel)
+                descBuilder.Append("ExtraLabel: ").AppendLine(ExtraLabel)
                     .AppendLine(LINE);
             }
 
