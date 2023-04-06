@@ -1,3 +1,4 @@
+using System.Text;
 using GBG.PlayableGraphMonitor.Editor.Node;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor.Experimental.GraphView;
@@ -15,6 +16,8 @@ namespace GBG.PlayableGraphMonitor.Editor
         private Label _nodeDescriptionLabel;
 
         private MiniMap _graphMiniMap;
+
+        private StringBuilder _graphDescBuilder = new StringBuilder();
 
 
         private void CreateSidebar(VisualElement container)
@@ -89,10 +92,42 @@ namespace GBG.PlayableGraphMonitor.Editor
                 return;
             }
 
-            _nodeDescriptionLabel.text = "Select one node to show details.";
+            // PlayableGraph description
+            _nodeDescriptionLabel.text = GetPlayableGraphDescription();
 
             // MiniMap
             _graphMiniMap.MarkDirtyRepaint();
+        }
+
+        private string GetPlayableGraphDescription()
+        {
+            _graphDescBuilder.Clear();
+
+            var playableGraph = _graphPopupField.value;
+            if (!playableGraph.IsValid())
+            {
+                _graphDescBuilder.AppendLine("Invalid PlayableGraph");
+            }
+            else
+            {
+                const string LINE = "----------";
+
+                _graphDescBuilder.AppendLine(playableGraph.GetEditorName())
+                    .Append("HashCode: ").AppendLine(playableGraph.GetHashCode().ToString())
+                    .AppendLine(LINE)
+                    .Append("IsValid: ").AppendLine(playableGraph.IsValid().ToString())
+                    .Append("IsDone: ").AppendLine(playableGraph.IsDone().ToString())
+                    .Append("IsPlaying: ").AppendLine(playableGraph.IsPlaying().ToString())
+                    .Append("TimeUpdateMode: ").AppendLine(playableGraph.GetTimeUpdateMode().ToString())
+                    .AppendLine(LINE)
+                    .Append("OutputCount: ").AppendLine(playableGraph.GetOutputCount().ToString())
+                    .Append("PlayableCount: ").AppendLine(playableGraph.GetPlayableCount().ToString())
+                    .Append("RootPlayableCount: ").AppendLine(playableGraph.GetRootPlayableCount().ToString())
+                    .AppendLine(LINE)
+                    .Append("Resolver: ").AppendLine(playableGraph.GetResolver().ToString());
+            }
+
+            return _graphDescBuilder.ToString();
         }
     }
 }
