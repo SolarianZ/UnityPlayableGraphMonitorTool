@@ -1,6 +1,6 @@
-using System.Text;
 using GBG.PlayableGraphMonitor.Editor.Node;
 using GBG.PlayableGraphMonitor.Editor.Utility;
+using System.Text;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 
@@ -114,6 +114,7 @@ namespace GBG.PlayableGraphMonitor.Editor
                 const string LINE = "----------";
 
                 _graphDescBuilder.AppendLine(playableGraph.GetEditorName())
+                    .AppendLine(LINE)
                     .Append("HashCode: ").AppendLine(playableGraph.GetHashCode().ToString())
                     .AppendLine(LINE)
                     .Append("IsValid: ").AppendLine(playableGraph.IsValid().ToString())
@@ -125,7 +126,7 @@ namespace GBG.PlayableGraphMonitor.Editor
                     .Append("PlayableCount: ").AppendLine(playableGraph.GetPlayableCount().ToString())
                     .Append("RootPlayableCount: ").AppendLine(playableGraph.GetRootPlayableCount().ToString())
                     .AppendLine(LINE)
-                    .Append("Resolver: ").AppendLine(playableGraph.GetResolver().ToString());
+                    .Append("Resolver: ").AppendLine(playableGraph.GetResolver()?.ToString() ?? "Null");
             }
 
             return _graphDescBuilder.ToString();
