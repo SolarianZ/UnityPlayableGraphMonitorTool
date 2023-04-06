@@ -89,11 +89,12 @@ namespace GBG.PlayableGraphMonitor.Editor
                 _graphView.selection[0] is GraphViewNode node)
             {
                 _nodeDescriptionLabel.text = node.GetNodeDescription();
-                return;
             }
-
             // PlayableGraph description
-            _nodeDescriptionLabel.text = GetPlayableGraphDescription();
+            else
+            {
+                _nodeDescriptionLabel.text = GetPlayableGraphDescription();
+            }
 
             // MiniMap
             _graphMiniMap.MarkDirtyRepaint();
