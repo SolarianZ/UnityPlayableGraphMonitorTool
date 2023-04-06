@@ -1,6 +1,7 @@
 using GBG.PlayableGraphMonitor.Editor.Node;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Playables;
 using UnityEditor.UIElements;
@@ -156,11 +157,7 @@ namespace GBG.PlayableGraphMonitor.Editor
             {
                 text = "Select Output Node"
             };
-#if UNITY_2020_1_OR_NEWER
-            _selectOutputNodeMenu.RegisterCallback<ClickEvent>(OnClickSelectOutputNodeMenu);
-#else
-            _selectOutputNodeMenu.RegisterCallback<PointerDownEvent>(OnClickSelectOutputNodeMenu);
-#endif
+            _selectOutputNodeMenu.RegisterCallback<PointerEnterEvent>(OnHoverSelectOutputNodeMenu);
             _toolbar.Add(_selectOutputNodeMenu);
 
             // Select root node
@@ -168,11 +165,7 @@ namespace GBG.PlayableGraphMonitor.Editor
             {
                 text = "Select Root Node"
             };
-#if UNITY_2020_1_OR_NEWER
-            _selectRootNodeMenu.RegisterCallback<ClickEvent>(OnClickSelectRootNodeMenu);
-#else
-            _selectRootNodeMenu.RegisterCallback<PointerDownEvent>(OnClickSelectRootNodeMenu);
-#endif
+            _selectRootNodeMenu.RegisterCallback<PointerEnterEvent>(OnHoverSelectRootNodeMenu);
             _toolbar.Add(_selectRootNodeMenu);
         }
 
@@ -250,48 +243,9 @@ namespace GBG.PlayableGraphMonitor.Editor
             _graphView.FrameAll();
         }
 
-#if UNITY_2020_1_OR_NEWER
-        private void OnClickSelectOutputNodeMenu(ClickEvent evt)
-#else
-        private void OnClickSelectOutputNodeMenu(PointerDownEvent evt)
-#endif
+        private void OnHoverSelectOutputNodeMenu(PointerEnterEvent evt)
         {
-            var itemCount = _selectOutputNodeMenu.menu.MenuItems().Count;
-            for (int i = itemCount - 1; i >= 0; i--)
-            {
-                _selectOutputNodeMenu.menu.RemoveItemAt(i);
-            }
-
-            var nodeList = new List<UNode>();
-            _graphView.nodes.ToList(nodeList);
-            foreach (var node in nodeList)
-            {
-                if (node is PlayableOutputNode outputNode &&
-                    outputNode.PlayableOutput.IsOutputValid())
-                {
-                    var nodeName = $"{outputNode.PlayableOutput.GetPlayableOutputType().Name}" +
-                        $" ({outputNode.PlayableOutput.GetEditorName()})";
-                    _selectOutputNodeMenu.menu.AppendAction(nodeName, _ =>
-                    {
-                        _graphView.ClearSelection();
-                        _graphView.AddToSelection(outputNode);
-                        _graphView.FrameSelection();
-                    });
-                }
-            }
-        }
-
-#if UNITY_2020_1_OR_NEWER
-        private void OnClickSelectRootNodeMenu(ClickEvent evt)
-#else
-        private void OnClickSelectRootNodeMenu(PointerDownEvent evt)
-#endif
-        {
-            var itemCount = _selectRootNodeMenu.menu.MenuItems().Count;
-            for (int i = itemCount - 1; i >= 0; i--)
-            {
-                _selectRootNodeMenu.menu.RemoveItemAt(i);
-            }
+            _selectOutputNodeMenu.menu.MenuItems().Clear();
 
             var playableGraph = _graphPopupField.value;
             if (!playableGraph.IsValid())
@@ -299,35 +253,85 @@ namespace GBG.PlayableGraphMonitor.Editor
                 return;
             }
 
-            var rootPlayableCount = playableGraph.GetRootPlayableCount();
-            var rootPlayableHandles = new HashSet<PlayableHandle>();
-            for (int i = 0; i < rootPlayableCount; i++)
+            var nodeList = new List<UNode>();
+            _graphView.nodes.ToList(nodeList);
+            // _graphView.nodes.ToList() method returns nodes in random order,
+            // ensure that the menu items are ordered
+            var outputCount = playableGraph.GetOutputCount();
+            for (int i = 0; i < outputCount; i++)
             {
-                var rootPlayableHandle = playableGraph.GetRootPlayable(i).GetHandle();
-                rootPlayableHandles.Add(rootPlayableHandle);
+                var playableOutput = playableGraph.GetOutput(i);
+                var outputNode = nodeList.First(node =>
+                {
+                    if (node is PlayableOutputNode oNode)
+                    {
+                        return oNode.PlayableOutput.GetHandle() == playableOutput.GetHandle();
+                    }
+
+                    return false;
+                }) as PlayableOutputNode;
+
+                if (!outputNode.PlayableOutput.IsOutputValid())
+                {
+                    continue;
+                }
+
+                var nodeName = $"{outputNode.PlayableOutput.GetPlayableOutputType().Name}" +
+                        $" ({outputNode.PlayableOutput.GetEditorName()})";
+                _selectOutputNodeMenu.menu.AppendAction(nodeName, _ =>
+                {
+                    _graphView.ClearSelection();
+                    _graphView.AddToSelection(outputNode);
+                    _graphView.FrameSelection();
+                });
+            }
+        }
+
+        private void OnHoverSelectRootNodeMenu(PointerEnterEvent evt)
+        {
+            _selectRootNodeMenu.menu.MenuItems().Clear();
+
+            var playableGraph = _graphPopupField.value;
+            if (!playableGraph.IsValid())
+            {
+                return;
             }
 
             var nodeList = new List<UNode>();
             _graphView.nodes.ToList(nodeList);
-            foreach (var node in nodeList)
+            // _graphView.nodes.ToList() method returns nodes in random order,
+            // ensure that the menu items are ordered
+            var rootPlayableCount = playableGraph.GetRootPlayableCount();
+            for (int i = 0; i < rootPlayableCount; i++)
             {
-                if (node is PlayableNode playableNode &&
-                    playableNode.Playable.IsValid() &&
-                    rootPlayableHandles.Contains(playableNode.Playable.GetHandle()))
+                var playable = playableGraph.GetRootPlayable(i);
+                var playableNode = nodeList.First(node =>
                 {
-                    var nodeName = $"{playableNode.Playable.GetPlayableType()?.Name ?? "?"}";
-                    if (!string.IsNullOrEmpty(playableNode.ExtraLabel))
+                    if (node is PlayableNode pNode)
                     {
-                        nodeName = $"{nodeName} ({playableNode.ExtraLabel})";
+                        return pNode.Playable.GetHandle() == playable.GetHandle();
                     }
 
-                    _selectRootNodeMenu.menu.AppendAction(nodeName, _ =>
-                    {
-                        _graphView.ClearSelection();
-                        _graphView.AddToSelection(playableNode);
-                        _graphView.FrameSelection();
-                    });
+                    return false;
+                }) as PlayableNode;
+
+                if (!playableNode.Playable.IsValid())
+                {
+                    continue;
                 }
+
+                var nodeName = $"{playableNode.Playable.GetPlayableType()?.Name ?? "?"}";
+                if (!string.IsNullOrEmpty(playableNode.ExtraLabel))
+                {
+                    nodeName = $"{nodeName} ({playableNode.ExtraLabel})";
+                }
+
+                _selectRootNodeMenu.menu.AppendAction(nodeName, _ =>
+                {
+                    _graphView.ClearSelection();
+                    _graphView.AddToSelection(playableNode);
+                    _graphView.FrameSelection();
+                });
             }
         }
     }
