@@ -250,6 +250,8 @@ namespace GBG.PlayableGraphMonitor.Editor
             var playableGraph = _graphPopupField.value;
             if (!playableGraph.IsValid())
             {
+                _selectOutputNodeMenu.menu.AppendAction("No PlayableOuput node", null,
+                    DropdownMenuAction.Status.Disabled);
                 return;
             }
 
@@ -276,14 +278,20 @@ namespace GBG.PlayableGraphMonitor.Editor
                     continue;
                 }
 
-                var nodeName = $"{outputNode.PlayableOutput.GetPlayableOutputType().Name}" +
-                        $" ({outputNode.PlayableOutput.GetEditorName()})";
+                var nodeName = $"#{i} [{outputNode.PlayableOutput.GetEditorName()}]" +
+                    $" {outputNode.PlayableOutput.GetPlayableOutputType().Name}";
                 _selectOutputNodeMenu.menu.AppendAction(nodeName, _ =>
                 {
                     _graphView.ClearSelection();
                     _graphView.AddToSelection(outputNode);
                     _graphView.FrameSelection();
                 });
+            }
+
+            if (outputCount == 0)
+            {
+                _selectOutputNodeMenu.menu.AppendAction("No PlayableOuput node", null,
+                    DropdownMenuAction.Status.Disabled);
             }
         }
 
@@ -294,6 +302,8 @@ namespace GBG.PlayableGraphMonitor.Editor
             var playableGraph = _graphPopupField.value;
             if (!playableGraph.IsValid())
             {
+                _selectRootNodeMenu.menu.AppendAction("No root Playable node", null,
+                    DropdownMenuAction.Status.Disabled);
                 return;
             }
 
@@ -320,11 +330,9 @@ namespace GBG.PlayableGraphMonitor.Editor
                     continue;
                 }
 
-                var nodeName = $"{playableNode.Playable.GetPlayableType()?.Name ?? "?"}";
-                if (!string.IsNullOrEmpty(playableNode.ExtraLabel))
-                {
-                    nodeName = $"{nodeName} ({playableNode.ExtraLabel})";
-                }
+                var nodeName = !string.IsNullOrEmpty(playableNode.ExtraLabel)
+                    ? $"#{i} [{playableNode.ExtraLabel}] {playableNode.Playable.GetPlayableType().Name}"
+                    : $"#{i} {playableNode.Playable.GetPlayableType().Name}";
 
                 _selectRootNodeMenu.menu.AppendAction(nodeName, _ =>
                 {
@@ -332,6 +340,12 @@ namespace GBG.PlayableGraphMonitor.Editor
                     _graphView.AddToSelection(playableNode);
                     _graphView.FrameSelection();
                 });
+            }
+
+            if (rootPlayableCount == 0)
+            {
+                _selectRootNodeMenu.menu.AppendAction("No root Playable node", null,
+                    DropdownMenuAction.Status.Disabled);
             }
         }
     }
