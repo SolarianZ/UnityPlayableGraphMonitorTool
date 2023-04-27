@@ -1,8 +1,8 @@
-﻿using System;
+﻿using GBG.PlayableGraphMonitor.Editor.GraphView;
+using GBG.PlayableGraphMonitor.Editor.Utility;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using GBG.PlayableGraphMonitor.Editor.GraphView;
-using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -185,7 +185,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         protected virtual void AppendPlayableTypeDescription(StringBuilder descBuilder)
         {
             descBuilder.Append("Type: ").AppendLine(Playable.GetPlayableType()?.Name ?? "?")
-                .Append("HashCode: ").AppendLine(Playable.GetHandle().GetHashCode().ToString());
+                .Append("HandleHashCode: ").AppendLine(Playable.GetHandle().GetHashCode().ToString());
         }
 
         protected virtual void AppendInputPortDescription(StringBuilder descBuilder)
@@ -210,8 +210,11 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         /// <returns></returns>
         public Port FindOutputPort(Playable outputPlayable)
         {
-            // If the output of Playable at index i is connected to a PlayableOutput,
+            // If the output port of the Playable at index i is connected to a PlayableOutput,
             // Playable.GetOutput(i) will return an invalid Playable.
+
+            // TODO FIXME: If multiple output ports of `outputPlayable` connect to different input ports of the same `Playable`,
+            // this method cannot distinguish between these output ports.
 
             for (int i = 0; i < Playable.GetOutputCount(); i++)
             {

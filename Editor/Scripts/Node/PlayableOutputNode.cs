@@ -106,7 +106,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             descBuilder.Append("#").AppendLine(_outputIndex.ToString())
                 .Append("Type: ").AppendLine(PlayableOutput.GetPlayableOutputType().Name)
-                .Append("HashCode: ").AppendLine(PlayableOutput.GetHandle().GetHashCode().ToString())
+                .Append("HandleHashCode: ").AppendLine(PlayableOutput.GetHandle().GetHashCode().ToString())
                 .AppendLine(LINE)
                 .Append("Name: ").AppendLine(PlayableOutput.GetEditorName())
                 .AppendLine(LINE)

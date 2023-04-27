@@ -1,10 +1,11 @@
-﻿using System;
+﻿using GBG.PlayableGraphMonitor.Editor.GraphView;
+using System;
 using System.Reflection;
 using System.Text;
-using GBG.PlayableGraphMonitor.Editor.GraphView;
 using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 using UnityEngine.UIElements;
-
 
 namespace GBG.PlayableGraphMonitor.Editor.Node
 {
@@ -58,6 +59,19 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             descBuilder.Append("Job: ").AppendLine(jobType?.Name ?? "?");
         }
 
+         protected override void AppendNodeDescription(StringBuilder descBuilder)
+        {
+            base.AppendNodeDescription(descBuilder);
+
+            if (!Playable.IsValid())
+            {
+                return;
+            }
+            
+            var animScriptPlayable = (AnimationScriptPlayable)Playable;
+            descBuilder.AppendLine(LINE)
+                .Append("ProcessInputs: ").AppendLine(animScriptPlayable.GetProcessInputs().ToString());
+        }
 
         private Type GetJobType()
         {
