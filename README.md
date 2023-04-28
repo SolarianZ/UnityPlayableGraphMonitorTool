@@ -50,12 +50,12 @@ Use the `PlayableGraphMonitorWindow.Open(IReadOnlyDictionary<PlayableHandle, str
 
 ## Manually dragging nodes to adjust the layout
 
-In the monitoring tool window toolbar, after setting the maximum refresh rate to **Manual**, you can use the left mouse button to drag the selected nodes. Clicking the **Update View** button in the toolbar will refresh the view once. If the **Auto Layout** option in the toolbar is enabled, the positions of all nodes will be recalculated. If you want to keep the dragged node layout when update the view, disable the **Auto Layout** option.
+After disabling the **Auto Layout** option in the toolbar of the monitor window, you can manually drag nodes to adjust the layout.
 
 
 ## PlayableGraph with circular references
 
-When there are circular references in the nodes of a PlayableGraph, the monitoring tool cannot automatically calculate the node layout. If you find that the monitoring tool fails to layout nodes properly, check the console log to see if it indicates circular references in the PlayableGraph. In this case, you can set the maximum refresh rate to **Manual** and disable the **Auto Layout** option, and then manually drag nodes to identify the circular references in the PlayableGraph.
+When there are circular references in the nodes of a PlayableGraph, the monitoring tool cannot automatically calculate the node layout. If you find that the monitoring tool fails to layout nodes properly, check the console log to see if it indicates circular references in the PlayableGraph. In this case, you can disable the **Auto Layout** option, and then manually drag nodes to identify the circular references in the PlayableGraph.
 
 **It should be noted** that if there is a group of Playables where each Playable serves as an input to another one or more Playables in the group (i.e., there is no root Playable), and none of them are connected to a PlayableOutput, then this group of Playables will not appear in the graph view and may not trigger any error messages.
 
