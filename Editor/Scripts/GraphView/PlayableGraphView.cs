@@ -31,6 +31,9 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
         [SerializeField]
         public bool ShowClipProgressBar = true;
 
+        [SerializeField]
+        public bool ShowClipProgressBarTitle;
+
         [NonSerialized]
         public IReadOnlyDictionary<PlayableHandle, string> NodeExtraLabelTable;
     }

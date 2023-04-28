@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 using GBG.PlayableGraphMonitor.Editor.GraphView;
 using GBG.PlayableGraphMonitor.Editor.Utility;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -127,12 +126,13 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private void Update()
         {
-            UpdateGraphView();
+            // TODO FIXME CLIP_PROGRESS: If I reverse the order of these two method calls, the progress bar on the Clip node will become inaccurate. Why???
             DrawInspector();
+            UpdateGraphView();
 
             if (_updateNodesMovability)
             {
-                _graphView.SetNodesMovability(_refreshRate == RefreshRate.Manual);
+                _graphView.SetNodesMovability(!_autoLayoutToggle.value);
             }
         }
 
@@ -220,8 +220,18 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         void IHasCustomMenu.AddItemsToMenu(GenericMenu menu)
         {
-            menu.AddItem(new GUIContent("Keep updating edges when mouse leave GraphView(will degrade performance)"),
+#if UNITY_2021_1_OR_NEWER
+            menu.AddItem(new GUIContent("Show clip progress bar title (will degrade performance)"),
+                _viewUpdateContext.ShowClipProgressBarTitle, OnToggleShowClipProgressBarTitle);
+#endif
+
+            menu.AddItem(new GUIContent("Keep updating edges when mouse leave GraphView (will degrade performance)"),
                 _viewUpdateContext.KeepUpdatingEdges, OnToggleKeepUpdatingEdges);
+        }
+
+        private void OnToggleShowClipProgressBarTitle()
+        {
+            _viewUpdateContext.ShowClipProgressBarTitle = !_viewUpdateContext.ShowClipProgressBarTitle;
         }
 
         private void OnToggleKeepUpdatingEdges()

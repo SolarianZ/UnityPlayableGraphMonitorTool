@@ -51,6 +51,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var clip = clipPlayable.GetAnimationClip();
             _clipField.SetValueWithoutNotify(clip);
 
+            // MEMO KEYWORD: CLIP_PROGRESS
             if (updateContext.ShowClipProgressBar)
             {
                 _progressBar.style.display = DisplayStyle.Flex;
@@ -58,13 +59,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 {
                     if (clip.isLooping)
                     {
-                        var progress = (float)(Playable.GetTime() / clip.length) % 1.0f * 100;
+                        var progress = (float)(Playable.GetTime() / clip.length % 1.0f * 100);
                         // Expensive operations
                         _progressBar.SetValueWithoutNotify(progress);
                     }
                     else
                     {
-                        var progress = (float)(Playable.GetTime() / clip.length) * 100;
+                        var progress = (float)(Playable.GetTime() / clip.length * 100);
                         progress = Mathf.Clamp(progress, 0, 100);
                         // Expensive operations
                         _progressBar.SetValueWithoutNotify(progress);
@@ -75,6 +76,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                     // Expensive operations
                     _progressBar.SetValueWithoutNotify(0);
                 }
+
+#if UNITY_2021_1_OR_NEWER
+                // Expensive operations
+                _progressBar.title = updateContext.ShowClipProgressBarTitle
+                    ? $"{_progressBar.value:F2}%"
+                    : null;
+#endif
             }
             else
             {

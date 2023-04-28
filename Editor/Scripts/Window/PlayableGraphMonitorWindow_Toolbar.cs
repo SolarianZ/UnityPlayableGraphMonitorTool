@@ -18,8 +18,8 @@ namespace GBG.PlayableGraphMonitor.Editor
         [InspectorName("Max FPS")]
         Fps_Max = 0,
 
-        [InspectorName("50 FPS")]
-        Fps_50 = 20,
+        [InspectorName("30 FPS")]
+        Fps_50 = 33,
 
         [InspectorName("20 FPS")]
         Fps_20 = 50,
@@ -116,10 +116,10 @@ namespace GBG.PlayableGraphMonitor.Editor
             _autoLayoutToggle.RegisterValueChangedCallback(ToggleAutoLayout);
             _autoLayoutLabel = _autoLayoutToggle.Q<TextElement>(className: "unity-text-element");
             _autoLayoutLabel.style.color = _viewUpdateContext.AutoLayout ? NormalTextColor : NotableTextColor;
+            _updateNodesMovability = true;
             _toolbar.Add(_autoLayoutToggle);
 
             // Refresh rate popup
-            _updateNodesMovability = _refreshRate == RefreshRate.Manual;
             _refreshRateField = new EnumField(_refreshRate)
             {
                 tooltip = "Max refresh rate.",
@@ -216,6 +216,8 @@ namespace GBG.PlayableGraphMonitor.Editor
             _autoLayoutLabel.style.color = _viewUpdateContext.AutoLayout
                 ? NormalTextColor
                 : NotableTextColor;
+
+            _updateNodesMovability = true;
         }
 
         private void OnRefreshRateChanged(ChangeEvent<Enum> evt)
@@ -229,8 +231,6 @@ namespace GBG.PlayableGraphMonitor.Editor
             _refreshRateLabel.style.color = _refreshRate == RefreshRate.Manual
                 ? NotableTextColor
                 : NormalTextColor;
-
-            _updateNodesMovability = true;
         }
 
         private void OnManualUpdateButtonClicked()
