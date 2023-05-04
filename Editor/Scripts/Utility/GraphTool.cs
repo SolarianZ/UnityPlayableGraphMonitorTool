@@ -40,6 +40,40 @@ namespace GBG.PlayableGraphMonitor.Editor.Utility
 
             return durationStr;
         }
+     
+        /// <summary>
+        /// Wrap the value to the range of [0,1].
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static double Wrap01(double value)
+        {
+            if (value < 0)
+            {
+                var result = 1.0 + value % 1;
+                // Prevent wrapping -0 to 1
+                if (result == 1)
+                {
+                    result = 0;
+                }
+
+                return result;
+            }
+
+            if (value > 1)
+            {
+                var result = value % 1;
+                // Prevent wrapping 1 to 0
+                if (result == 0)
+                {
+                    result = 1;
+                }
+
+                return result;
+            }
+
+            return value;
+        }
 
         public static void SetNodeStyle(this GraphViewNode node, Color nodeColor,
             float titleFontSize = 15, Color? titleColor = null)

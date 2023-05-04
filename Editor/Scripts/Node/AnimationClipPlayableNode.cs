@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using GBG.PlayableGraphMonitor.Editor.GraphView;
+using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -59,16 +60,18 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 {
                     if (clip.isLooping)
                     {
-                        var progress = (float)(Playable.GetTime() / clip.length % 1.0f * 100);
+                        var progress = Playable.GetTime() / clip.length;
+                        progress = GraphTool.Wrap01(progress) * 100;
                         // Expensive operations
-                        _progressBar.SetValueWithoutNotify(progress);
+                        _progressBar.SetValueWithoutNotify((float)progress);
                     }
                     else
                     {
-                        var progress = (float)(Playable.GetTime() / clip.length * 100);
-                        progress = Mathf.Clamp(progress, 0, 100);
+                        var progress = Playable.GetTime() / clip.length;
+                        progress = Mathf.Clamp((float)progress, -1, 1);
+                        progress = GraphTool.Wrap01(progress) * 100;
                         // Expensive operations
-                        _progressBar.SetValueWithoutNotify(progress);
+                        _progressBar.SetValueWithoutNotify((float)progress);
                     }
                 }
                 else
