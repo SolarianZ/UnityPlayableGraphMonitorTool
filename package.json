@@ -7,11 +7,14 @@
   "documentationUrl": "https://github.com/SolarianZ/UnityPlayableGraphMonitorTool",
   "changelogUrl": "",
   "licensesUrl": "https://github.com/SolarianZ/UnityPlayableGraphMonitorTool/blob/main/LICENSE",
-  "keywords": [],
+  "keywords": [
+    "Playable",
+    "Graph"
+  ],
   "author": {
     "name": "GBG",
     "email": "vdergow@hotmail.com",
-    "url": ""
+    "url": "https://github.com/SolarianZ"
   },
   "type": "tool",
   "hideInEditor": false
