@@ -95,7 +95,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 #if UNITY_2021_1_OR_NEWER
                 // Expensive operations
                 _progressBar.title = updateContext.ShowClipProgressBarTitle
-                    ? (rawProgress01 * 100).ToString("F2");
+                    ? (rawProgress01 * 100).ToString("F2")
                     : null;
 #endif
             }
