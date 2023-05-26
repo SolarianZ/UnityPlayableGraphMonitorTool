@@ -1,6 +1,6 @@
-﻿using System.Text;
-using GBG.PlayableGraphMonitor.Editor.GraphView;
+﻿using GBG.PlayableGraphMonitor.Editor.GraphView;
 using GBG.PlayableGraphMonitor.Editor.Utility;
+using System.Text;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -56,34 +56,47 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             if (updateContext.ShowClipProgressBar)
             {
                 _progressBar.style.display = DisplayStyle.Flex;
+
+                var rawProgress01 = 0.0;
+                double progress01;
                 if (clip)
                 {
+                    var time = Playable.GetTime();
+                    rawProgress01 = time / clip.length;
+
                     if (clip.isLooping)
                     {
-                        var progress = Playable.GetTime() / clip.length;
-                        progress = GraphTool.Wrap01(progress) * 100;
-                        // Expensive operations
-                        _progressBar.SetValueWithoutNotify((float)progress);
+                        progress01 = GraphTool.Wrap01(rawProgress01);
                     }
                     else
                     {
-                        var progress = Playable.GetTime() / clip.length;
-                        progress = Mathf.Clamp((float)progress, -1, 1);
-                        progress = GraphTool.Wrap01(progress) * 100;
-                        // Expensive operations
-                        _progressBar.SetValueWithoutNotify((float)progress);
+                        var speed = Playable.GetSpeed();
+                        if (speed > 0 && time >= clip.length)
+                        {
+                            progress01 = 1;
+                        }
+                        else if (speed < 0 && time <= 0)
+                        {
+                            progress01 = 0;
+                        }
+                        else
+                        {
+                            progress01 = GraphTool.Wrap01(rawProgress01);
+                        }
                     }
                 }
                 else
                 {
-                    // Expensive operations
-                    _progressBar.SetValueWithoutNotify(0);
+                    progress01 = 0;
                 }
+
+                // Expensive operations
+                _progressBar.SetValueWithoutNotify((float)progress01 * 100);
 
 #if UNITY_2021_1_OR_NEWER
                 // Expensive operations
                 _progressBar.title = updateContext.ShowClipProgressBarTitle
-                    ? $"{_progressBar.value:F2}%"
+                    ? (rawProgress01 * 100).ToString("F2");
                     : null;
 #endif
             }
