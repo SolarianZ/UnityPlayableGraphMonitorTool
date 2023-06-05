@@ -158,6 +158,21 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 .Append("AverageAngularSpeed: ").AppendLine(clip.averageAngularSpeed.ToString("F3"))
                 .Append("AverageDuration: ").AppendLine(clip.averageDuration.ToString("F3"))
                 .Append("IsHumanMotion: ").AppendLine(clip.isHumanMotion.ToString());
+
+            // Event
+            descBuilder.AppendLine(LINE);
+            var events = clip.events;
+            descBuilder.AppendLine(
+                events.Length == 0
+                    ? "No Event"
+                    : (events.Length == 1 ? "1 Event:" : $"{events.Length.ToString()} Events:")
+            );
+            for (int i = 0; i < events.Length; i++)
+            {
+                var evt = events[i];
+                var evtPosition = evt.time / clip.length * 100;
+                descBuilder.AppendLine($"  #{(i + 1).ToString()} {evtPosition.ToString("F2")}% {evt.functionName}");
+            }
         }
     }
 }

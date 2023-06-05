@@ -168,7 +168,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             descBuilder.AppendLine(
                 inputCount == 0
                     ? "No Input"
-                    : (inputCount == 1 ? "1 Input:" : $"{inputCount} Inputs:")
+                    : (inputCount == 1 ? "1 Input:" : $"{inputCount.ToString()} Inputs:")
             );
             AppendInputPortDescription(descBuilder);
 
@@ -178,7 +178,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             descBuilder.AppendLine(
                 playableOutputCount == 0
                     ? "No Output"
-                    : (playableOutputCount == 1 ? "1 Output" : $"{playableOutputCount} Outputs")
+                    : (playableOutputCount == 1 ? "1 Output" : $"{playableOutputCount.ToString()} Outputs")
             );
         }
 
