@@ -33,8 +33,11 @@ Unity 2019.4或更新版本。
 
 [![openupm](https://img.shields.io/npm/v/com.greenbamboogames.playablegraphmonitor?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.cn/packages/com.greenbamboogames.playablegraphmonitor/) 
 
-从 [OpenUPM](https://openupm.cn/packages/com.greenbamboogames.playablegraphmonitor/) 安装。
+从 [OpenUPM](https://openupm.cn/packages/com.greenbamboogames.playablegraphmonitor/) 免费安装
 
+或者
+
+在 [Unity Asset Store](https://assetstore.unity.com/packages/tools/utilities/playablegraph-monitor-238251) 购买此包来支持此项目。
 
 # 如何使用
 
