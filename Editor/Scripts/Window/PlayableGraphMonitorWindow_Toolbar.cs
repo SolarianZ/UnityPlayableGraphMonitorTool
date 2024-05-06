@@ -173,7 +173,8 @@ namespace GBG.PlayableGraphMonitor.Editor
         {
             if (graph.IsValid())
             {
-                return graph.GetEditorName();
+                // Popup cannot display empty names and items with the same name properly, add HashCode to display them
+                return $"{graph.GetEditorName()} <{graph.GetHashCode()}>";
             }
 
             return "No PlayableGraph";
