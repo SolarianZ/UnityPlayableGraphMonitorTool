@@ -14,7 +14,9 @@ namespace GBG.PlayableGraphMonitor.Editor
             {
                 style =
                 {
-                    flexGrow = new StyleFloat(1)
+                    flexGrow = new StyleFloat(1),
+                    // Fix #19
+                    height = Length.Percent(100),
                 }
             };
 

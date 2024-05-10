@@ -63,7 +63,7 @@ namespace GBG.PlayableGraphMonitor.Editor
         private ToolbarMenu _selectRootNodeMenu;
 
         // Common data
-        private static Color NotableTextColor => Color.yellow;
+        private static Color NotableTextColor => Color.red;
         private static Color NormalTextColor => EditorGUIUtility.isProSkin
             ? Color.white
             : Color.black;
