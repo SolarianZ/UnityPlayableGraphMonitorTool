@@ -224,9 +224,15 @@ namespace GBG.PlayableGraphMonitor.Editor
             menu.AddItem(new GUIContent("Show clip progress bar title (will degrade performance)"),
                 _viewUpdateContext.ShowClipProgressBarTitle, OnToggleShowClipProgressBarTitle);
 #endif
-
             menu.AddItem(new GUIContent("Keep updating edges when mouse leave GraphView (will degrade performance)"),
                 _viewUpdateContext.KeepUpdatingEdges, OnToggleKeepUpdatingEdges);
+            menu.AddSeparator("");
+
+            // Source Code
+            menu.AddItem(new GUIContent("Source Code"), false, () =>
+            {
+                Application.OpenURL("https://github.com/SolarianZ/UnityPlayableGraphMonitorTool");
+            });
         }
 
         private void OnToggleShowClipProgressBarTitle()
