@@ -136,6 +136,14 @@ namespace GBG.PlayableGraphMonitor.Editor
             }
         }
 
+        private void ShowButton(Rect position)
+        {
+            if (GUI.Button(position, EditorGUIUtility.IconContent("_Help"), GUI.skin.FindStyle("IconButton")))
+            {
+                Application.OpenURL("https://github.com/SolarianZ/UnityPlayableGraphMonitorTool");
+            }
+        }
+
         private void UpdateGraphView()
         {
             var currentTimeMS = GetCurrentEditorTimeMs();
