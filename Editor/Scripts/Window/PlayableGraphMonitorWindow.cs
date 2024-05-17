@@ -231,10 +231,8 @@ namespace GBG.PlayableGraphMonitor.Editor
 #if UNITY_2021_1_OR_NEWER
             menu.AddItem(new GUIContent("Show clip progress bar title (will degrade performance)"),
                 _viewUpdateContext.ShowClipProgressBarTitle, OnToggleShowClipProgressBarTitle);
-#endif
-            menu.AddItem(new GUIContent("Keep updating edges when mouse leave GraphView (will degrade performance)"),
-                _viewUpdateContext.KeepUpdatingEdges, OnToggleKeepUpdatingEdges);
             menu.AddSeparator("");
+#endif
 
             // Source Code
             menu.AddItem(new GUIContent("Source Code"), false, () =>
@@ -246,11 +244,6 @@ namespace GBG.PlayableGraphMonitor.Editor
         private void OnToggleShowClipProgressBarTitle()
         {
             _viewUpdateContext.ShowClipProgressBarTitle = !_viewUpdateContext.ShowClipProgressBarTitle;
-        }
-
-        private void OnToggleKeepUpdatingEdges()
-        {
-            _viewUpdateContext.KeepUpdatingEdges = !_viewUpdateContext.KeepUpdatingEdges;
         }
 
         #endregion

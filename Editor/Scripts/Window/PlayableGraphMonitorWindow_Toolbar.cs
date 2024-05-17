@@ -105,6 +105,16 @@ namespace GBG.PlayableGraphMonitor.Editor
             clipProgressBarToggle.Q<TextElement>(className: "unity-text-element").style.color = NormalTextColor;
             _toolbar.Add(clipProgressBarToggle);
 
+            var updateEdgeToggle = new ToolbarToggle()
+            {
+                text = "Always Update Edges",
+                tooltip = "Keep updating edges when mouse leave GraphView (will degrade performance).",
+                value = _viewUpdateContext.KeepUpdatingEdges,
+            };
+            updateEdgeToggle.RegisterValueChangedCallback(ToggleKeepUpdatingEdges);
+            updateEdgeToggle.Q<TextElement>(className: "unity-text-element").style.color = NormalTextColor;
+            _toolbar.Add(updateEdgeToggle);
+
             // Auto layout toggle
             _autoLayoutToggle = new ToolbarToggle()
             {
@@ -209,6 +219,11 @@ namespace GBG.PlayableGraphMonitor.Editor
         private void ToggleDisplayClipProgressBar(ChangeEvent<bool> evt)
         {
             _viewUpdateContext.ShowClipProgressBar = evt.newValue;
+        }
+
+        private void ToggleKeepUpdatingEdges(ChangeEvent<bool> evt)
+        {
+            _viewUpdateContext.KeepUpdatingEdges = evt.newValue;
         }
 
         private void ToggleAutoLayout(ChangeEvent<bool> evt)
