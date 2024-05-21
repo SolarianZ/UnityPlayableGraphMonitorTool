@@ -228,22 +228,11 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         void IHasCustomMenu.AddItemsToMenu(GenericMenu menu)
         {
-#if UNITY_2021_1_OR_NEWER
-            menu.AddItem(new GUIContent("Show clip progress bar title (will degrade performance)"),
-                _viewUpdateContext.ShowClipProgressBarTitle, OnToggleShowClipProgressBarTitle);
-            menu.AddSeparator("");
-#endif
-
             // Source Code
             menu.AddItem(new GUIContent("Source Code"), false, () =>
             {
                 Application.OpenURL("https://github.com/SolarianZ/UnityPlayableGraphMonitorTool");
             });
-        }
-
-        private void OnToggleShowClipProgressBarTitle()
-        {
-            _viewUpdateContext.ShowClipProgressBarTitle = !_viewUpdateContext.ShowClipProgressBarTitle;
         }
 
         #endregion

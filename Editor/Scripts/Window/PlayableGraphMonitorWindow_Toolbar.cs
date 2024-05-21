@@ -95,16 +95,29 @@ namespace GBG.PlayableGraphMonitor.Editor
             _toolbar.Add(_inspectorToggle);
 
             // Clip ProgressBar toggle
-            var clipProgressBarToggle = new ToolbarToggle()
+            var clipProgressDropdownToggle = new ToolbarDropdownToggle()
             {
                 text = "Clip Progress",
                 tooltip = "Disabling this option can significantly improve performance.",
                 value = _viewUpdateContext.ShowClipProgressBar,
             };
-            clipProgressBarToggle.RegisterValueChangedCallback(ToggleDisplayClipProgressBar);
-            clipProgressBarToggle.Q<TextElement>(className: "unity-text-element").style.color = NormalTextColor;
-            _toolbar.Add(clipProgressBarToggle);
+            clipProgressDropdownToggle.RegisterValueChangedCallback(ToggleDisplayClipProgressBar);
+            clipProgressDropdownToggle.Q<TextElement>(className: "unity-text-element").style.color = NormalTextColor;
+            clipProgressDropdownToggle.menu.AppendAction("Progress Text (Low-Performance)",
+                ToggleDisplayClipProgressBarText,
+                (_) =>
+                {
+                    var @checked = _viewUpdateContext.ShowClipProgressBarTitle
+                    ? DropdownMenuAction.Status.Checked
+                    : DropdownMenuAction.Status.Normal;
+                    var disabled = _viewUpdateContext.ShowClipProgressBar
+                    ? DropdownMenuAction.Status.Normal
+                    : DropdownMenuAction.Status.Disabled;
+                    return @checked | disabled;
+                });
+            _toolbar.Add(clipProgressDropdownToggle);
 
+            // Update edge toggle
             var updateEdgeToggle = new ToolbarToggle()
             {
                 text = "Always Update Edges",
@@ -157,6 +170,7 @@ namespace GBG.PlayableGraphMonitor.Editor
             var frameAllButton = new ToolbarButton(OnFrameAllButtonClicked)
             {
                 text = "Frame All",
+                style = { flexShrink = 0 },
             };
             frameAllButton.Q<TextElement>(className: "unity-text-element").style.color = NormalTextColor;
             _toolbar.Add(frameAllButton);
@@ -165,7 +179,8 @@ namespace GBG.PlayableGraphMonitor.Editor
             _toolbar.Add(new ToolbarSpacer());
             _selectOutputNodeMenu = new ToolbarMenu
             {
-                text = "Select Output Node"
+                text = "Select Output Node",
+                style = { flexShrink = 0 },
             };
             _selectOutputNodeMenu.RegisterCallback<PointerEnterEvent>(OnHoverSelectOutputNodeMenu);
             _toolbar.Add(_selectOutputNodeMenu);
@@ -173,7 +188,8 @@ namespace GBG.PlayableGraphMonitor.Editor
             // Select root node
             _selectRootNodeMenu = new ToolbarMenu
             {
-                text = "Select Root Node"
+                text = "Select Root Node",
+                style = { flexShrink = 0 },
             };
             _selectRootNodeMenu.RegisterCallback<PointerEnterEvent>(OnHoverSelectRootNodeMenu);
             _toolbar.Add(_selectRootNodeMenu);
@@ -219,6 +235,11 @@ namespace GBG.PlayableGraphMonitor.Editor
         private void ToggleDisplayClipProgressBar(ChangeEvent<bool> evt)
         {
             _viewUpdateContext.ShowClipProgressBar = evt.newValue;
+        }
+
+        private void ToggleDisplayClipProgressBarText(DropdownMenuAction _)
+        {
+            _viewUpdateContext.ShowClipProgressBarTitle = !_viewUpdateContext.ShowClipProgressBarTitle;
         }
 
         private void ToggleKeepUpdatingEdges(ChangeEvent<bool> evt)
