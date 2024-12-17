@@ -2,6 +2,7 @@ using GBG.PlayableGraphMonitor.Editor.Node;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using System.Text;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 
@@ -13,7 +14,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         private VisualElement _sidebarPanel;
 
-        private Label _nodeDescriptionLabel;
+        private IMGUIContainer _nodeDescriptionLabel;
 
         private MiniMap _graphMiniMap;
 
@@ -49,7 +50,7 @@ namespace GBG.PlayableGraphMonitor.Editor
                     flexGrow = 1,
                 }
             };
-            _nodeDescriptionLabel = new Label
+            _nodeDescriptionLabel = new IMGUIContainer(DrawNodeDescription)
             {
                 name = "node-desc-label",
                 style =
@@ -84,23 +85,25 @@ namespace GBG.PlayableGraphMonitor.Editor
                 return;
             }
 
-            // Node description
-            if (_graphView.selection.Count == 1 &&
-                _graphView.selection[0] is GraphViewNode node)
-            {
-                _nodeDescriptionLabel.text = node.GetNodeDescription();
-            }
-            // PlayableGraph description
-            else
-            {
-                _nodeDescriptionLabel.text = GetPlayableGraphDescription();
-            }
-
             // MiniMap
             _graphMiniMap.MarkDirtyRepaint();
         }
 
-        private string GetPlayableGraphDescription()
+        void DrawNodeDescription() {
+            // Node description
+            if (_graphView.selection.Count == 1 &&
+                _graphView.selection[0] is GraphViewNode node)
+            {
+                node.GetNodeDescription();
+            }
+            // PlayableGraph description
+            else
+            {
+                GetPlayableGraphDescription();
+            }
+        }
+
+        private void GetPlayableGraphDescription()
         {
             _graphDescBuilder.Clear();
 
@@ -129,7 +132,7 @@ namespace GBG.PlayableGraphMonitor.Editor
                     .Append("Resolver: ").AppendLine(playableGraph.GetResolver()?.ToString() ?? "Null");
             }
 
-            return _graphDescBuilder.ToString();
+            GUILayout.Label(_graphDescBuilder.ToString());
         }
     }
 }

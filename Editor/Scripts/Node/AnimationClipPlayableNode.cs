@@ -1,6 +1,7 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.GraphView;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using System.Text;
+using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -113,9 +114,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         //     // _clipField.SetValueWithoutNotify(null);
         // }
 
-        protected override void AppendNodeDescription(StringBuilder descBuilder)
+        protected override void AppendNodeDescription()
         {
-            base.AppendNodeDescription(descBuilder);
+            base.AppendNodeDescription();
 
             if (!Playable.IsValid())
             {
@@ -125,44 +126,44 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var animClipPlayable = (AnimationClipPlayable)Playable;
 
             // IK
-            descBuilder.AppendLine(LINE)
-                .Append("ApplyFootIK: ").AppendLine(animClipPlayable.GetApplyFootIK().ToString())
-                .Append("ApplyPlayableIK: ").AppendLine(animClipPlayable.GetApplyPlayableIK().ToString());
+            GUILayout.Label(LINE);
+            EditorGUILayout.Toggle("ApplyFootIK:", animClipPlayable.GetApplyFootIK());
+            EditorGUILayout.Toggle("ApplyPlayableIK:", animClipPlayable.GetApplyPlayableIK());
 
             // Clip
-            descBuilder.AppendLine(LINE);
+            GUILayout.Label(LINE);
             var clip = animClipPlayable.GetAnimationClip();
             if (!clip)
             {
-                descBuilder.AppendLine("Clip: None");
+                GUILayout.Label("Clip: None");
                 return;
             }
 
-            descBuilder.Append("Clip: ").AppendLine(clip.name)
-                .Append("Length: ").Append(clip.length.ToString("F3")).AppendLine("(s)")
-                .Append("Looped: ").AppendLine(clip.isLooping.ToString())
-                .Append("WrapMode: ").AppendLine(clip.wrapMode.ToString())
-                .Append("FrameRate: ").AppendLine(clip.frameRate.ToString("F3"))
-                .Append("Empty: ").AppendLine(clip.empty.ToString())
-                .Append("Legacy: ").AppendLine(clip.legacy.ToString())
-                .Append("HumanMotion: ").AppendLine(clip.humanMotion.ToString())
-                .Append("HasMotionCurves: ").AppendLine(clip.hasMotionCurves.ToString())
-                .Append("HasRootCurves: ").AppendLine(clip.hasRootCurves.ToString())
-                .Append("HasGenericRootTransform: ").AppendLine(clip.hasGenericRootTransform.ToString())
-                .Append("HasMotionFloatCurves: ").AppendLine(clip.hasMotionFloatCurves.ToString())
-                .AppendLine("LocalBounds: ")
-                .Append("  Center: ").AppendLine(clip.localBounds.center.ToString())
-                .Append("  Extends: ").AppendLine(clip.localBounds.extents.ToString())
-                .Append("ApparentSpeed: ").AppendLine(clip.apparentSpeed.ToString("F3")) // Motion.cs
-                .Append("AverageSpeed: ").AppendLine(clip.averageSpeed.ToString())
-                .Append("AverageAngularSpeed: ").AppendLine(clip.averageAngularSpeed.ToString("F3"))
-                .Append("AverageDuration: ").AppendLine(clip.averageDuration.ToString("F3"))
-                .Append("IsHumanMotion: ").AppendLine(clip.isHumanMotion.ToString());
+            EditorGUILayout.ObjectField("Clip:", clip, typeof(AnimationClip), true);
+            GUILayout.Label($"Length: {clip.length.ToString("F3")}(s)");
+            GUILayout.Label($"Looped: {clip.isLooping}");
+            GUILayout.Label($"WrapMode: {clip.wrapMode}");
+            GUILayout.Label($"FrameRate: {clip.frameRate.ToString("F3")}");
+            GUILayout.Label($"Empty: {clip.empty}");
+            GUILayout.Label($"Legacy: {clip.legacy}");
+            GUILayout.Label($"HumanMotion: {clip.humanMotion}");
+            GUILayout.Label($"HasMotionCurves: {clip.hasMotionCurves}");
+            GUILayout.Label($"HasRootCurves: {clip.hasRootCurves}");
+            GUILayout.Label($"HasGenericRootTransform: {clip.hasGenericRootTransform}");
+            GUILayout.Label($"HasMotionFloatCurves: {clip.hasMotionFloatCurves}");
+            GUILayout.Label($"LocalBounds: ");
+            GUILayout.Label($"  Center: {clip.localBounds.center}");
+            GUILayout.Label($"  Extends: {clip.localBounds.extents}");
+            GUILayout.Label($"ApparentSpeed: {clip.apparentSpeed.ToString("F3")}"); // Motion.cs
+            GUILayout.Label($"AverageSpeed: {clip.averageSpeed}");
+            GUILayout.Label($"AverageAngularSpeed: {clip.averageAngularSpeed.ToString("F3")}");
+            GUILayout.Label($"AverageDuration: {clip.averageDuration.ToString("F3")}");
+            GUILayout.Label($"IsHumanMotion: {clip.isHumanMotion}");
 
             // Event
-            descBuilder.AppendLine(LINE);
+            GUILayout.Label(LINE);
             var events = clip.events;
-            descBuilder.AppendLine(
+            GUILayout.Label(
                 events.Length == 0
                     ? "No Event"
                     : (events.Length == 1 ? "1 Event:" : $"{events.Length.ToString()} Events:")
@@ -171,7 +172,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 var evt = events[i];
                 var evtPosition = evt.time / clip.length * 100;
-                descBuilder.AppendLine($"  #{(i + 1).ToString()} {evtPosition.ToString("F2")}% {evt.functionName}");
+                GUILayout.Label($"  #{(i + 1)} {evtPosition.ToString("F2")}% {evt.functionName}");
             }
         }
     }

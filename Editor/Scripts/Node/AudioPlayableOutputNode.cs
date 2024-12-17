@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -43,9 +44,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             _targetField.SetValueWithoutNotify(target);
         }
 
-        protected override void AppendNodeDescription(StringBuilder descBuilder)
+        protected override void AppendNodeDescription()
         {
-            base.AppendNodeDescription(descBuilder);
+            base.AppendNodeDescription();
 
             if (!PlayableOutput.IsOutputValid())
             {
@@ -55,9 +56,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             var audioPlayableOutput = (AudioPlayableOutput)PlayableOutput;
             var target = audioPlayableOutput.GetTarget();
             var evaluateOnSeek = audioPlayableOutput.GetEvaluateOnSeek();
-            descBuilder.AppendLine(LINE);
-            descBuilder.Append("Target: ").AppendLine(target?.name ?? "Null")
-                .Append("EvaluateOnSeek: ").AppendLine(evaluateOnSeek.ToString());
+            GUILayout.Label(LINE);
+            EditorGUILayout.ObjectField("Target:", target, typeof(AudioSource), true);
+            EditorGUILayout.Toggle("EvaluateOnSeek:", evaluateOnSeek);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.GraphView;
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using System.Text;
+using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -113,9 +114,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         // }
 
 
-        protected override void AppendNodeDescription(StringBuilder descBuilder)
+        protected override void AppendNodeDescription()
         {
-            base.AppendNodeDescription(descBuilder);
+            base.AppendNodeDescription();
 
             if (!Playable.IsValid())
             {
@@ -123,25 +124,25 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             }
 
             var clipPlayable = (AudioClipPlayable)Playable;
-            descBuilder.AppendLine(LINE);
+            GUILayout.Label(LINE);
             var clip = clipPlayable.GetClip();
             if (!clip)
             {
-                descBuilder.AppendLine("Clip: None");
+                GUILayout.Label("Clip: None");
                 return;
             }
 
-            descBuilder.Append("Clip: ").AppendLine(clip.name)
-                .Append("Length: ").Append(clip.length.ToString("F3")).AppendLine("(s)")
-                .Append("Looped: ").AppendLine(clipPlayable.GetLooped().ToString())
-                .Append("Channels: ").AppendLine(clip.channels.ToString())
-                .Append("Ambisonic: ").AppendLine(clip.ambisonic.ToString())
-                .Append("Frequency: ").AppendLine(clip.frequency.ToString())
-                .Append("Samples: ").AppendLine(clip.samples.ToString())
-                .Append("LoadState: ").AppendLine(clip.loadState.ToString())
-                .Append("LoadType: ").AppendLine(clip.loadType.ToString())
-                .Append("LoadInBackground: ").AppendLine(clip.loadInBackground.ToString())
-                .Append("PreloadAudioData: ").AppendLine(clip.preloadAudioData.ToString());
+            EditorGUILayout.ObjectField("Clip:", clip, typeof(AudioClip), true);
+            GUILayout.Label($"Length: {clip.length.ToString("F3")}(s)");
+            EditorGUILayout.Toggle("Looped:", clipPlayable.GetLooped());
+            GUILayout.Label($"Channels: {clip.channels}");
+            GUILayout.Label($"Ambisonic: {clip.ambisonic}");
+            GUILayout.Label($"Frequency: {clip.frequency}");
+            GUILayout.Label($"Samples: {clip.samples}");
+            GUILayout.Label($"LoadState: {clip.loadState}");
+            GUILayout.Label($"LoadType: {clip.loadType}");
+            GUILayout.Label($"LoadInBackground: {clip.loadInBackground}");
+            GUILayout.Label($"PreloadAudioData: {clip.preloadAudioData}");;
         }
     }
 }

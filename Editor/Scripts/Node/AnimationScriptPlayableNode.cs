@@ -50,18 +50,18 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             }
         }
 
-        protected override void AppendPlayableTypeDescription(StringBuilder descBuilder)
+        protected override void AppendPlayableTypeDescription()
         {
-            base.AppendPlayableTypeDescription(descBuilder);
+            base.AppendPlayableTypeDescription();
 
             // Job
             var jobType = GetJobType();
-            descBuilder.Append("Job: ").AppendLine(jobType?.Name ?? "?");
+            GUILayout.Label($"Job: {jobType?.Name ?? "?"}");
         }
 
-         protected override void AppendNodeDescription(StringBuilder descBuilder)
+         protected override void AppendNodeDescription()
         {
-            base.AppendNodeDescription(descBuilder);
+            base.AppendNodeDescription();
 
             if (!Playable.IsValid())
             {
@@ -69,8 +69,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             }
             
             var animScriptPlayable = (AnimationScriptPlayable)Playable;
-            descBuilder.AppendLine(LINE)
-                .Append("ProcessInputs: ").AppendLine(animScriptPlayable.GetProcessInputs().ToString());
+            GUILayout.Label(LINE);
+            GUILayout.Label($"ProcessInputs: {animScriptPlayable.GetProcessInputs()}");
         }
 
         private Type GetJobType()

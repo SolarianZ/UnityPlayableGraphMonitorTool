@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -49,20 +50,16 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         protected const string LINE = "----------";
 
 
-        public string GetNodeDescription()
+        public void GetNodeDescription()
         {
-            if (_descBuilder == null)
-            {
-                _descBuilder = new StringBuilder();
-            }
-
-            _descBuilder.Clear();
-            AppendNodeDescription(_descBuilder);
-            return _descBuilder.ToString();
+            var prevSize = EditorGUIUtility.labelWidth;
+            EditorGUIUtility.labelWidth = 120;
+            AppendNodeDescription();
+            EditorGUIUtility.labelWidth = prevSize;
         }
 
 
-        protected abstract void AppendNodeDescription(StringBuilder descBuilder);
+        protected abstract void AppendNodeDescription();
 
         #endregion
 
