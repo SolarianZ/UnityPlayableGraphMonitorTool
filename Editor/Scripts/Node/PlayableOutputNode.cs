@@ -118,7 +118,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             GUILayout.Label(LINE);
             GUILayout.Label("Source Input:");
             GUILayout.Label($"  SourceOutputPort: {PlayableOutput.GetSourceOutputPort()}");
-            EditorGUILayout.Slider("  Weight:", PlayableOutput.GetWeight(), 0, 1);
+            EditorGUI.BeginChangeCheck();
+            var weight = EditorGUILayout.Slider("  Weight:", PlayableOutput.GetWeight(), 0, 1);
+            if (EditorGUI.EndChangeCheck()) PlayableOutput.SetWeight(weight);
         }
 
         #endregion
