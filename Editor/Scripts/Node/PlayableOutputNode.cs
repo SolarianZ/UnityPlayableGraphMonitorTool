@@ -117,8 +117,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             GUILayout.Label($"UserData: {PlayableOutput.GetUserData()?.name ?? "Null"}");
             GUILayout.Label(LINE);
             GUILayout.Label("Source Input:");
-            GUILayout.Label($"  SourceOutputPort: {PlayableOutput.GetSourceOutputPort().ToString()}");
-            EditorGUILayout.Slider($"  Weight: {PlayableOutput.GetWeight().ToString("F3")}", PlayableOutput.GetWeight(), 0, 1);
+            GUILayout.Label($"  SourceOutputPort: {PlayableOutput.GetSourceOutputPort()}");
+            EditorGUILayout.Slider("  Weight:", PlayableOutput.GetWeight(), 0, 1);
         }
 
         #endregion
