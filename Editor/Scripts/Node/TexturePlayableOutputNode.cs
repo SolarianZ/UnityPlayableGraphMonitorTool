@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Experimental.Playables;
@@ -43,9 +44,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             _targetField.SetValueWithoutNotify(target);
         }
 
-        protected override void AppendNodeDescription(StringBuilder descBuilder)
+        protected override void AppendNodeDescription()
         {
-            base.AppendNodeDescription(descBuilder);
+            base.AppendNodeDescription();
 
             if (!PlayableOutput.IsOutputValid())
             {
@@ -54,8 +55,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             var texturePlayableOutput = (TexturePlayableOutput)PlayableOutput;
             var target = texturePlayableOutput.GetTarget();
-            descBuilder.AppendLine(LINE);
-            descBuilder.Append("Target: ").AppendLine(target?.name ?? "Null");
+            GUILayout.Label(LINE);
+            EditorGUILayout.ObjectField("Target:", target, typeof(RenderTexture), true);
         }
     }
 }

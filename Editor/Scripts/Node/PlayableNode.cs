@@ -3,6 +3,7 @@ using GBG.PlayableGraphMonitor.Editor.Utility;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -130,71 +131,88 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         }
 
 
-        protected override void AppendNodeDescription(StringBuilder descBuilder)
+        protected override void AppendNodeDescription()
         {
             if (!Playable.IsValid())
             {
-                descBuilder.AppendLine("Invalid Playable");
+                GUILayout.Label("Invalid Playable");
                 return;
             }
 
             // Extra label
             if (!string.IsNullOrEmpty(ExtraLabel))
             {
-                descBuilder.Append("ExtraLabel: ").AppendLine(ExtraLabel)
-                    .AppendLine(LINE);
+                GUILayout.Label($"ExtraLabel: {ExtraLabel}");
+                GUILayout.Label(LINE);
             }
 
             // Type
-            AppendPlayableTypeDescription(descBuilder);
+            AppendPlayableTypeDescription();
 
             // Playable
-            descBuilder.AppendLine(LINE)
-                .AppendLine("IsValid: True")
-                .Append("IsNull: ").AppendLine(Playable.IsNull().ToString())
-                .Append("IsDone: ").AppendLine(Playable.IsDone().ToString())
-                .Append("PlayState: ").AppendLine(Playable.GetPlayState().ToString())
-                .Append("Speed: ").Append(Playable.GetSpeed().ToString("F3")).AppendLine("x")
-                .Append("Duration: ").Append(Playable.DurationToString()).AppendLine("(s)")
-                .Append("PreviousTime: ").Append(Playable.GetPreviousTime().ToString("F3")).AppendLine("(s)")
-                .Append("Time: ").Append(Playable.GetTime().ToString("F3")).AppendLine("(s)")
-                .Append("LeadTime: ").Append(Playable.GetLeadTime().ToString("F3")).AppendLine("s")
-                .Append("PropagateSetTime: ").AppendLine(Playable.GetPropagateSetTime().ToString())
-                .Append("TraversalMode: ").AppendLine(Playable.GetTraversalMode().ToString());
+            GUILayout.Label(LINE);
+            GUILayout.Label("IsValid: True");
+            GUILayout.Label($"IsNull: {Playable.IsNull()}");
+            EditorGUI.BeginChangeCheck();
+            var done = EditorGUILayout.Toggle("IsDone:", Playable.IsDone());
+            if (EditorGUI.EndChangeCheck()) Playable.SetDone(done);
+            EditorGUI.BeginChangeCheck();
+            var playState = (PlayState) EditorGUILayout.EnumPopup("PlayState:", Playable.GetPlayState());
+            if (EditorGUI.EndChangeCheck()) if (playState == PlayState.Playing) Playable.Play(); else if (playState == PlayState.Paused) Playable.Pause(); else /*Do nothing*/;
+            EditorGUI.BeginChangeCheck();
+            var speed = EditorGUILayout.DoubleField("Speed:", Playable.GetSpeed());
+            if (EditorGUI.EndChangeCheck()) Playable.SetSpeed(speed);
+            EditorGUI.BeginChangeCheck();
+            var duration = EditorGUILayout.DoubleField("Duration (s):", Playable.GetDuration());
+            if (EditorGUI.EndChangeCheck()) Playable.SetDuration(duration);
+            GUILayout.Label($"PreviousTime: {Playable.GetPreviousTime().ToString("F3")}(s)");
+            EditorGUI.BeginChangeCheck();
+            var time = EditorGUILayout.DoubleField("Time (s):", Playable.GetTime());
+            if (EditorGUI.EndChangeCheck()) Playable.SetTime(time);
+            EditorGUI.BeginChangeCheck();
+            var leadTime = EditorGUILayout.FloatField("LeadTime (s):", Playable.GetLeadTime());
+            if (EditorGUI.EndChangeCheck()) Playable.SetLeadTime(leadTime);
+            EditorGUI.BeginChangeCheck();
+            var propagateSetTime = EditorGUILayout.Toggle($"PropagateSetTime:", Playable.GetPropagateSetTime());
+            if (EditorGUI.EndChangeCheck()) Playable.SetPropagateSetTime(propagateSetTime);
+            EditorGUI.BeginChangeCheck();
+            var traversalMode = (PlayableTraversalMode) EditorGUILayout.EnumPopup("TraversalMode:", Playable.GetTraversalMode());
+            if (EditorGUI.EndChangeCheck()) Playable.SetTraversalMode(traversalMode);
 
             // Inputs
-            descBuilder.AppendLine(LINE);
+            GUILayout.Label(LINE);
             var inputCount = Playable.GetInputCount();
-            descBuilder.AppendLine(
+            GUILayout.Label(
                 inputCount == 0
                     ? "No Input"
-                    : (inputCount == 1 ? "1 Input:" : $"{inputCount.ToString()} Inputs:")
+                    : (inputCount == 1 ? "1 Input:" : $"{inputCount} Inputs:")
             );
-            AppendInputPortDescription(descBuilder);
+            AppendInputPortDescription();
 
             // Outputs
-            descBuilder.AppendLine(LINE);
+            GUILayout.Label(LINE);
             var playableOutputCount = Playable.GetOutputCount();
-            descBuilder.AppendLine(
+            GUILayout.Label(
                 playableOutputCount == 0
                     ? "No Output"
-                    : (playableOutputCount == 1 ? "1 Output" : $"{playableOutputCount.ToString()} Outputs")
+                    : (playableOutputCount == 1 ? "1 Output" : $"{playableOutputCount} Outputs")
             );
         }
 
-        protected virtual void AppendPlayableTypeDescription(StringBuilder descBuilder)
+        protected virtual void AppendPlayableTypeDescription()
         {
-            descBuilder.Append("Type: ").AppendLine(Playable.GetPlayableType()?.Name ?? "?")
-                .Append("HandleHashCode: ").AppendLine(Playable.GetHandle().GetHashCode().ToString());
+            GUILayout.Label($"Type: {Playable.GetPlayableType()?.Name ?? "?"}");
+            GUILayout.Label($"HandleHashCode: {Playable.GetHandle().GetHashCode()}");
         }
 
-        protected virtual void AppendInputPortDescription(StringBuilder descBuilder)
+        protected virtual void AppendInputPortDescription()
         {
             var playableInputCount = Playable.GetInputCount();
             for (int i = 0; i < playableInputCount; i++)
             {
-                descBuilder.Append("  #").Append(i.ToString()).Append(" Weight: ")
-                    .AppendLine(Playable.GetInputWeight(i).ToString("F3"));
+                EditorGUI.BeginChangeCheck();
+                var weight = EditorGUILayout.Slider($"  #{i} Weight: {Playable.GetInputWeight(i).ToString("F3")}", Playable.GetInputWeight(i), 0, 1);
+                if (EditorGUI.EndChangeCheck()) Playable.SetInputWeight(i, weight);
             }
         }
 

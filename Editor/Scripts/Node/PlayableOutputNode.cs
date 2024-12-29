@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using GBG.PlayableGraphMonitor.Editor.Utility;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.Playables;
 using UnityEditor.UIElements;
@@ -96,28 +97,30 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             return GetType().Name;
         }
 
-        protected override void AppendNodeDescription(StringBuilder descBuilder)
+        protected override void AppendNodeDescription()
         {
             if (!PlayableOutput.IsOutputValid())
             {
-                descBuilder.AppendLine("Invalid PlayableOutput");
+                GUILayout.Label("Invalid PlayableOutput");
                 return;
             }
 
-            descBuilder.Append("#").AppendLine(_outputIndex.ToString())
-                .Append("Type: ").AppendLine(PlayableOutput.GetPlayableOutputType().Name)
-                .Append("HandleHashCode: ").AppendLine(PlayableOutput.GetHandle().GetHashCode().ToString())
-                .AppendLine(LINE)
-                .Append("Name: ").AppendLine(PlayableOutput.GetEditorName())
-                .AppendLine(LINE)
-                .AppendLine("IsValid: True")
-                .Append("IsNull: ").AppendLine(PlayableOutput.IsOutputNull().ToString())
-                .Append("ReferenceObject: ").AppendLine(PlayableOutput.GetReferenceObject()?.name ?? "Null")
-                .Append("UserData: ").AppendLine(PlayableOutput.GetUserData()?.name ?? "Null")
-                .AppendLine(LINE)
-                .AppendLine("Source Input:")
-                .Append("  SourceOutputPort: ").AppendLine(PlayableOutput.GetSourceOutputPort().ToString())
-                .Append("  Weight: ").AppendLine(PlayableOutput.GetWeight().ToString("F3"));
+            GUILayout.Label($"#{_outputIndex}");
+            GUILayout.Label($"Type: {PlayableOutput.GetPlayableOutputType().Name}");
+            GUILayout.Label($"HandleHashCode: {PlayableOutput.GetHandle().GetHashCode()}");
+            GUILayout.Label(LINE);
+            GUILayout.Label($"Name: {PlayableOutput.GetEditorName()}");
+            GUILayout.Label(LINE);
+            GUILayout.Label("IsValid: True");
+            GUILayout.Label($"IsNull: {PlayableOutput.IsOutputNull()}");
+            GUILayout.Label($"ReferenceObject: {PlayableOutput.GetReferenceObject()?.name ?? "Null"}");
+            GUILayout.Label($"UserData: {PlayableOutput.GetUserData()?.name ?? "Null"}");
+            GUILayout.Label(LINE);
+            GUILayout.Label("Source Input:");
+            GUILayout.Label($"  SourceOutputPort: {PlayableOutput.GetSourceOutputPort()}");
+            EditorGUI.BeginChangeCheck();
+            var weight = EditorGUILayout.Slider("  Weight:", PlayableOutput.GetWeight(), 0, 1);
+            if (EditorGUI.EndChangeCheck()) PlayableOutput.SetWeight(weight);
         }
 
         #endregion
