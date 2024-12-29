@@ -1,6 +1,5 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.GraphView;
 using GBG.PlayableGraphMonitor.Editor.Utility;
-using System.Text;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -58,7 +57,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 _progressBar.style.display = DisplayStyle.Flex;
 
-                var rawProgress01 = 0.0;
+                // ReSharper disable once TooWideLocalVariableScope
+                // ReSharper disable once RedundantAssignment
+                var rawProgress01 = 0.0; // used in UNITY_2021_1_OR_NEWER
                 double progress01;
                 if (clip)
                 {
@@ -110,13 +111,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         // public override void Release()
         // {
         //     base.Release();
-        //     // Change the value of the ObjectField is expensive, so we dont clear referenced clip asset to save performance 
+        //     // Change the value of the ObjectField is expensive, so we don't clear referenced clip asset to save performance 
         //     // _clipField.SetValueWithoutNotify(null);
         // }
 
-        protected override void AppendNodeDescription()
+        protected override void DrawNodeDescriptionInternal()
         {
-            base.AppendNodeDescription();
+            base.DrawNodeDescriptionInternal();
 
             if (!Playable.IsValid())
             {
@@ -172,7 +173,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 var evt = events[i];
                 var evtPosition = evt.time / clip.length * 100;
-                GUILayout.Label($"  #{(i + 1)} {evtPosition.ToString("F2")}% {evt.functionName}");
+                GUILayout.Label($"  #{(i + 1)} {evtPosition:F2}% {evt.functionName}");
             }
         }
     }

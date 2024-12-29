@@ -1,7 +1,6 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.GraphView;
 using System;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -59,9 +58,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             GUILayout.Label($"Job: {jobType?.Name ?? "?"}");
         }
 
-         protected override void AppendNodeDescription()
+         protected override void DrawNodeDescriptionInternal()
         {
-            base.AppendNodeDescription();
+            base.DrawNodeDescriptionInternal();
 
             if (!Playable.IsValid())
             {

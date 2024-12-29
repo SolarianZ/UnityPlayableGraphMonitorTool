@@ -1,5 +1,4 @@
-﻿using System.Text;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -45,9 +44,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             _targetField.SetValueWithoutNotify(target);
         }
 
-        protected override void AppendNodeDescription()
+        protected override void DrawNodeDescriptionInternal()
         {
-            base.AppendNodeDescription();
+            base.DrawNodeDescriptionInternal();
 
             if (!PlayableOutput.IsOutputValid())
             {
@@ -59,11 +58,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             GUILayout.Label(LINE);
             EditorGUILayout.ObjectField("Target:", target, typeof(Animator), true);
             EditorGUI.BeginChangeCheck();
-            var animationStreamSource = (AnimationStreamSource) EditorGUILayout.EnumPopup("AnimationStreamSource:", animationPlayableOutput.GetAnimationStreamSource());
-            if (EditorGUI.EndChangeCheck()) animationPlayableOutput.SetAnimationStreamSource(animationStreamSource);
+            var animationStreamSource = (AnimationStreamSource)EditorGUILayout.EnumPopup("AnimationStreamSource:", animationPlayableOutput.GetAnimationStreamSource());
+            if (EditorGUI.EndChangeCheck())
+                animationPlayableOutput.SetAnimationStreamSource(animationStreamSource);
             EditorGUI.BeginChangeCheck();
-            var sortingOrder = (ushort) EditorGUILayout.IntField("SortingOrder:", animationPlayableOutput.GetSortingOrder());
-            if (EditorGUI.EndChangeCheck()) animationPlayableOutput.SetSortingOrder(sortingOrder);
+            var sortingOrder = (ushort)EditorGUILayout.IntField("SortingOrder:", animationPlayableOutput.GetSortingOrder());
+            if (EditorGUI.EndChangeCheck())
+                animationPlayableOutput.SetSortingOrder(sortingOrder);
         }
     }
 }

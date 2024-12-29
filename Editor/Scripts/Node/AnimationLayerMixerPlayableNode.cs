@@ -1,5 +1,4 @@
-﻿using System.Text;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
@@ -15,10 +14,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 EditorGUI.BeginChangeCheck();
                 var weight = EditorGUILayout.Slider($"  #{i} Weight:", Playable.GetInputWeight(i), 0, 1);
-                if (EditorGUI.EndChangeCheck()) Playable.SetInputWeight(i, weight);
+                if (EditorGUI.EndChangeCheck())
+                    Playable.SetInputWeight(i, weight);
                 EditorGUI.BeginChangeCheck();
                 var isLayerAdditive = EditorGUILayout.Toggle($"  #{i} Additive:", layerMixer.IsLayerAdditive((uint)i));
-                if (EditorGUI.EndChangeCheck()) layerMixer.SetLayerAdditive((uint) i, isLayerAdditive);
+                if (EditorGUI.EndChangeCheck())
+                    layerMixer.SetLayerAdditive((uint)i, isLayerAdditive);
             }
         }
     }

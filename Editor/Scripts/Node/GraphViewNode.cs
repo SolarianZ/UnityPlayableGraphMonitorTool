@@ -50,16 +50,16 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         protected const string LINE = "----------";
 
 
-        public void GetNodeDescription()
+        public void DrawNodeDescription()
         {
             var prevSize = EditorGUIUtility.labelWidth;
             EditorGUIUtility.labelWidth = 120;
-            AppendNodeDescription();
+            DrawNodeDescriptionInternal();
             EditorGUIUtility.labelWidth = prevSize;
         }
 
 
-        protected abstract void AppendNodeDescription();
+        protected abstract void DrawNodeDescriptionInternal();
 
         #endregion
 

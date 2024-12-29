@@ -94,7 +94,7 @@ namespace GBG.PlayableGraphMonitor.Editor
             if (_graphView.selection.Count == 1 &&
                 _graphView.selection[0] is GraphViewNode node)
             {
-                node.GetNodeDescription();
+                node.DrawNodeDescription();
             }
             // PlayableGraph description
             else

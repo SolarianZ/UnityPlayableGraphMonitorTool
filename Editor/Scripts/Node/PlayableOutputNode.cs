@@ -1,5 +1,4 @@
-﻿using System.Text;
-using GBG.PlayableGraphMonitor.Editor.Utility;
+﻿using GBG.PlayableGraphMonitor.Editor.Utility;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.Playables;
@@ -97,7 +96,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             return GetType().Name;
         }
 
-        protected override void AppendNodeDescription()
+        protected override void DrawNodeDescriptionInternal()
         {
             if (!PlayableOutput.IsOutputValid())
             {
@@ -120,7 +119,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             GUILayout.Label($"  SourceOutputPort: {PlayableOutput.GetSourceOutputPort()}");
             EditorGUI.BeginChangeCheck();
             var weight = EditorGUILayout.Slider("  Weight:", PlayableOutput.GetWeight(), 0, 1);
-            if (EditorGUI.EndChangeCheck()) PlayableOutput.SetWeight(weight);
+            if (EditorGUI.EndChangeCheck())
+                PlayableOutput.SetWeight(weight);
         }
 
         #endregion

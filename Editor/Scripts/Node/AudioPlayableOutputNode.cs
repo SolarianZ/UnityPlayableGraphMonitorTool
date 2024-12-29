@@ -1,5 +1,4 @@
-﻿using System.Text;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -44,9 +43,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             _targetField.SetValueWithoutNotify(target);
         }
 
-        protected override void AppendNodeDescription()
+        protected override void DrawNodeDescriptionInternal()
         {
-            base.AppendNodeDescription();
+            base.DrawNodeDescriptionInternal();
 
             if (!PlayableOutput.IsOutputValid())
             {

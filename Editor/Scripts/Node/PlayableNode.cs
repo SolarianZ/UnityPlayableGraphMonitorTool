@@ -2,7 +2,6 @@
 using GBG.PlayableGraphMonitor.Editor.Utility;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -131,7 +130,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         }
 
 
-        protected override void AppendNodeDescription()
+        protected override void DrawNodeDescriptionInternal()
         {
             if (!Playable.IsValid())
             {
@@ -155,29 +154,40 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             GUILayout.Label($"IsNull: {Playable.IsNull()}");
             EditorGUI.BeginChangeCheck();
             var done = EditorGUILayout.Toggle("IsDone:", Playable.IsDone());
-            if (EditorGUI.EndChangeCheck()) Playable.SetDone(done);
+            if (EditorGUI.EndChangeCheck())
+                Playable.SetDone(done);
             EditorGUI.BeginChangeCheck();
-            var playState = (PlayState) EditorGUILayout.EnumPopup("PlayState:", Playable.GetPlayState());
-            if (EditorGUI.EndChangeCheck()) if (playState == PlayState.Playing) Playable.Play(); else if (playState == PlayState.Paused) Playable.Pause(); else /*Do nothing*/;
+            var playState = (PlayState)EditorGUILayout.EnumPopup("PlayState:", Playable.GetPlayState());
+            if (EditorGUI.EndChangeCheck())
+                if (playState == PlayState.Playing)
+                    Playable.Play();
+                else if (playState == PlayState.Paused)
+                    Playable.Pause();
             EditorGUI.BeginChangeCheck();
             var speed = EditorGUILayout.DoubleField("Speed:", Playable.GetSpeed());
-            if (EditorGUI.EndChangeCheck()) Playable.SetSpeed(speed);
+            if (EditorGUI.EndChangeCheck())
+                Playable.SetSpeed(speed);
             EditorGUI.BeginChangeCheck();
             var duration = EditorGUILayout.DoubleField("Duration (s):", Playable.GetDuration());
-            if (EditorGUI.EndChangeCheck()) Playable.SetDuration(duration);
+            if (EditorGUI.EndChangeCheck())
+                Playable.SetDuration(duration);
             GUILayout.Label($"PreviousTime: {Playable.GetPreviousTime().ToString("F3")}(s)");
             EditorGUI.BeginChangeCheck();
             var time = EditorGUILayout.DoubleField("Time (s):", Playable.GetTime());
-            if (EditorGUI.EndChangeCheck()) Playable.SetTime(time);
+            if (EditorGUI.EndChangeCheck())
+                Playable.SetTime(time);
             EditorGUI.BeginChangeCheck();
             var leadTime = EditorGUILayout.FloatField("LeadTime (s):", Playable.GetLeadTime());
-            if (EditorGUI.EndChangeCheck()) Playable.SetLeadTime(leadTime);
+            if (EditorGUI.EndChangeCheck())
+                Playable.SetLeadTime(leadTime);
             EditorGUI.BeginChangeCheck();
             var propagateSetTime = EditorGUILayout.Toggle($"PropagateSetTime:", Playable.GetPropagateSetTime());
-            if (EditorGUI.EndChangeCheck()) Playable.SetPropagateSetTime(propagateSetTime);
+            if (EditorGUI.EndChangeCheck())
+                Playable.SetPropagateSetTime(propagateSetTime);
             EditorGUI.BeginChangeCheck();
-            var traversalMode = (PlayableTraversalMode) EditorGUILayout.EnumPopup("TraversalMode:", Playable.GetTraversalMode());
-            if (EditorGUI.EndChangeCheck()) Playable.SetTraversalMode(traversalMode);
+            var traversalMode = (PlayableTraversalMode)EditorGUILayout.EnumPopup("TraversalMode:", Playable.GetTraversalMode());
+            if (EditorGUI.EndChangeCheck())
+                Playable.SetTraversalMode(traversalMode);
 
             // Inputs
             GUILayout.Label(LINE);
@@ -212,7 +222,8 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 EditorGUI.BeginChangeCheck();
                 var weight = EditorGUILayout.Slider($"  #{i} Weight: {Playable.GetInputWeight(i).ToString("F3")}", Playable.GetInputWeight(i), 0, 1);
-                if (EditorGUI.EndChangeCheck()) Playable.SetInputWeight(i, weight);
+                if (EditorGUI.EndChangeCheck())
+                    Playable.SetInputWeight(i, weight);
             }
         }
 

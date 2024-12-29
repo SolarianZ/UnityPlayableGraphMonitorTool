@@ -1,6 +1,5 @@
 ﻿using GBG.PlayableGraphMonitor.Editor.GraphView;
 using GBG.PlayableGraphMonitor.Editor.Utility;
-using System.Text;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -57,7 +56,9 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 _progressBar.style.display = DisplayStyle.Flex;
 
-                var rawProgress01 = 0.0;
+                // ReSharper disable once TooWideLocalVariableScope
+                // ReSharper disable once RedundantAssignment
+                var rawProgress01 = 0.0; // used in UNITY_2021_1_OR_NEWER
                 double progress01;
                 if (clip)
                 {
@@ -109,14 +110,14 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
         // public override void Release()
         // {
         //     base.Release();
-        //     // Change the value of the ObjectField is expensive, so we dont clear referenced clip asset to save performance 
+        //     // Change the value of the ObjectField is expensive, so we don't clear referenced clip asset to save performance 
         //     // _clipField.SetValueWithoutNotify(null);
         // }
 
 
-        protected override void AppendNodeDescription()
+        protected override void DrawNodeDescriptionInternal()
         {
-            base.AppendNodeDescription();
+            base.DrawNodeDescriptionInternal();
 
             if (!Playable.IsValid())
             {
@@ -133,7 +134,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             }
 
             EditorGUILayout.ObjectField("Clip:", clip, typeof(AudioClip), true);
-            GUILayout.Label($"Length: {clip.length.ToString("F3")}(s)");
+            GUILayout.Label($"Length: {clip.length:F3}(s)");
             EditorGUILayout.Toggle("Looped:", clipPlayable.GetLooped());
             GUILayout.Label($"Channels: {clip.channels}");
             GUILayout.Label($"Ambisonic: {clip.ambisonic}");
@@ -142,7 +143,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             GUILayout.Label($"LoadState: {clip.loadState}");
             GUILayout.Label($"LoadType: {clip.loadType}");
             GUILayout.Label($"LoadInBackground: {clip.loadInBackground}");
-            GUILayout.Label($"PreloadAudioData: {clip.preloadAudioData}");;
+            GUILayout.Label($"PreloadAudioData: {clip.preloadAudioData}");
         }
     }
 }
