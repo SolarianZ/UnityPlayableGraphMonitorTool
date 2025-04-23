@@ -265,7 +265,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             // Input ports
             var inputCount = isPlayableValid ? Playable.GetInputCount() : 0;
             var redundantInputPortCount = InputPorts.Count - inputCount;
-            for (int i = 0; i < redundantInputPortCount; i++)
+            for (int i = InputPorts.Count - 1; i >= inputCount; i++)
             {
                 // Port won't change frequently, so there's no PortPool
                 inputContainer.Remove(InputPorts[i]);
@@ -287,8 +287,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             // Output ports
             var outputCount = isPlayableValid ? Playable.GetOutputCount() : 0;
-            var redundantOutputPortCount = OutputPorts.Count - outputCount;
-            for (int i = 0; i < redundantOutputPortCount; i++)
+            for (int i = OutputPorts.Count - 1; i >= outputCount; i++)
             {
                 // Port won't change frequently, so there's no PortPool
                 outputContainer.Remove(OutputPorts[i]);
