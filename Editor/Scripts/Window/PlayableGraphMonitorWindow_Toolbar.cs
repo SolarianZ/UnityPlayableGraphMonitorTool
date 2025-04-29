@@ -39,6 +39,9 @@ namespace GBG.PlayableGraphMonitor.Editor
         // Toolbar
         private Toolbar _toolbar;
 
+        // SearchField
+        private ToolbarSearchField _searchField;
+
         // PlayableGraph popup
         private PopupField<PlayableGraph> _graphPopupField;
 
@@ -68,12 +71,16 @@ namespace GBG.PlayableGraphMonitor.Editor
             ? Color.white
             : Color.black;
 
-
         private void CreateToolbar()
         {
             // Toolbar
             _toolbar = new Toolbar();
             rootVisualElement.Add(_toolbar);
+
+            // Playable graph search
+            _searchField = new ToolbarSearchField();
+            _searchField.RegisterValueChangedCallback(OnSearchTextChanged);
+            _toolbar.Add(_searchField);
 
             // Playable graph popup
             _graphPopupField = new PopupField<PlayableGraph>(_graphs, 0,
@@ -218,6 +225,37 @@ namespace GBG.PlayableGraphMonitor.Editor
             _graphPopupField.index = index;
             _graphPopupField.value = _graphs[index];
             _graphPopupField.MarkDirtyRepaint();
+        }
+
+        private void OnSearchTextChanged(ChangeEvent<string> evt)
+        {
+            string searchText = evt.newValue.Trim().ToLower();
+
+            // Filter the list (GraphPopupFieldFormatter returns the name)
+            List<PlayableGraph> filtered = _graphs.Where(graph =>
+                GraphPopupFieldFormatter(graph).ToLower().Contains(searchText)
+            ).ToList();
+
+            // Retain the currently selected value
+            PlayableGraph current = _graphPopupField.value;
+
+            // Remove the old PopupField and unregister the event
+            _graphPopupField.UnregisterValueChangedCallback(OnSelectedPlayableGraphChanged);
+            _toolbar.Remove(_graphPopupField);
+
+            // Determine the new index
+            int newIndex = filtered.IndexOf(current);
+            newIndex = Mathf.Clamp(newIndex, 0, filtered.Count - 1); // Ensure the index is valid
+
+            // Create the new PopupField
+            _graphPopupField = new PopupField<PlayableGraph>(filtered, newIndex,
+                GraphPopupFieldFormatter, GraphPopupFieldFormatter);
+            _graphPopupField.RegisterValueChangedCallback(OnSelectedPlayableGraphChanged);
+            _graphPopupField.Q<TextElement>(className: "unity-text-element").style.color = NormalTextColor;
+
+            // Insert into the position after the search field
+            int searchIndex = _toolbar.IndexOf(_searchField);
+            _toolbar.Insert(searchIndex + 1, _graphPopupField);
         }
 
         private void OnSelectedPlayableGraphChanged(ChangeEvent<PlayableGraph> evt)
