@@ -82,6 +82,12 @@ namespace GBG.PlayableGraphMonitor.Editor
 
         #region Block the default GenericMenu
 
+#if !UNITY_2021_1_OR_NEWER
+        protected override void ExecuteDefaultActionAtTarget(EventBase evt)
+        {
+        }
+#endif
+
 #if UNITY_2023_1_OR_NEWER
         [Obsolete]
         protected override void ExecuteDefaultAction(EventBase evt)
