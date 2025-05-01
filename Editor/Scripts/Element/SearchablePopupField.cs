@@ -160,8 +160,14 @@ namespace GBG.PlayableGraphMonitor.Editor
 
             public override void OnGUI(Rect rect)
             {
+                const string SEARCH_CONTROL = "ToolbarSearchField";
+
                 EditorGUI.BeginChangeCheck();
-                _searchContent = EditorGUILayoutHelper.ToolbarSearchField(_searchContent);
+                {
+                    GUI.SetNextControlName(SEARCH_CONTROL);
+                    _searchContent = EditorGUILayoutHelper.ToolbarSearchField(_searchContent);
+                    EditorGUI.FocusTextInControl(SEARCH_CONTROL);
+                }
                 if (EditorGUI.EndChangeCheck())
                 {
                     _filteredChoices.Clear();
@@ -187,7 +193,7 @@ namespace GBG.PlayableGraphMonitor.Editor
                 Vector2 size = new Vector2
                 {
                     x = Mathf.Max(300, _popup.GetVisualInput().resolvedStyle.width),
-                    y = Mathf.Min(400, _list.elementHeight * _list.count + 28),
+                    y = Mathf.Min(400, _list.elementHeight * _list.count + 36),
                 };
 
                 return size;
@@ -208,7 +214,6 @@ namespace GBG.PlayableGraphMonitor.Editor
 
             private void DrawElementBackground(Rect rect, int index, bool isActive, bool isFocused)
             {
-                // EditorStyles.toolbarPopup
                 if (isActive)
                 {
                     EditorGUI.DrawRect(rect, new Color(0.24f, 0.48f, 0.90f, 0.5f));
