@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using GBG.PlayableGraphMonitor.Editor.Node;
 using UnityEditor;
-using UnityEditor.Playables;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UIElements;
-using UNode = UnityEditor.Experimental.GraphView.Node;
+
+// using UNode = UnityEditor.Experimental.GraphView.Node;
 
 
 namespace GBG.PlayableGraphMonitor.Editor
@@ -59,9 +58,7 @@ namespace GBG.PlayableGraphMonitor.Editor
         private ToolbarButton _manualUpdateViewButton;
 
         // Node search
-        private ToolbarPopupSearchField _searchField;
         private ToolbarButton _searchNodeButton;
-        private ToolbarMenu _searchNodeMenu;
 
         // Common data
         private static Color NotableTextColor => Color.red;
@@ -78,8 +75,22 @@ namespace GBG.PlayableGraphMonitor.Editor
 
             // Playable graph popup
             _graphPopupField = new SearchablePopupField<PlayableGraph>(_graphs, 0,
-                GraphPopupFieldFormatter, GraphPopupFieldFormatter);
+                GraphPopupFieldFormatter, GraphPopupFieldFormatter)
+            {
+                style =
+                {
+                    marginTop = 0,
+                    marginBottom = 0,
+                }
+            };
             _graphPopupField.RegisterValueChangedCallback(OnSelectedPlayableGraphChanged);
+            VisualElement playableGraphPopupInput = _graphPopupField.Q<VisualElement>(className: SearchablePopupField<PlayableGraph>.inputUssClassName);
+            playableGraphPopupInput.style.borderTopLeftRadius = 0;
+            playableGraphPopupInput.style.borderTopRightRadius = 0;
+            playableGraphPopupInput.style.borderBottomLeftRadius = 0;
+            playableGraphPopupInput.style.borderBottomRightRadius = 0;
+            playableGraphPopupInput.style.borderTopWidth = 0;
+            playableGraphPopupInput.style.borderBottomWidth = 0;
             _graphPopupField.Q<TextElement>(className: "unity-text-element").style.color = NormalTextColor;
             _toolbar.Add(_graphPopupField);
             _toolbar.Add(new ToolbarSpacer());
@@ -147,8 +158,20 @@ namespace GBG.PlayableGraphMonitor.Editor
             _refreshRateField = new EnumField(_refreshRate)
             {
                 tooltip = "Max refresh rate.",
+                style =
+                {
+                    marginTop = 0,
+                    marginBottom = 0,
+                }
             };
             _refreshRateField.RegisterValueChangedCallback(OnRefreshRateChanged);
+            VisualElement refreshRateInput = _refreshRateField.Q<VisualElement>(className: EnumField.inputUssClassName);
+            refreshRateInput.style.borderTopLeftRadius = 0;
+            refreshRateInput.style.borderTopRightRadius = 0;
+            refreshRateInput.style.borderBottomLeftRadius = 0;
+            refreshRateInput.style.borderBottomRightRadius = 0;
+            refreshRateInput.style.borderTopWidth = 0;
+            refreshRateInput.style.borderBottomWidth = 0;
             _refreshRateLabel = _refreshRateField.Q<TextElement>(className: "unity-text-element");
             _refreshRateLabel.style.color = _refreshRate != RefreshRate.Manual ? NormalTextColor : NotableTextColor;
             _toolbar.Add(_refreshRateField);
@@ -171,7 +194,11 @@ namespace GBG.PlayableGraphMonitor.Editor
             var frameAllButton = new ToolbarButton(OnFrameAllButtonClicked)
             {
                 text = "Frame All",
-                style = { flexShrink = 0 },
+                style =
+                {
+                    flexShrink = 0,
+                    unityTextAlign = TextAnchor.MiddleCenter,
+                },
             };
             frameAllButton.Q<TextElement>(className: "unity-text-element").style.color = NormalTextColor;
             _toolbar.Add(frameAllButton);
@@ -180,12 +207,14 @@ namespace GBG.PlayableGraphMonitor.Editor
             _toolbar.Add(new ToolbarSpacer());
             _searchNodeButton = new ToolbarButton(ShowSearchNodeWindow)
             {
-                text = "Search Nodes"
+                text = "Search Nodes",
+                style =
+                {
+                    flexShrink = 0,
+                    unityTextAlign = TextAnchor.MiddleCenter,
+                },
             };
             _toolbar.Add(_searchNodeButton);
-            _searchNodeMenu = new ToolbarMenu();
-            _searchNodeMenu.RegisterCallback<PointerDownEvent>(OnClickSearchNodeMenu);
-            _toolbar.Add(_searchNodeMenu);
         }
 
         private string GraphPopupFieldFormatter(PlayableGraph graph)
@@ -368,22 +397,15 @@ namespace GBG.PlayableGraphMonitor.Editor
             return node.ToString();
         }
 
-        private void OnClickSearchNodeMenu(PointerDownEvent evt)
-        {
-            _searchNodeMenu.menu.MenuItems().Clear();
-            PopulateRootNodeDropdownMenu(_searchNodeMenu.menu);
-            PopulateOutputNodeDropdownMenu(_searchNodeMenu.menu);
-        }
-
-        private void PopulateRootNodeDropdownMenu(DropdownMenu menu)
+        /*
+        private void PopulateRootNodeDropdownMenu(GenericMenu menu)
         {
             const string ROOT_NODES = "Root Playable Nodes";
 
             var playableGraph = _graphPopupField.value;
             if (!playableGraph.IsValid())
             {
-                menu.AppendAction("No Root Playable Node", null,
-                    DropdownMenuAction.Status.Disabled);
+                menu.AddDisabledItem(new GUIContent("No Root Playable Node"));
                 return;
             }
 
@@ -414,7 +436,7 @@ namespace GBG.PlayableGraphMonitor.Editor
                     ? $"#{i} [{playableNode.ExtraLabel}] {playableNode.Playable.GetPlayableType().Name}"
                     : $"#{i} {playableNode.Playable.GetPlayableType().Name}";
 
-                menu.AppendAction($"{ROOT_NODES}/{nodeName}", _ =>
+                menu.AddItem(new GUIContent($"{ROOT_NODES}/{nodeName}"), false, () =>
                 {
                     _graphView.ClearSelection();
                     _graphView.AddToSelection(playableNode);
@@ -424,20 +446,18 @@ namespace GBG.PlayableGraphMonitor.Editor
 
             if (rootPlayableCount == 0)
             {
-                menu.AppendAction("No Root Playable Node", null,
-                    DropdownMenuAction.Status.Disabled);
+                menu.AddDisabledItem(new GUIContent("No Root Playable Node"));
             }
         }
 
-        private void PopulateOutputNodeDropdownMenu(DropdownMenu menu)
+        private void PopulateOutputNodeDropdownMenu(GenericMenu menu)
         {
             const string OUTPUT_NODES = "PlayableOutput Nodes";
 
             var playableGraph = _graphPopupField.value;
             if (!playableGraph.IsValid())
             {
-                menu.AppendAction("No PlayableOutput Node", null,
-                    DropdownMenuAction.Status.Disabled);
+                menu.AddDisabledItem(new GUIContent("No PlayableOutput Node"));
                 return;
             }
 
@@ -466,7 +486,7 @@ namespace GBG.PlayableGraphMonitor.Editor
 
                 var nodeName = $"#{i} [{outputNode.PlayableOutput.GetEditorName()}]" +
                     $" {outputNode.PlayableOutput.GetPlayableOutputType().Name}";
-                menu.AppendAction($"{OUTPUT_NODES}/{nodeName}", _ =>
+                menu.AddItem(new GUIContent($"{OUTPUT_NODES}/{nodeName}"), false, () =>
                 {
                     _graphView.ClearSelection();
                     _graphView.AddToSelection(outputNode);
@@ -476,10 +496,10 @@ namespace GBG.PlayableGraphMonitor.Editor
 
             if (outputCount == 0)
             {
-                menu.AppendAction("No PlayableOutput Node", null,
-                    DropdownMenuAction.Status.Disabled);
+                menu.AddDisabledItem(new GUIContent("No PlayableOutput Node"));
             }
         }
+        */
 
         #endregion
     }
