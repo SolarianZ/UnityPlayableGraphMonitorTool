@@ -264,7 +264,6 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
 
             // Input ports
             var inputCount = isPlayableValid ? Playable.GetInputCount() : 0;
-            var redundantInputPortCount = InputPorts.Count - inputCount;
             for (int i = InputPorts.Count - 1; i >= inputCount; i--)
             {
                 // Port won't change frequently, so there's no PortPool
