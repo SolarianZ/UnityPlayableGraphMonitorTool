@@ -190,10 +190,23 @@ namespace GBG.PlayableGraphMonitor.Editor
 
             public override Vector2 GetWindowSize()
             {
+                GUIContent tempLabelContent = new GUIContent();
+                float maxWidth = 0;
+                foreach (T item in _popup.GetChoices())
+                {
+                    string label = item?.GetHashCode() == _popup.value?.GetHashCode()
+                        ? _popup.formatSelectedValueCallback?.Invoke(item) ?? item?.ToString() ?? string.Empty
+                        : _popup.formatListItemCallback?.Invoke(item) ?? item?.ToString() ?? string.Empty;
+                    tempLabelContent.text = label;
+                    float width = EditorStyles.toolbarPopup.CalcSize(tempLabelContent).x;
+                    if (width > maxWidth)
+                        maxWidth = width;
+                }
+
                 Vector2 size = new Vector2
                 {
-                    x = Mathf.Max(300, _popup.GetVisualInput().resolvedStyle.width),
-                    y = Mathf.Min(400, _list.elementHeight * _list.count + 36),
+                    x = Mathf.Max(300, _popup.GetVisualInput().resolvedStyle.width, maxWidth),
+                    y = Mathf.Min(400, Mathf.Max(_list.elementHeight * _list.count + 36, 48)),
                 };
 
                 return size;
