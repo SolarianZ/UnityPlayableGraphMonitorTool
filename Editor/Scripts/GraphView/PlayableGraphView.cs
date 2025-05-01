@@ -46,6 +46,9 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         private bool _isViewFocused;
 
+        public IReadOnlyList<GraphViewNode> ActiveNodes => _activeNodes;
+        private List<GraphViewNode> _activeNodes = new List<GraphViewNode>();
+
 
         #region Properties for connection and layout
 
@@ -86,6 +89,7 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         public bool Update(PlayableGraphViewUpdateContext context)
         {
+            _activeNodes.Clear();
             var success = true;
 
             var playableGraphChanged = !GraphTool.IsEqual(ref _playableGraph, ref context.PlayableGraph);
@@ -205,9 +209,13 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
 
         private void ConnectNodes()
         {
+            _activeNodes.Clear();
+
             // PlayableOutputNodes
             foreach (var parentNode in _outputNodePoolFactory.GetActiveNodes())
             {
+                _activeNodes.Add(parentNode);
+
                 var childPlayable = parentNode.PlayableOutput.GetSourcePlayable();
                 if (!childPlayable.IsValid())
                 {
@@ -226,6 +234,8 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             // PlayableNodes
             foreach (var parentNode in _playableNodePoolFactory.GetActiveNodes())
             {
+                _activeNodes.Add(parentNode);
+
                 var parentPlayable = parentNode.Playable;
                 var inputCount = parentPlayable.GetInputCount();
                 for (int i = 0; i < inputCount; i++)
@@ -429,16 +439,20 @@ namespace GBG.PlayableGraphMonitor.Editor.GraphView
             foreach (var outputNode in _outputNodePoolFactory.GetActiveNodes())
             {
                 var nodeCaps = outputNode.capabilities;
-                if (movable) nodeCaps |= Capabilities.Movable;
-                else nodeCaps &= ~Capabilities.Movable;
+                if (movable)
+                    nodeCaps |= Capabilities.Movable;
+                else
+                    nodeCaps &= ~Capabilities.Movable;
                 outputNode.capabilities = nodeCaps;
             }
 
             foreach (var playableNode in _playableNodePoolFactory.GetActiveNodes())
             {
                 var nodeCaps = playableNode.capabilities;
-                if (movable) nodeCaps |= Capabilities.Movable;
-                else nodeCaps &= ~Capabilities.Movable;
+                if (movable)
+                    nodeCaps |= Capabilities.Movable;
+                else
+                    nodeCaps &= ~Capabilities.Movable;
                 playableNode.capabilities = nodeCaps;
             }
         }

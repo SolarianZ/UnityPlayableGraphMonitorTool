@@ -59,5 +59,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             EditorGUILayout.ObjectField("Target:", target, typeof(AudioSource), true);
             EditorGUILayout.Toggle("EvaluateOnSeek:", evaluateOnSeek);
         }
+
+        public AudioSource GetAudioSourceTarget()
+        {
+            var audioPlayableOutput = (AudioPlayableOutput)PlayableOutput;
+            var target = audioPlayableOutput.GetTarget();
+            return target;
+        }
     }
 }

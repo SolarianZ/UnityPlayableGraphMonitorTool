@@ -57,5 +57,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             GUILayout.Label(LINE);
             EditorGUILayout.ObjectField("Target:", target, typeof(RenderTexture), true);
         }
+
+        public RenderTexture GetRenderTextureTarget()
+        {
+            var texturePlayableOutput = (TexturePlayableOutput)PlayableOutput;
+            var target = texturePlayableOutput.GetTarget();
+            return target;
+        }
     }
 }

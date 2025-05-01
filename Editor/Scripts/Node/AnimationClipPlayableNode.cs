@@ -176,5 +176,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
                 GUILayout.Label($"  #{(i + 1)} {evtPosition:F2}% {evt.functionName}");
             }
         }
+
+        public AnimationClip GetAnimationClip()
+        {
+            var clipPlayable = (AnimationClipPlayable)Playable;
+            var clip = clipPlayable.GetAnimationClip();
+            return clip;
+        }
     }
 }

@@ -66,5 +66,12 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             if (EditorGUI.EndChangeCheck())
                 animationPlayableOutput.SetSortingOrder(sortingOrder);
         }
+
+        public Animator GetAnimatorTarget()
+        {
+            var animationPlayableOutput = (AnimationPlayableOutput)PlayableOutput;
+            var target = animationPlayableOutput.GetTarget();
+            return target;
+        }
     }
 }

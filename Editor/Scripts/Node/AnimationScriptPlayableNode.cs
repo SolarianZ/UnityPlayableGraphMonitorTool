@@ -58,7 +58,7 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             GUILayout.Label($"Job: {jobType?.Name ?? "?"}");
         }
 
-         protected override void DrawNodeDescriptionInternal()
+        protected override void DrawNodeDescriptionInternal()
         {
             base.DrawNodeDescriptionInternal();
 
@@ -66,13 +66,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             {
                 return;
             }
-            
+
             var animScriptPlayable = (AnimationScriptPlayable)Playable;
             GUILayout.Label(LINE);
             GUILayout.Label($"ProcessInputs: {animScriptPlayable.GetProcessInputs()}");
         }
 
-        private Type GetJobType()
+        public Type GetJobType()
         {
             if (_getJobTypeFunc != null)
             {

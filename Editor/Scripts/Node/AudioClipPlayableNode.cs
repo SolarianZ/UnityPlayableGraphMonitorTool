@@ -145,5 +145,13 @@ namespace GBG.PlayableGraphMonitor.Editor.Node
             GUILayout.Label($"LoadInBackground: {clip.loadInBackground}");
             GUILayout.Label($"PreloadAudioData: {clip.preloadAudioData}");
         }
+
+        public AudioClip GetAudioClip()
+        {
+            var clipPlayable = (AudioClipPlayable)Playable;
+            GUILayout.Label(LINE);
+            var clip = clipPlayable.GetClip();
+            return clip;
+        }
     }
 }
